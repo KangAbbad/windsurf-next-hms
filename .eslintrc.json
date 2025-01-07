@@ -1,0 +1,32 @@
+{
+  "extends": [
+    // "next/core-web-vitals",
+    "universe/web",
+    "universe/shared/typescript-analysis",
+    "plugin:@next/next/recommended"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "*.ts",
+        "*.tsx",
+        "*.d.ts"
+      ],
+      "parserOptions": {
+        "project": "./tsconfig.json"
+      }
+    }
+  ],
+  "rules": {
+    "react/no-unknown-property": [
+      2,
+      {
+        "ignore": [
+          "jsx",
+          "global"
+        ]
+      }
+    ],
+    "@typescript-eslint/no-floating-promises": "off"
+  }
+}
