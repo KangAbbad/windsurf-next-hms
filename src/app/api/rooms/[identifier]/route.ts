@@ -1,5 +1,5 @@
-import { createApiResponse, createErrorResponse } from '@/lib/api-response'
 import { createClient } from '@/providers/supabase/server'
+import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
 import type { UpdateRoomInput } from '@/types/room'
 
 export async function GET(_request: Request, { params }: { params: { identifier: string } }): Promise<Response> {

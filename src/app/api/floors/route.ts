@@ -1,5 +1,5 @@
-import { createApiResponse, createErrorResponse } from '@/lib/api-response'
 import { createClient } from '@/providers/supabase/server'
+import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
 import type { CreateFloorInput, Floor, FloorResponse } from '@/types/floor'
 
 export async function GET(request: Request): Promise<Response> {

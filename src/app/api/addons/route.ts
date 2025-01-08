@@ -1,6 +1,6 @@
-import { createApiResponse, createErrorResponse } from '@/lib/api-response'
 import { createClient } from '@/providers/supabase/server'
-import type { AddonResponse, CreateAddonInput } from '@/types/addon'
+import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
+import type { AddonListItem, CreateAddonBody } from '@/types/addon'
 
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -31,7 +31,7 @@ export async function GET(request: Request): Promise<Response> {
     }
 
     const {
-      data: addons,
+      data: items,
       error,
       count,
     } = await query.range(offset, offset + limit - 1).order('addon_name', { ascending: true })
@@ -44,13 +44,13 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    const response: AddonResponse = {
-      addons: addons ?? [],
-      pagination: {
-        total: count,
+    const response: PaginatedDataResponse<AddonListItem> = {
+      items: items ?? [],
+      meta: {
         page,
         limit,
-        total_pages: count ? Math.ceil(count / limit) : null,
+        total: count ?? 0,
+        total_pages: count ? Math.ceil(count / limit) : 1,
       },
     }
 
@@ -72,7 +72,7 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const newAddon: CreateAddonInput = await request.json()
+    const newAddon: CreateAddonBody = await request.json()
 
     // Validate required fields
     if (!newAddon.addon_name || !newAddon.price) {

@@ -1,5 +1,5 @@
-import { createApiResponse, createErrorResponse } from '@/lib/api-response'
 import { createClient } from '@/providers/supabase/server'
+import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
 
 export async function POST(request: Request) {
   try {

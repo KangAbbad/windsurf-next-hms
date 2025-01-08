@@ -1,6 +1,6 @@
-import { createApiResponse, createErrorResponse } from '@/lib/api-response'
 import { createClient } from '@/providers/supabase/server'
-import type { UpdateAddonInput } from '@/types/addon'
+import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
+import type { UpdateAddonBody } from '@/types/addon'
 
 export async function GET(
   _request: Request,
@@ -54,7 +54,7 @@ export async function PUT(
   try {
     const supabase = await createClient()
     const { identifier } = await params
-    const updates: UpdateAddonInput = await request.json()
+    const updates: UpdateAddonBody = await request.json()
 
     // Validate required fields if provided
     if (updates.addon_name || updates.price) {

@@ -1,153 +1,105 @@
 'use client'
 
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Button, Table, message, Input } from 'antd'
+import { useQuery } from '@tanstack/react-query'
+import { Button, Table, Input } from 'antd'
+import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
+import { FaPlus } from 'react-icons/fa6'
+import { IoSearch } from 'react-icons/io5'
 
-import { columns } from './columns'
-import AddonsForm from './components/AddonsForm'
-import { addonsService, type Addon, type PageParams } from './services/addons'
+import { queryKey } from './lib/constants'
+import { addonDetailStore } from './lib/state'
+import { tableColumns } from './lib/tableColumns'
+import { type AddonListPageParams, getAll } from './services/get'
+
+const FormModal = dynamic(() => import('./components/FormModal'), {
+  ssr: false,
+})
 
 export default function AddonsPage() {
-  const queryClient = useQueryClient()
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedAddon, setSelectedAddon] = useState<Addon | null>(null)
-  const [searchText, setSearchText] = useState('')
-  const [pageParams, setPageParams] = useState<PageParams>({
+  const [isFormVisible, setFormVisible] = useState<boolean>(false)
+  const [keyword, setKeyword] = useState<string>('')
+  const [pageParams, setPageParams] = useState<AddonListPageParams>({
     page: 1,
     limit: 10,
-    search: '',
+    search: undefined,
   })
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['addons', pageParams],
-    queryFn: () => addonsService.getAll(pageParams),
-    // keepPreviousData: true,
-  })
+  const { resetData: resetAddonDetail } = addonDetailStore()
 
-  const createMutation = useMutation({
-    mutationFn: (addon: Omit<Addon, 'id' | 'created_at' | 'updated_at'>) => addonsService.create(addon),
-    onSuccess: async () => {
-      message.success('Addon created successfully')
-      await queryClient.invalidateQueries({ queryKey: ['addons'] })
-      setIsModalOpen(false)
-    },
-    onError: () => {
-      message.error('Failed to create addon')
-    },
+  const { data: dataSourceResponse, isFetching: isDataSourceFetching } = useQuery({
+    queryKey: [queryKey.RES_ADDON_LIST, pageParams],
+    queryFn: () => getAll(pageParams),
   })
+  const { data: dataSourceData } = dataSourceResponse ?? {}
+  const { items: dataSource = [], meta: dataSourceMeta } = dataSourceData ?? {}
+  const { total } = dataSourceMeta ?? {}
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, addon }: { id: string; addon: Partial<Addon> }) => addonsService.update(id, addon),
-    onSuccess: () => {
-      message.success('Addon updated successfully')
-      queryClient.invalidateQueries({ queryKey: ['addons'] })
-      setIsModalOpen(false)
-    },
-    onError: () => {
-      message.error('Failed to update addon')
-    },
-  })
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => addonsService.delete(id),
-    onSuccess: () => {
-      message.success('Addon deleted successfully')
-      queryClient.invalidateQueries({ queryKey: ['addons'] })
-    },
-    onError: () => {
-      message.error('Failed to delete addon')
-    },
-  })
-
-  const handleAdd = () => {
-    setSelectedAddon(null)
-    setIsModalOpen(true)
+  const showAddModal = () => {
+    resetAddonDetail()
+    setFormVisible(true)
   }
 
-  const handleEdit = (record: Addon) => {
-    setSelectedAddon(record)
-    setIsModalOpen(true)
-  }
-
-  const handleDelete = (id: string) => {
-    deleteMutation.mutate(id)
-  }
+  const columns = tableColumns({
+    onEdit: () => {
+      setFormVisible(true)
+    },
+  })()
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      setPageParams((prev) => ({ ...prev, search: searchText }))
+      setPageParams((prev) => ({ ...prev, search: keyword }))
     }, 500)
 
     return () => {
       clearTimeout(delayDebounceFn)
     }
-  }, [searchText])
+  }, [keyword])
 
   return (
-    <>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-semibold m-0">Addons Management</h1>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd} loading={createMutation.isPending}>
-          Add New
-        </Button>
-      </div>
-
-      <div className="mb-6">
-        <Input
-          placeholder="Search addons..."
-          prefix={<SearchOutlined className="text-gray-400" />}
-          onChange={(e) => {
-            setSearchText(e.target.value)
+    <main className="p-4">
+      <div className="bg-white p-4 rounded-lg">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-semibold m-0">Addons Management</h1>
+          <Button type="primary" icon={<FaPlus />} onClick={showAddModal}>
+            Add New
+          </Button>
+        </div>
+        <div className="mb-4">
+          <Input
+            allowClear
+            placeholder="Search addons..."
+            size="middle"
+            prefix={<IoSearch />}
+            className="max-w-md"
+            onChange={(e) => {
+              setKeyword(e.target.value)
+            }}
+          />
+        </div>
+        <Table
+          columns={columns}
+          dataSource={dataSource}
+          loading={isDataSourceFetching}
+          rowKey="id"
+          pagination={{
+            current: pageParams.page,
+            pageSize: pageParams.limit,
+            total,
+            showSizeChanger: true,
+            showTotal: (total) => `Total ${total} items`,
+            onChange: (page, pageSize) => {
+              setPageParams((prev) => ({ ...prev, page, limit: pageSize }))
+            },
           }}
-          className="max-w-md"
-          allowClear
+        />
+        <FormModal
+          isVisible={isFormVisible}
+          onCancel={() => {
+            setFormVisible(false)
+          }}
         />
       </div>
-
-      <Table
-        columns={columns({
-          handleEdit,
-          handleDelete,
-          isDeleting: deleteMutation.isPending,
-        })}
-        dataSource={data?.addons.map((addon) => ({
-          ...addon,
-          name: addon.addon_name, // Map addon_name to name for table display
-        }))}
-        loading={isLoading || deleteMutation.isPending}
-        rowKey="id"
-        pagination={{
-          current: pageParams.page,
-          pageSize: pageParams.limit,
-          total: data?.pagination.total,
-          showSizeChanger: true,
-          showTotal: (total) => `Total ${total} items`,
-          onChange: (page, pageSize) => {
-            setPageParams((prev) => ({ ...prev, page, limit: pageSize }))
-          },
-        }}
-      />
-
-      <AddonsForm
-        open={isModalOpen}
-        onCancel={() => {
-          setIsModalOpen(false)
-        }}
-        onSubmit={(values) => {
-          if (selectedAddon) {
-            updateMutation.mutate({
-              id: selectedAddon.id,
-              addon: values,
-            })
-          } else {
-            createMutation.mutate(values)
-          }
-        }}
-        initialValues={selectedAddon}
-        loading={createMutation.isPending || updateMutation.isPending}
-      />
-    </>
+    </main>
   )
 }

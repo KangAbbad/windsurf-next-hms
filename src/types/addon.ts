@@ -1,33 +1,16 @@
-import type { RoomClass } from './room-class'
-
-export interface Addon {
-  id: number
+export interface AddonListItem {
+  id: string
   addon_name: string
-  description?: string
   price: number
-  created_at?: string
-  updated_at?: string
-  room_classes?: {
-    room_class: RoomClass[]
-  }[]
+  created_at: string
+  updated_at: string
 }
 
-export interface CreateAddonInput {
+export interface CreateAddonBody {
   addon_name: string
-  description?: string
   price: number
 }
 
-export interface UpdateAddonInput extends Partial<CreateAddonInput> {
-  id: number
-}
-
-export interface AddonResponse {
-  addons: Addon[]
-  pagination: {
-    total: number | null
-    page: number
-    limit: number
-    total_pages: number | null
-  }
+export interface UpdateAddonBody extends Partial<CreateAddonBody> {
+  id: string
 }

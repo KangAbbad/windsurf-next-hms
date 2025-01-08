@@ -1,12 +1,22 @@
 import { NextResponse } from 'next/server'
 
-interface ApiResponse<T> {
+export interface ApiResponse<T> {
   code: number
   message: string
   success: boolean
   response_time: string
   errors: string[]
   data: T | null
+}
+
+export interface PaginatedDataResponse<T> {
+  items: T[]
+  meta: {
+    page: number
+    limit: number
+    total: number
+    total_pages: number
+  }
 }
 
 export function createApiResponse<T>({
