@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
-import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { CreateFloorInput, Floor, FloorResponse } from '@/types/floor'
+import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
+import type { CreateFloorBody, FloorListItem } from '@/types/floor'
 
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -24,7 +24,7 @@ export async function GET(request: Request): Promise<Response> {
     }
 
     const {
-      data: floors,
+      data: items,
       error,
       count,
     } = await query.range(offset, offset + limit - 1).order('floor_number', { ascending: true })
@@ -37,15 +37,13 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    const response: FloorResponse = {
-      floors: floors as Floor[],
-      pagination: {
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        total: count || 0,
+    const response: PaginatedDataResponse<FloorListItem> = {
+      items: items ?? [],
+      meta: {
         page,
         limit,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        total_pages: Math.ceil((count || 0) / limit),
+        total: count ?? 0,
+        total_pages: count ? Math.ceil(count / limit) : 1,
       },
     }
 
@@ -67,7 +65,7 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const newFloor: CreateFloorInput = await request.json()
+    const newFloor: CreateFloorBody = await request.json()
 
     // Validate required fields
     if (typeof newFloor.floor_number !== 'number') {
@@ -107,7 +105,7 @@ export async function POST(request: Request): Promise<Response> {
     return createApiResponse({
       code: 201,
       message: 'Floor created successfully',
-      data: data as Floor,
+      data: data as FloorListItem,
     })
   } catch (error) {
     console.error('Create floor error:', error)

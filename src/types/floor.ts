@@ -1,20 +1,14 @@
-export type Floor = {
-  id: number
+export type FloorListItem = {
+  id: string
   floor_number: number
-  created_at?: string
-  updated_at?: string
+  created_at: string
+  updated_at: string
 }
 
-export type CreateFloorInput = {
+export type CreateFloorBody = {
   floor_number: number
 }
 
-export type FloorResponse = {
-  floors: Floor[]
-  pagination: {
-    total: number
-    page: number
-    limit: number
-    total_pages: number
-  }
+export type UpdateFloorBody = Partial<CreateFloorBody> & {
+  id: string
 }
