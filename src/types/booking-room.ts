@@ -1,7 +1,7 @@
 import type { Booking } from './booking'
 import type { Room } from './room'
 
-export interface BookingRoom {
+export type BookingRoom = {
   id: number
   booking_id: number
   room_id: number
@@ -13,30 +13,30 @@ export interface BookingRoom {
   room?: Room[]
 }
 
-export interface CreateBookingRoomInput {
+export type CreateBookingRoomInput = {
   booking_id: number
   room_id: number
   check_in: string
   check_out: string
 }
 
-export interface UpdateBookingRoomInput extends Partial<CreateBookingRoomInput> {
+export type UpdateBookingRoomInput = Partial<CreateBookingRoomInput> & {
   id: number
 }
 
-export interface BulkCreateBookingRoomInput {
+export type BulkCreateBookingRoomInput = {
   items: CreateBookingRoomInput[]
 }
 
-export interface BulkUpdateBookingRoomInput {
+export type BulkUpdateBookingRoomInput = {
   items: UpdateBookingRoomInput[]
 }
 
-export interface BulkDeleteBookingRoomInput {
+export type BulkDeleteBookingRoomInput = {
   ids: number[]
 }
 
-export interface BookingRoomResponse {
+export type BookingRoomResponse = {
   booking_rooms: BookingRoom[]
   pagination: {
     total: number | null

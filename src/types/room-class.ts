@@ -1,16 +1,16 @@
 import type { BedType } from './bed-type'
 import type { Feature } from './feature'
 
-export interface RoomClassFeature {
+export type RoomClassFeature = {
   feature: Feature[]
 }
 
-export interface RoomClassBedType {
+export type RoomClassBedType = {
   bed_type: BedType[]
   quantity: number
 }
 
-export interface RoomClass {
+export type RoomClass = {
   id: number
   room_class_name: string
   description?: string
@@ -23,7 +23,7 @@ export interface RoomClass {
   bed_types?: RoomClassBedType[]
 }
 
-export interface CreateRoomClassInput {
+export type CreateRoomClassInput = {
   room_class_name: string
   description?: string
   base_occupancy: number
@@ -36,7 +36,7 @@ export interface CreateRoomClassInput {
   }[]
 }
 
-export interface UpdateRoomClassInput {
+export type UpdateRoomClassInput = {
   id: number
   room_class_name?: string
   description?: string
@@ -45,7 +45,7 @@ export interface UpdateRoomClassInput {
   base_rate?: number
 }
 
-export interface RoomClassResponse {
+export type RoomClassResponse = {
   room_classes: RoomClass[]
   pagination: {
     total: number | null

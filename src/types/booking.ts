@@ -1,10 +1,10 @@
 // Shared types for booking-related endpoints
-export interface RoomStatus {
+export type RoomStatus = {
   id: number
   status_name: string
 }
 
-export interface Room {
+export type Room = {
   id: number
   room_number: string
   floor_id: number
@@ -13,7 +13,7 @@ export interface Room {
   status: RoomStatus
 }
 
-export interface Booking {
+export type Booking = {
   id: number
   guest_id: number
   payment_status_id: number
@@ -26,7 +26,7 @@ export interface Booking {
   updated_at: string
 }
 
-export interface Guest {
+export type Guest = {
   id: number
   first_name: string
   last_name: string
@@ -34,26 +34,26 @@ export interface Guest {
   phone_number: string
 }
 
-export interface PaymentStatus {
+export type PaymentStatus = {
   id: number
   payment_status_name: string
 }
 
-export interface Addon {
+export type Addon = {
   id: number
   addon_name: string
   price: number
 }
 
-export interface BookingRoom {
+export type BookingRoom = {
   room: Room
 }
 
-export interface BookingAddon {
+export type BookingAddon = {
   addon: Addon
 }
 
-export interface BookingData {
+export type BookingData = {
   id: number
   guest: Guest
   payment_status: PaymentStatus
@@ -68,7 +68,7 @@ export interface BookingData {
   updated_at: string
 }
 
-export interface CreateBookingInput {
+export type CreateBookingInput = {
   guest_id: number
   payment_status_id: number
   room_ids: number[]

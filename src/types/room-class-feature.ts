@@ -1,7 +1,7 @@
 import type { Feature } from './feature'
 import type { RoomClass } from './room-class'
 
-export interface RoomClassFeature {
+export type RoomClassFeature = {
   id: number
   room_class_id: number
   feature_id: number
@@ -11,16 +11,16 @@ export interface RoomClassFeature {
   feature?: Feature[]
 }
 
-export interface CreateRoomClassFeatureInput {
+export type CreateRoomClassFeatureInput = {
   room_class_id: number
   feature_id: number
 }
 
-export interface UpdateRoomClassFeatureInput {
+export type UpdateRoomClassFeatureInput = {
   id: number
 }
 
-export interface RoomClassFeatureResponse {
+export type RoomClassFeatureResponse = {
   room_class_features: RoomClassFeature[]
   pagination: {
     total: number | null

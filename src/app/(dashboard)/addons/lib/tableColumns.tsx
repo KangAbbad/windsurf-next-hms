@@ -47,25 +47,27 @@ export const tableColumns = (props: Props) => {
         title: 'Name',
         dataIndex: 'addon_name',
         key: 'addon_name',
-        sorter: (a, b) => a.addon_name.localeCompare(b.addon_name),
         width: '30%',
+        sorter: (a, b) => a.addon_name.localeCompare(b.addon_name),
       },
       {
         title: 'Price',
         dataIndex: 'price',
         key: 'price',
+        width: '30%',
+        sorter: (a, b) => a.price - b.price,
         render: (price) => (
           <span className="font-medium">
             ${Number(price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         ),
-        sorter: (a, b) => a.price - b.price,
-        width: '30%',
       },
       {
         title: 'Created At',
         dataIndex: 'created_at',
         key: 'created_at',
+        width: '30%',
+        sorter: (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
         render: (date) => {
           return new Date(date).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -73,12 +75,12 @@ export const tableColumns = (props: Props) => {
             day: 'numeric',
           })
         },
-        sorter: (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-        width: '30%',
       },
       {
         title: 'Actions',
         key: 'actions',
+        width: '10%',
+        align: 'center',
         render: (_, record) => (
           <Space>
             <Button
@@ -109,8 +111,6 @@ export const tableColumns = (props: Props) => {
             </Popconfirm>
           </Space>
         ),
-        width: '10%',
-        align: 'center' as const,
       },
     ]
   }

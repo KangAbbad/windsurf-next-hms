@@ -1,4 +1,4 @@
-export interface RoomStatus {
+export type RoomStatus = {
   id: number
   status_name: string
   description?: string
@@ -8,14 +8,14 @@ export interface RoomStatus {
   updated_at?: string
 }
 
-export interface CreateRoomStatusInput {
+export type CreateRoomStatusInput = {
   status_name: string
   description?: string
   is_available: boolean
   color_code?: string
 }
 
-export interface UpdateRoomStatusInput {
+export type UpdateRoomStatusInput = {
   id: number
   status_name?: string
   description?: string
@@ -23,7 +23,7 @@ export interface UpdateRoomStatusInput {
   color_code?: string
 }
 
-export interface RoomStatusResponse {
+export type RoomStatusResponse = {
   room_statuses: RoomStatus[]
   pagination: {
     total: number | null

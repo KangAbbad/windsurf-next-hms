@@ -1,7 +1,7 @@
 import type { BedType } from './bed-type'
 import type { RoomClass } from './room-class'
 
-export interface RoomClassBedType {
+export type RoomClassBedType = {
   id: number
   room_class_id: number
   bed_type_id: number
@@ -12,18 +12,18 @@ export interface RoomClassBedType {
   bed_type?: BedType
 }
 
-export interface CreateRoomClassBedTypeInput {
+export type CreateRoomClassBedTypeInput = {
   room_class_id: number
   bed_type_id: number
   quantity: number
 }
 
-export interface UpdateRoomClassBedTypeInput {
+export type UpdateRoomClassBedTypeInput = {
   id: number
   quantity: number
 }
 
-export interface RoomClassBedTypeResponse {
+export type RoomClassBedTypeResponse = {
   room_class_bed_types: RoomClassBedType[]
   pagination: {
     total: number | null

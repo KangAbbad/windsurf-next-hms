@@ -1,4 +1,4 @@
-export interface AddonListItem {
+export type AddonListItem = {
   id: string
   addon_name: string
   price: number
@@ -6,11 +6,11 @@ export interface AddonListItem {
   updated_at: string
 }
 
-export interface CreateAddonBody {
+export type CreateAddonBody = {
   addon_name: string
   price: number
 }
 
-export interface UpdateAddonBody extends Partial<CreateAddonBody> {
+export type UpdateAddonBody = Partial<CreateAddonBody> & {
   id: string
 }

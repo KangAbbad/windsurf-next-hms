@@ -2,7 +2,7 @@ import { ApiResponse, PaginatedDataResponse } from '@/services/apiResponse'
 import { axiosInstance } from '@/services/axiosInstance'
 import { AddonListItem } from '@/types/addon'
 
-export interface AddonListPageParams {
+export type AddonListPageParams = {
   page?: number
   limit?: number
   search?: string

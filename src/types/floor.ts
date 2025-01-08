@@ -1,15 +1,15 @@
-export interface Floor {
+export type Floor = {
   id: number
   floor_number: number
   created_at?: string
   updated_at?: string
 }
 
-export interface CreateFloorInput {
+export type CreateFloorInput = {
   floor_number: number
 }
 
-export interface FloorResponse {
+export type FloorResponse = {
   floors: Floor[]
   pagination: {
     total: number

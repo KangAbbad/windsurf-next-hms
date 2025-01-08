@@ -1,7 +1,7 @@
 import type { RoomClass } from './room-class'
 import type { RoomStatus } from './room-status'
 
-export interface Room {
+export type Room = {
   id: number
   room_number: string
   room_class_id: number
@@ -12,20 +12,20 @@ export interface Room {
   room_status?: RoomStatus[]
 }
 
-export interface CreateRoomInput {
+export type CreateRoomInput = {
   room_number: string
   room_class_id: number
   room_status_id: number
 }
 
-export interface UpdateRoomInput {
+export type UpdateRoomInput = {
   id: number
   room_number?: string
   room_class_id?: number
   room_status_id?: number
 }
 
-export interface RoomResponse {
+export type RoomResponse = {
   rooms: Room[]
   pagination: {
     total: number | null

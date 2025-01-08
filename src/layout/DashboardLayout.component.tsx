@@ -13,13 +13,12 @@ import styles from './DashboardLayout.module.css'
 import { useBreadcrumbs } from '@/hooks/utils/useBreadcrumb'
 import { AntdContextHolder } from '@/lib/context/AntdContextHolder'
 import { createGlobalState } from '@/utils/createGlobalState'
-// import HotelLogo from '~/public/hotel-logo.jpg'
 
-interface DashboardLayoutProps {
+type Props = {
   children: React.ReactNode
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export default function DashboardLayout({ children }: Props) {
   const pathname = usePathname()
   const defaultParentKey = [`/${pathname.split('/')[1]}`]
   const defaultSelectedKeys = pathname.split('/').length > 2 ? [pathname] : defaultParentKey

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-export interface ApiResponse<T> {
+export type ApiResponse<T> = {
   code: number
   message: string
   success: boolean
@@ -9,7 +9,7 @@ export interface ApiResponse<T> {
   data: T | null
 }
 
-export interface PaginatedDataResponse<T> {
+export type PaginatedDataResponse<T> = {
   items: T[]
   meta: {
     page: number

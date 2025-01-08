@@ -1,7 +1,7 @@
-import type { Addon } from './addon'
+import { AddonListItem } from './addon'
 import type { Booking } from './booking'
 
-export interface BookingAddon {
+export type BookingAddon = {
   id: number
   booking_id: number
   addon_id: number
@@ -9,32 +9,32 @@ export interface BookingAddon {
   created_at?: string
   updated_at?: string
   booking?: Booking[]
-  addon?: Addon[]
+  addon?: AddonListItem[]
 }
 
-export interface CreateBookingAddonInput {
+export type CreateBookingAddonInput = {
   booking_id: number
   addon_id: number
   quantity: number
 }
 
-export interface UpdateBookingAddonInput extends Partial<CreateBookingAddonInput> {
+export type UpdateBookingAddonInput = Partial<CreateBookingAddonInput> & {
   id: number
 }
 
-export interface BulkCreateBookingAddonInput {
+export type BulkCreateBookingAddonInput = {
   items: CreateBookingAddonInput[]
 }
 
-export interface BulkUpdateBookingAddonInput {
+export type BulkUpdateBookingAddonInput = {
   items: UpdateBookingAddonInput[]
 }
 
-export interface BulkDeleteBookingAddonInput {
+export type BulkDeleteBookingAddonInput = {
   ids: number[]
 }
 
-export interface BookingAddonResponse {
+export type BookingAddonResponse = {
   booking_addons: BookingAddon[]
   pagination: {
     total: number | null

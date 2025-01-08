@@ -58,7 +58,7 @@ export default function AddonsPage() {
 
   return (
     <main className="p-4">
-      <div className="bg-white p-4 rounded-lg">
+      <div className="bg-white p-4 pb-0 rounded-lg">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-semibold m-0">Addons Management</h1>
           <Button type="primary" icon={<FaPlus />} onClick={showAddModal}>

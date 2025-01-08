@@ -2,7 +2,7 @@ import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
 import type { BookingData, Room, Guest, PaymentStatus, Addon, BookingRoom, BookingAddon } from '@/types/booking'
 
-interface RoomClass {
+type RoomClass = {
   id: number
   class_name: string
   base_price: number
@@ -21,12 +21,12 @@ interface RoomClass {
   }[]
 }
 
-interface Floor {
+type Floor = {
   id: number
   floor_number: number
 }
 
-interface DatabaseBooking {
+type DatabaseBooking = {
   id: number
   guest_id: number
   payment_status_id: number
@@ -54,12 +54,12 @@ interface DatabaseBooking {
   }[]
 }
 
-interface DatabaseExistingBooking {
+type DatabaseExistingBooking = {
   room_id: number
   booking: DatabaseBooking
 }
 
-interface DatabaseRoom {
+type DatabaseRoom = {
   id: number
   room_number: string
   status: {
@@ -68,7 +68,7 @@ interface DatabaseRoom {
   }[]
 }
 
-interface DatabaseRoomResponse {
+type DatabaseRoomResponse = {
   data: DatabaseRoom[] | null
   error: any
 }

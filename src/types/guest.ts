@@ -1,4 +1,4 @@
-export interface Guest {
+export type Guest = {
   id: number
   first_name: string
   last_name: string
@@ -8,18 +8,18 @@ export interface Guest {
   updated_at?: string
 }
 
-export interface CreateGuestInput {
+export type CreateGuestInput = {
   first_name: string
   last_name: string
   email_address: string
   phone_number: string
 }
 
-export interface UpdateGuestInput extends CreateGuestInput {
+export type UpdateGuestInput = CreateGuestInput & {
   id: number
 }
 
-export interface GuestResponse {
+export type GuestResponse = {
   guests: Guest[]
   pagination: {
     total: number
