@@ -1,0 +1,4 @@
+export const queryKey = {
+  RES_BED_TYPE_LIST: 'RES_BED_TYPE_LIST',
+  BED_TYPE_DETAIL: 'BED_TYPE_DETAIL',
+}
