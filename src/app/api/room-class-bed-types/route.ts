@@ -1,9 +1,9 @@
 import { createClient } from '@/providers/supabase/server'
-import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
+import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
 import type {
-  CreateRoomClassBedTypeInput,
-  RoomClassBedTypeResponse,
-  UpdateRoomClassBedTypeInput,
+  CreateRoomClassBedTypeBody,
+  RoomClassBedTypeListItem,
+  UpdateRoomClassBedTypeBody,
 } from '@/types/room-class-bed-type'
 
 export async function GET(request: Request): Promise<Response> {
@@ -58,13 +58,13 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    const response: RoomClassBedTypeResponse = {
-      room_class_bed_types: roomClassBedTypes || [],
-      pagination: {
+    const response: PaginatedDataResponse<RoomClassBedTypeListItem> = {
+      items: roomClassBedTypes || [],
+      meta: {
         total: count,
         page,
         limit,
-        total_pages: count ? Math.ceil(count / limit) : null,
+        total_pages: count ? Math.ceil(count / limit) : 0,
       },
     }
 
@@ -86,7 +86,7 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const newRoomClassBedType: CreateRoomClassBedTypeInput = await request.json()
+    const newRoomClassBedType: CreateRoomClassBedTypeBody = await request.json()
     const { room_class_id, bed_type_id, quantity } = newRoomClassBedType
 
     // Validate required fields
@@ -215,7 +215,7 @@ export async function POST(request: Request): Promise<Response> {
 export async function PUT(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const updateData: UpdateRoomClassBedTypeInput = await request.json()
+    const updateData: UpdateRoomClassBedTypeBody = await request.json()
     const { id, quantity } = updateData
 
     // Validate required fields

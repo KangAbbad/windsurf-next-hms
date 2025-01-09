@@ -1,10 +1,14 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
+import { FEATURE_NAME_MAX_LENGTH, type UpdateFeatureBody } from '@/types/feature'
 
-export async function GET(_request: Request, { params }: { params: { identifier: string } }) {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ identifier: string }> }
+): Promise<Response> {
   try {
     const supabase = await createClient()
-    const { identifier } = params
+    const { identifier } = await params
 
     const { data, error } = await supabase.from('feature').select('*').eq('id', identifier).single()
 
@@ -31,14 +35,18 @@ export async function GET(_request: Request, { params }: { params: { identifier:
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { identifier: string } }) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ identifier: string }> }
+): Promise<Response> {
   try {
     const supabase = await createClient()
-    const { identifier } = params
-    const updates = await request.json()
+    const { identifier } = await params
+    const updates: UpdateFeatureBody = await request.json()
+    const featureName = updates.feature_name?.trim()
 
     // Validate required fields
-    if (!updates.feature_name) {
+    if (!featureName) {
       return createErrorResponse({
         code: 400,
         message: 'Missing required fields',
@@ -46,26 +54,48 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
       })
     }
 
+    // Validate feature name length
+    if (featureName.length > FEATURE_NAME_MAX_LENGTH) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid feature name',
+        errors: [`feature_name must not exceed ${FEATURE_NAME_MAX_LENGTH} characters`],
+      })
+    }
+
+    // Check if feature exists
+    const { data: existingFeature } = await supabase.from('feature').select('id').eq('id', identifier).single()
+
+    if (!existingFeature) {
+      return createErrorResponse({
+        code: 404,
+        message: 'Feature not found',
+        errors: ['The specified feature does not exist'],
+      })
+    }
+
     // Check if feature name already exists (excluding current feature)
-    const { data: existingFeature } = await supabase
+    const { data: duplicateFeature } = await supabase
       .from('feature')
       .select('id')
-      .ilike('feature_name', updates.feature_name)
+      .ilike('feature_name', featureName)
       .neq('id', identifier)
       .single()
 
-    if (existingFeature) {
+    if (duplicateFeature) {
       return createErrorResponse({
-        code: 400,
+        code: 409,
         message: 'Feature name already exists',
         errors: ['Feature name must be unique'],
       })
     }
 
-    // Remove protected fields from updates
-    const { id, created_at, updated_at, ...safeUpdates } = updates
-
-    const { data, error } = await supabase.from('feature').update(safeUpdates).eq('id', identifier).select().single()
+    const { data, error } = await supabase
+      .from('feature')
+      .update({ feature_name: featureName })
+      .eq('id', identifier)
+      .select()
+      .single()
 
     if (error) {
       return createErrorResponse({
@@ -90,10 +120,24 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
   }
 }
 
-export async function DELETE(_request: Request, { params }: { params: { identifier: string } }) {
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ identifier: string }> }
+): Promise<Response> {
   try {
     const supabase = await createClient()
-    const { identifier } = params
+    const { identifier } = await params
+
+    // Check if feature exists
+    const { data: existingFeature } = await supabase.from('feature').select('id').eq('id', identifier).single()
+
+    if (!existingFeature) {
+      return createErrorResponse({
+        code: 404,
+        message: 'Feature not found',
+        errors: ['The specified feature does not exist'],
+      })
+    }
 
     // Check if feature is used in any room classes
     const { data: usedFeatures } = await supabase
@@ -104,7 +148,7 @@ export async function DELETE(_request: Request, { params }: { params: { identifi
 
     if (usedFeatures && usedFeatures.length > 0) {
       return createErrorResponse({
-        code: 400,
+        code: 409,
         message: 'Cannot delete feature that is used in room classes',
         errors: ['Feature is associated with one or more room classes'],
       })

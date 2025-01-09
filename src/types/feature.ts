@@ -1,25 +1,17 @@
-export type Feature = {
-  id: number
+export type FeatureListItem = {
+  id: string
   feature_name: string
-  created_at?: string
-  updated_at?: string
+  created_at: string
+  updated_at: string
 }
 
-export type CreateFeatureInput = {
-  feature_name: string
-}
-
-export type UpdateFeatureInput = {
-  id: number
+export type CreateFeatureBody = {
   feature_name: string
 }
 
-export type FeatureResponse = {
-  features: Feature[]
-  pagination: {
-    total: number | null
-    page: number
-    limit: number
-    total_pages: number | null
-  }
+export type UpdateFeatureBody = {
+  id: string
+  feature_name: string
 }
+
+export const FEATURE_NAME_MAX_LENGTH = 200

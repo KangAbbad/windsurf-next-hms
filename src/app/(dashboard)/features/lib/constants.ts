@@ -1,0 +1,4 @@
+export const queryKey = {
+  RES_FEATURE_LIST: 'RES_FEATURE_LIST',
+  FEATURE_DETAIL: 'FEATURE_DETAIL',
+}

@@ -1,4 +1,4 @@
-import type { Feature } from './feature'
+import type { FeatureListItem } from './feature'
 import type { RoomClass } from './room-class'
 
 export type RoomClassFeature = {
@@ -8,7 +8,7 @@ export type RoomClassFeature = {
   created_at?: string
   updated_at?: string
   room_class?: RoomClass[]
-  feature?: Feature[]
+  feature?: FeatureListItem[]
 }
 
 export type CreateRoomClassFeatureInput = {

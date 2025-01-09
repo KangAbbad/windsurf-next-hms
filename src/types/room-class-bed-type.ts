@@ -1,34 +1,26 @@
-import type { BedType } from './bed-type'
+import type { BedTypeListItem } from './bedType'
 import type { RoomClass } from './room-class'
 
-export type RoomClassBedType = {
-  id: number
-  room_class_id: number
-  bed_type_id: number
+export type RoomClassBedTypeListItem = {
+  id: string
+  room_class_id: string
+  bed_type_id: string
   quantity: number
-  created_at?: string
-  updated_at?: string
+  created_at: string
+  updated_at: string
   room_class?: RoomClass
-  bed_type?: BedType
+  bed_type?: BedTypeListItem
 }
 
-export type CreateRoomClassBedTypeInput = {
-  room_class_id: number
-  bed_type_id: number
+export type CreateRoomClassBedTypeBody = {
+  room_class_id: string
+  bed_type_id: string
   quantity: number
 }
 
-export type UpdateRoomClassBedTypeInput = {
-  id: number
+export type UpdateRoomClassBedTypeBody = {
+  id: string
+  room_class_id: string
+  bed_type_id: string
   quantity: number
-}
-
-export type RoomClassBedTypeResponse = {
-  room_class_bed_types: RoomClassBedType[]
-  pagination: {
-    total: number | null
-    page: number
-    limit: number
-    total_pages: number | null
-  }
 }

@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { CreateBedTypeBody } from '@/types/bedType'
+import { BED_TYPE_NAME_MAX_LENGTH, type CreateBedTypeBody } from '@/types/bedType'
 
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -61,9 +61,10 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
     const newBedType: CreateBedTypeBody = await request.json()
+    const bedTypeName = newBedType.bed_type_name?.trim()
 
     // Validate required fields
-    if (!newBedType.bed_type_name?.trim()) {
+    if (!bedTypeName) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
@@ -71,23 +72,36 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
+    // Validate bed type name length
+    if (bedTypeName.length > BED_TYPE_NAME_MAX_LENGTH) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid bed type name',
+        errors: [`bed_type_name must not exceed ${BED_TYPE_NAME_MAX_LENGTH} characters`],
+      })
+    }
+
     // Check if bed type name already exists
     const { data: existingBedType } = await supabase
       .from('bed_type')
       .select('id')
-      .ilike('bed_type_name', newBedType.bed_type_name)
+      .ilike('bed_type_name', bedTypeName)
       .single()
 
     if (existingBedType) {
       return createErrorResponse({
-        code: 400,
+        code: 409,
         message: 'Bed type name already exists',
         errors: ['Bed type name must be unique'],
       })
     }
 
     // Create bed type
-    const { data, error } = await supabase.from('bed_type').insert([newBedType]).select().single()
+    const { data, error } = await supabase
+      .from('bed_type')
+      .insert([{ bed_type_name: bedTypeName }])
+      .select()
+      .single()
 
     if (error) {
       return createErrorResponse({

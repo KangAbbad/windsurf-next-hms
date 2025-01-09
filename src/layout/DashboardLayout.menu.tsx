@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { BsFillHouseAddFill } from 'react-icons/bs'
 import { MdDashboard } from 'react-icons/md'
 import { PiStairsDuotone } from 'react-icons/pi'
-import { TbBed } from 'react-icons/tb'
+import { TbBed, TbListDetails } from 'react-icons/tb'
 
 export const dashboardMenuList: MenuItemType[] = [
   {
@@ -27,5 +27,10 @@ export const dashboardMenuList: MenuItemType[] = [
     key: '/bed-types',
     icon: <TbBed />,
     label: <Link href="/bed-types">Bed Types</Link>,
+  },
+  {
+    key: '/features',
+    icon: <TbListDetails />,
+    label: <Link href="/features">Features</Link>,
   },
 ]

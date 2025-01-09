@@ -1,8 +1,8 @@
 import type { BedType } from './bed-type'
-import type { Feature } from './feature'
+import type { FeatureListItem } from './feature'
 
 export type RoomClassFeature = {
-  feature: Feature[]
+  feature: FeatureListItem[]
 }
 
 export type RoomClassBedType = {

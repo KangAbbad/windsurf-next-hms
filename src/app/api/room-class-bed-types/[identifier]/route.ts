@@ -1,10 +1,13 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
 
-export async function GET(_request: Request, { params }: { params: { identifier: string } }) {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ identifier: string }> }
+): Promise<Response> {
   try {
     const supabase = await createClient()
-    const { identifier } = params
+    const { identifier } = await params
 
     const { data, error } = await supabase
       .from('room_class_bed_type')
@@ -44,10 +47,13 @@ export async function GET(_request: Request, { params }: { params: { identifier:
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { identifier: string } }) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ identifier: string }> }
+): Promise<Response> {
   try {
     const supabase = await createClient()
-    const { identifier } = params
+    const { identifier } = await params
     const { room_class_id, bed_type_id, quantity } = await request.json()
 
     // Validate required fields
@@ -149,10 +155,13 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
   }
 }
 
-export async function DELETE(_request: Request, { params }: { params: { identifier: string } }) {
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ identifier: string }> }
+): Promise<Response> {
   try {
     const supabase = await createClient()
-    const { identifier } = params
+    const { identifier } = await params
 
     // Check if any rooms of this class exist
     const { data: roomClassBedType } = await supabase

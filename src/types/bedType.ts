@@ -9,6 +9,9 @@ export type CreateBedTypeBody = {
   bed_type_name: string
 }
 
-export type UpdateBedTypeBody = Partial<CreateBedTypeBody> & {
+export type UpdateBedTypeBody = {
   id: string
+  bed_type_name: string
 }
+
+export const BED_TYPE_NAME_MAX_LENGTH = 50

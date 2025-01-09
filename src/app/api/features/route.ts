@@ -1,16 +1,13 @@
 import { createClient } from '@/providers/supabase/server'
-import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { CreateFeatureInput, Feature, FeatureResponse } from '@/types/feature'
+import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
+import { FEATURE_NAME_MAX_LENGTH, type CreateFeatureBody, type FeatureListItem } from '@/types/feature'
 
 export async function GET(request: Request): Promise<Response> {
   try {
     const { searchParams } = new URL(request.url)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const page = parseInt(searchParams.get('page') || '1', 10)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const limit = parseInt(searchParams.get('limit') || '10', 10)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const search = searchParams.get('search') || ''
+    const page = parseInt(searchParams.get('page') ?? '1', 10)
+    const limit = parseInt(searchParams.get('limit') ?? '10', 10)
+    const search = searchParams.get('search') ?? ''
 
     const offset = (page - 1) * limit
 
@@ -24,7 +21,7 @@ export async function GET(request: Request): Promise<Response> {
     }
 
     const {
-      data: features,
+      data: items,
       error,
       count,
     } = await query.range(offset, offset + limit - 1).order('feature_name', { ascending: true })
@@ -37,15 +34,13 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    const response: FeatureResponse = {
-      features: features as Feature[],
-      pagination: {
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        total: count || 0,
+    const response: PaginatedDataResponse<FeatureListItem> = {
+      items: items ?? [],
+      meta: {
+        total: count ?? 0,
         page,
         limit,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        total_pages: Math.ceil((count || 0) / limit),
+        total_pages: Math.ceil((count ?? 0) / limit),
       },
     }
 
@@ -67,10 +62,11 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const newFeature: CreateFeatureInput = await request.json()
+    const newFeature: CreateFeatureBody = await request.json()
+    const featureName = newFeature.feature_name?.trim()
 
     // Validate required fields
-    if (!newFeature.feature_name) {
+    if (!featureName) {
       return createErrorResponse({
         code: 400,
         message: 'Missing required fields',
@@ -78,22 +74,35 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
+    // Validate feature name length
+    if (featureName.length > FEATURE_NAME_MAX_LENGTH) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid feature name',
+        errors: [`feature_name must not exceed ${FEATURE_NAME_MAX_LENGTH} characters`],
+      })
+    }
+
     // Check if feature name already exists
     const { data: existingFeature } = await supabase
       .from('feature')
       .select('id')
-      .ilike('feature_name', newFeature.feature_name)
+      .ilike('feature_name', featureName)
       .single()
 
     if (existingFeature) {
       return createErrorResponse({
-        code: 400,
+        code: 409,
         message: 'Feature name already exists',
         errors: ['Feature name must be unique'],
       })
     }
 
-    const { data, error } = await supabase.from('feature').insert([newFeature]).select().single()
+    const { data, error } = await supabase
+      .from('feature')
+      .insert([{ feature_name: featureName }])
+      .select()
+      .single()
 
     if (error) {
       return createErrorResponse({
@@ -106,7 +115,7 @@ export async function POST(request: Request): Promise<Response> {
     return createApiResponse({
       code: 201,
       message: 'Feature created successfully',
-      data: data as Feature,
+      data: data as FeatureListItem,
     })
   } catch (error) {
     console.error('Create feature error:', error)

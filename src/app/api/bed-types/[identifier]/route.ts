@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { UpdateBedTypeBody } from '@/types/bedType'
+import { BED_TYPE_NAME_MAX_LENGTH, type UpdateBedTypeBody } from '@/types/bedType'
 
 export async function GET(
   _request: Request,
@@ -43,9 +43,10 @@ export async function PUT(
     const supabase = await createClient()
     const { identifier } = await params
     const updateData: UpdateBedTypeBody = await request.json()
+    const bedTypeName = updateData.bed_type_name?.trim()
 
     // Validate required fields
-    if (!updateData.bed_type_name?.trim()) {
+    if (!bedTypeName) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
@@ -53,17 +54,37 @@ export async function PUT(
       })
     }
 
+    // Validate bed type name length
+    if (bedTypeName.length > BED_TYPE_NAME_MAX_LENGTH) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid bed type name',
+        errors: [`bed_type_name must not exceed ${BED_TYPE_NAME_MAX_LENGTH} characters`],
+      })
+    }
+
+    // Check if bed type exists
+    const { data: existingBedType } = await supabase.from('bed_type').select('id').eq('id', identifier).single()
+
+    if (!existingBedType) {
+      return createErrorResponse({
+        code: 404,
+        message: 'Bed type not found',
+        errors: ['The specified bed type does not exist'],
+      })
+    }
+
     // Check if bed type name already exists (excluding current bed type)
-    const { data: existingBedType } = await supabase
+    const { data: duplicateBedType } = await supabase
       .from('bed_type')
       .select('id')
-      .ilike('bed_type_name', updateData.bed_type_name)
+      .ilike('bed_type_name', bedTypeName)
       .neq('id', identifier)
       .single()
 
-    if (existingBedType) {
+    if (duplicateBedType) {
       return createErrorResponse({
-        code: 400,
+        code: 409,
         message: 'Bed type name already exists',
         errors: ['Bed type name must be unique'],
       })
@@ -72,7 +93,7 @@ export async function PUT(
     // Update bed type
     const { data, error } = await supabase
       .from('bed_type')
-      .update({ bed_type_name: updateData.bed_type_name })
+      .update({ bed_type_name: bedTypeName })
       .eq('id', identifier)
       .select()
       .single()
@@ -108,6 +129,17 @@ export async function DELETE(
     const supabase = await createClient()
     const { identifier } = await params
 
+    // Check if bed type exists
+    const { data: existingBedType } = await supabase.from('bed_type').select('id').eq('id', identifier).single()
+
+    if (!existingBedType) {
+      return createErrorResponse({
+        code: 404,
+        message: 'Bed type not found',
+        errors: ['The specified bed type does not exist'],
+      })
+    }
+
     // Check if bed type is used in room_class_bed_type
     const { data: roomClassBedTypes } = await supabase
       .from('room_class_bed_type')
@@ -117,7 +149,7 @@ export async function DELETE(
 
     if (roomClassBedTypes && roomClassBedTypes.length > 0) {
       return createErrorResponse({
-        code: 400,
+        code: 409,
         message: 'Cannot delete bed type that is in use',
         errors: ['Bed type is being used in one or more room classes'],
       })
