@@ -1,10 +1,14 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
+import type { UpdateBedTypeBody } from '@/types/bedType'
 
-export async function GET(_request: Request, { params }: { params: { identifier: string } }) {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ identifier: string }> }
+): Promise<Response> {
   try {
     const supabase = await createClient()
-    const { identifier } = params
+    const { identifier } = await params
 
     const { data, error } = await supabase.from('bed_type').select('*').eq('id', identifier).single()
 
@@ -18,11 +22,11 @@ export async function GET(_request: Request, { params }: { params: { identifier:
 
     return createApiResponse({
       code: 200,
-      message: 'Bed type details retrieved successfully',
+      message: 'Bed type retrieved successfully',
       data,
     })
   } catch (error) {
-    console.error('Get bed type details error:', error)
+    console.error('Get bed type error:', error)
     return createErrorResponse({
       code: 500,
       message: 'Internal server error',
@@ -31,17 +35,20 @@ export async function GET(_request: Request, { params }: { params: { identifier:
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { identifier: string } }) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ identifier: string }> }
+): Promise<Response> {
   try {
     const supabase = await createClient()
-    const { identifier } = params
-    const updates = await request.json()
+    const { identifier } = await params
+    const updateData: UpdateBedTypeBody = await request.json()
 
     // Validate required fields
-    if (!updates.bed_type_name) {
+    if (!updateData.bed_type_name?.trim()) {
       return createErrorResponse({
         code: 400,
-        message: 'Missing required fields',
+        message: 'Missing or invalid required fields',
         errors: ['bed_type_name is required'],
       })
     }
@@ -50,7 +57,7 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
     const { data: existingBedType } = await supabase
       .from('bed_type')
       .select('id')
-      .ilike('bed_type_name', updates.bed_type_name)
+      .ilike('bed_type_name', updateData.bed_type_name)
       .neq('id', identifier)
       .single()
 
@@ -62,10 +69,13 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
       })
     }
 
-    // Remove protected fields from updates
-    const { id, created_at, updated_at, ...safeUpdates } = updates
-
-    const { data, error } = await supabase.from('bed_type').update(safeUpdates).eq('id', identifier).select().single()
+    // Update bed type
+    const { data, error } = await supabase
+      .from('bed_type')
+      .update({ bed_type_name: updateData.bed_type_name })
+      .eq('id', identifier)
+      .select()
+      .single()
 
     if (error) {
       return createErrorResponse({
@@ -90,23 +100,26 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
   }
 }
 
-export async function DELETE(_request: Request, { params }: { params: { identifier: string } }) {
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ identifier: string }> }
+): Promise<Response> {
   try {
     const supabase = await createClient()
-    const { identifier } = params
+    const { identifier } = await params
 
-    // Check if bed type is used in any room class bed types
-    const { data: usedBedTypes } = await supabase
+    // Check if bed type is used in room_class_bed_type
+    const { data: roomClassBedTypes } = await supabase
       .from('room_class_bed_type')
-      .select('room_class_id')
+      .select('id')
       .eq('bed_type_id', identifier)
       .limit(1)
 
-    if (usedBedTypes && usedBedTypes.length > 0) {
+    if (roomClassBedTypes && roomClassBedTypes.length > 0) {
       return createErrorResponse({
         code: 400,
-        message: 'Cannot delete bed type that is used in room classes',
-        errors: ['Bed type is associated with one or more room classes'],
+        message: 'Cannot delete bed type that is in use',
+        errors: ['Bed type is being used in one or more room classes'],
       })
     }
 

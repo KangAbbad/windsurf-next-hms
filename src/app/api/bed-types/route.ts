@@ -1,15 +1,13 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
+import type { CreateBedTypeBody } from '@/types/bedType'
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<Response> {
   try {
     const { searchParams } = new URL(request.url)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const page = parseInt(searchParams.get('page') || '1', 10)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const limit = parseInt(searchParams.get('limit') || '10', 10)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const search = searchParams.get('search') || ''
+    const page = parseInt(searchParams.get('page') ?? '1', 10)
+    const limit = parseInt(searchParams.get('limit') ?? '10', 10)
+    const search = searchParams.get('search') ?? ''
 
     const offset = (page - 1) * limit
 
@@ -23,7 +21,7 @@ export async function GET(request: Request) {
     }
 
     const {
-      data: bedTypes,
+      data: items,
       error,
       count,
     } = await query.range(offset, offset + limit - 1).order('bed_type_name', { ascending: true })
@@ -38,15 +36,14 @@ export async function GET(request: Request) {
 
     return createApiResponse({
       code: 200,
-      message: 'Bed type list retrieved successfully',
+      message: 'Bed types retrieved successfully',
       data: {
-        bed_types: bedTypes,
-        pagination: {
-          total: count,
+        items,
+        meta: {
           page,
           limit,
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-          total_pages: Math.ceil((count || 0) / limit),
+          total: count ?? 0,
+          total_pages: count ? Math.ceil(count / limit) : 1,
         },
       },
     })
@@ -60,16 +57,16 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const newBedType = await request.json()
+    const newBedType: CreateBedTypeBody = await request.json()
 
     // Validate required fields
-    if (!newBedType.bed_type_name) {
+    if (!newBedType.bed_type_name?.trim()) {
       return createErrorResponse({
         code: 400,
-        message: 'Missing required fields',
+        message: 'Missing or invalid required fields',
         errors: ['bed_type_name is required'],
       })
     }
@@ -89,6 +86,7 @@ export async function POST(request: Request) {
       })
     }
 
+    // Create bed type
     const { data, error } = await supabase.from('bed_type').insert([newBedType]).select().single()
 
     if (error) {
