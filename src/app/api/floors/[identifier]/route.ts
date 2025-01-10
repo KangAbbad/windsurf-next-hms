@@ -1,5 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
+import { FloorListItem } from '@/types/floor'
 
 export async function GET(_request: Request, { params }: { params: Promise<{ identifier: string }> }) {
   try {
@@ -16,7 +17,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ ide
       })
     }
 
-    return createApiResponse({
+    return createApiResponse<FloorListItem>({
       code: 200,
       message: 'Floor retrieved successfully',
       data,
@@ -73,7 +74,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ iden
       })
     }
 
-    return createApiResponse({
+    return createApiResponse<FloorListItem>({
       code: 200,
       message: 'Floor updated successfully',
       data,

@@ -47,7 +47,7 @@ export async function GET(request: Request): Promise<Response> {
       },
     }
 
-    return createApiResponse({
+    return createApiResponse<PaginatedDataResponse<FloorListItem>>({
       code: 200,
       message: 'Floor list retrieved successfully',
       data: response,
@@ -102,10 +102,10 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    return createApiResponse({
+    return createApiResponse<FloorListItem>({
       code: 201,
       message: 'Floor created successfully',
-      data: data as FloorListItem,
+      data,
     })
   } catch (error) {
     console.error('Create floor error:', error)
