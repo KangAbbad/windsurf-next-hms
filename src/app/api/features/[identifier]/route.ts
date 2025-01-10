@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import { FEATURE_NAME_MAX_LENGTH, type UpdateFeatureBody } from '@/types/feature'
+import { FEATURE_NAME_MAX_LENGTH, type FeatureListItem, type UpdateFeatureBody } from '@/types/feature'
 
 export async function GET(
   _request: Request,
@@ -20,7 +20,7 @@ export async function GET(
       })
     }
 
-    return createApiResponse({
+    return createApiResponse<FeatureListItem>({
       code: 200,
       message: 'Feature details retrieved successfully',
       data,
@@ -105,7 +105,7 @@ export async function PUT(
       })
     }
 
-    return createApiResponse({
+    return createApiResponse<FeatureListItem>({
       code: 200,
       message: 'Feature updated successfully',
       data,

@@ -9,9 +9,8 @@ export type CreateFeatureBody = {
   feature_name: string
 }
 
-export type UpdateFeatureBody = {
+export type UpdateFeatureBody = Partial<CreateFeatureBody> & {
   id: string
-  feature_name: string
 }
 
 export const FEATURE_NAME_MAX_LENGTH = 200

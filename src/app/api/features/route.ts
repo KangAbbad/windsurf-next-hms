@@ -44,7 +44,7 @@ export async function GET(request: Request): Promise<Response> {
       },
     }
 
-    return createApiResponse({
+    return createApiResponse<PaginatedDataResponse<FeatureListItem>>({
       code: 200,
       message: 'Feature list retrieved successfully',
       data: response,

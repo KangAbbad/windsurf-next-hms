@@ -92,15 +92,7 @@ export async function PUT(
     // Check if addon exists
     const { data: existingAddon, error: checkError } = await supabase
       .from('addon')
-      .select(
-        `
-        id,
-        addon_name,
-        price,
-        created_at,
-        updated_at
-        `
-      )
+      .select('id')
       .eq('id', identifier)
       .single()
 
@@ -132,7 +124,7 @@ export async function PUT(
       })
     }
 
-    return createApiResponse({
+    return createApiResponse<AddonListItem>({
       code: 200,
       message: 'Addon updated successfully',
       data: updatedAddon,
