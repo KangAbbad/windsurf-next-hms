@@ -19,13 +19,3 @@ export type CreateRoomClassFeatureInput = {
 export type UpdateRoomClassFeatureInput = {
   id: number
 }
-
-export type RoomClassFeatureResponse = {
-  room_class_features: RoomClassFeature[]
-  pagination: {
-    total: number | null
-    page: number
-    limit: number
-    total_pages: number | null
-  }
-}

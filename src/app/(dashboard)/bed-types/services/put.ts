@@ -1,5 +1,5 @@
 import { axiosInstance } from '@/services/axiosInstance'
-import { BedTypeListItem, UpdateBedTypeBody } from '@/types/bedType'
+import { BedTypeListItem, UpdateBedTypeBody } from '@/types/bed-type'
 
 export const updateItem = async (body: UpdateBedTypeBody) => {
   const { id, ...restBody } = body

@@ -33,13 +33,3 @@ export type BulkUpdateBookingAddonInput = {
 export type BulkDeleteBookingAddonInput = {
   ids: number[]
 }
-
-export type BookingAddonResponse = {
-  booking_addons: BookingAddon[]
-  pagination: {
-    total: number | null
-    page: number
-    limit: number
-    total_pages: number | null
-  }
-}

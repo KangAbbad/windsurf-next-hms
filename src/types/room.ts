@@ -24,13 +24,3 @@ export type UpdateRoomInput = {
   room_class_id?: number
   room_status_id?: number
 }
-
-export type RoomResponse = {
-  rooms: Room[]
-  pagination: {
-    total: number | null
-    page: number
-    limit: number
-    total_pages: number | null
-  }
-}

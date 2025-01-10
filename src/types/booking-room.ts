@@ -35,13 +35,3 @@ export type BulkUpdateBookingRoomInput = {
 export type BulkDeleteBookingRoomInput = {
   ids: number[]
 }
-
-export type BookingRoomResponse = {
-  booking_rooms: BookingRoom[]
-  pagination: {
-    total: number | null
-    page: number
-    limit: number
-    total_pages: number | null
-  }
-}

@@ -21,15 +21,14 @@ export async function GET(request: Request): Promise<Response> {
 
     let query = supabase.from('room_class_bed_type').select(
       `
-        id,
         room_class_id,
         bed_type_id,
-        quantity,
+        num_beds,
         created_at,
         updated_at,
         room_class:room_class(
           id,
-          room_class_name
+          class_name
         ),
         bed_type:bed_type(
           id,
@@ -45,7 +44,7 @@ export async function GET(request: Request): Promise<Response> {
     }
 
     const {
-      data: roomClassBedTypes,
+      data: items,
       error,
       count,
     } = await query.range(offset, offset + limit - 1).order('created_at', { ascending: false })
@@ -59,7 +58,7 @@ export async function GET(request: Request): Promise<Response> {
     }
 
     const response: PaginatedDataResponse<RoomClassBedTypeListItem> = {
-      items: roomClassBedTypes || [],
+      items: items || [],
       meta: {
         total: count,
         page,
@@ -87,15 +86,13 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
     const newRoomClassBedType: CreateRoomClassBedTypeBody = await request.json()
-    const { room_class_id, bed_type_id, quantity } = newRoomClassBedType
+    const { room_class_id, bed_type_id, num_beds } = newRoomClassBedType
 
     // Validate required fields
     const validationErrors: string[] = []
     if (!room_class_id) validationErrors.push('room_class_id is required')
     if (!bed_type_id) validationErrors.push('bed_type_id is required')
-    if (typeof quantity !== 'number' || quantity < 1) {
-      validationErrors.push('quantity must be a positive number')
-    }
+    if (!num_beds) validationErrors.push('num_beds is required')
 
     if (validationErrors.length > 0) {
       return createErrorResponse({
@@ -162,24 +159,22 @@ export async function POST(request: Request): Promise<Response> {
     // Create the relationship
     const { data: created, error: createError } = await supabase
       .from('room_class_bed_type')
-      .insert([
-        {
-          room_class_id,
-          bed_type_id,
-          quantity,
-        },
-      ])
+      .insert({
+        room_class_id,
+        bed_type_id,
+        num_beds,
+      })
       .select(
         `
         id,
         room_class_id,
         bed_type_id,
-        quantity,
+        num_beds,
         created_at,
         updated_at,
         room_class:room_class(
           id,
-          room_class_name
+          class_name
         ),
         bed_type:bed_type(
           id,
@@ -216,52 +211,53 @@ export async function PUT(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
     const updateData: UpdateRoomClassBedTypeBody = await request.json()
-    const { id, quantity } = updateData
+    const { room_class_id, bed_type_id, num_beds } = updateData
 
-    // Validate required fields
-    if (!id) {
+    const validationErrors: string[] = []
+    if (!room_class_id) validationErrors.push('room_class_id is required')
+    if (!bed_type_id) validationErrors.push('bed_type_id is required')
+    if (!num_beds) validationErrors.push('num_beds is required')
+
+    if (validationErrors.length > 0) {
       return createErrorResponse({
         code: 400,
-        message: 'Missing required fields',
-        errors: ['id is required'],
-      })
-    }
-
-    if (typeof quantity !== 'number' || quantity < 1) {
-      return createErrorResponse({
-        code: 400,
-        message: 'Invalid quantity',
-        errors: ['quantity must be a positive number'],
+        message: 'Missing or invalid required fields',
+        errors: validationErrors,
       })
     }
 
     // Check if record exists
-    const { error: checkError } = await supabase.from('room_class_bed_type').select('id').eq('id', id).single()
+    const { error: findError } = await supabase
+      .from('room_class_bed_type')
+      .select()
+      .eq('room_class_id', room_class_id)
+      .eq('bed_type_id', bed_type_id)
+      .single()
 
-    if (checkError) {
+    if (findError) {
       return createErrorResponse({
         code: 404,
-        message: 'Room class bed type not found',
-        errors: ['Invalid room class bed type ID'],
+        message: 'Record not found',
+        errors: [findError.message],
       })
     }
 
     // Update the record
     const { data: updated, error: updateError } = await supabase
       .from('room_class_bed_type')
-      .update({ quantity })
-      .eq('id', id)
+      .update({ num_beds })
+      .eq('room_class_id', room_class_id)
+      .eq('bed_type_id', bed_type_id)
       .select(
         `
-        id,
         room_class_id,
         bed_type_id,
-        quantity,
+        num_beds,
         created_at,
         updated_at,
         room_class:room_class(
           id,
-          room_class_name
+          class_name
         ),
         bed_type:bed_type(
           id,

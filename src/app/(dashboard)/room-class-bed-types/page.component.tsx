@@ -30,14 +30,16 @@ export function PageComponent() {
     queryKey: [queryKey.RES_ROOM_CLASS_LIST],
     queryFn: getAllRoomClasses,
   })
-  const { items: roomClasses = [] } = roomClassesResponse ?? {}
+  const { data: roomClassesData } = roomClassesResponse ?? {}
+  const { items: roomClasses = [] } = roomClassesData ?? {}
 
   const { data: dataSourceResponse, isFetching: isDataSourceFetching } = useQuery({
     queryKey: [queryKey.RES_ROOM_CLASS_BED_TYPE_LIST, pageParams],
     queryFn: () => getAll(pageParams),
   })
-  const { items: dataSource = [], meta: pagination } = dataSourceResponse ?? {}
-  const { total } = pagination ?? {}
+  const { data: dataSourceData } = dataSourceResponse ?? {}
+  const { items: dataSource = [], meta: dataSourceMeta } = dataSourceData ?? {}
+  const { total } = dataSourceMeta ?? {}
 
   const showAddModal = () => {
     resetRoomClassBedTypeDetail()
@@ -65,7 +67,7 @@ export function PageComponent() {
             placeholder="Filter by room class..."
             className="w-72"
             options={roomClasses.map((roomClass) => ({
-              label: roomClass.room_class_name,
+              label: roomClass.class_name,
               value: roomClass.id,
             }))}
             onChange={(value) => {
@@ -77,7 +79,7 @@ export function PageComponent() {
           columns={columns}
           dataSource={dataSource}
           loading={isDataSourceFetching}
-          rowKey="id"
+          rowKey={(record) => `${record.bed_type_id}-${record.room_class_id}`}
           pagination={{
             current: pageParams.page,
             pageSize: pageParams.limit,

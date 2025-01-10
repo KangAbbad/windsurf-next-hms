@@ -18,13 +18,3 @@ export type CreateGuestInput = {
 export type UpdateGuestInput = CreateGuestInput & {
   id: number
 }
-
-export type GuestResponse = {
-  guests: Guest[]
-  pagination: {
-    total: number
-    page: number
-    limit: number
-    total_pages: number
-  }
-}

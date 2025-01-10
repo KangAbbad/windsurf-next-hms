@@ -8,7 +8,7 @@ import { bedTypeDetailStore } from './state'
 import { deleteItem } from '../services/delete'
 
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
-import { BedTypeListItem } from '@/types/bedType'
+import { BedTypeListItem } from '@/types/bed-type'
 
 type Props = {
   onEdit: () => void

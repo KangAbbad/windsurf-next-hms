@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import { BED_TYPE_NAME_MAX_LENGTH, type CreateBedTypeBody } from '@/types/bedType'
+import { BED_TYPE_NAME_MAX_LENGTH, type CreateBedTypeBody } from '@/types/bed-type'
 
 export async function GET(request: Request): Promise<Response> {
   try {

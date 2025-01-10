@@ -1,4 +1,4 @@
-import type { BedType } from './bed-type'
+import type { BedTypeListItem } from './bed-type'
 import type { FeatureListItem } from './feature'
 
 export type RoomClassFeature = {
@@ -6,13 +6,13 @@ export type RoomClassFeature = {
 }
 
 export type RoomClassBedType = {
-  bed_type: BedType[]
-  quantity: number
+  bed_type: BedTypeListItem[]
+  num_beds: number
 }
 
 export type RoomClass = {
-  id: number
-  room_class_name: string
+  id: string
+  class_name: string
   description?: string
   base_occupancy: number
   max_occupancy: number
@@ -43,14 +43,4 @@ export type UpdateRoomClassInput = {
   base_occupancy?: number
   max_occupancy?: number
   base_rate?: number
-}
-
-export type RoomClassResponse = {
-  room_classes: RoomClass[]
-  pagination: {
-    total: number | null
-    page: number
-    limit: number
-    total_pages: number | null
-  }
 }

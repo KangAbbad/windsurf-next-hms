@@ -1,6 +1,6 @@
 import { ApiResponse, PaginatedDataResponse } from '@/services/apiResponse'
 import { axiosInstance } from '@/services/axiosInstance'
-import { BedTypeListItem } from '@/types/bedType'
+import { BedTypeListItem } from '@/types/bed-type'
 
 export type BedTypeListPageParams = {
   page?: number

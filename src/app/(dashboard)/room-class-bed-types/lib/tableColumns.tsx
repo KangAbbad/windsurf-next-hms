@@ -5,7 +5,7 @@ import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
 import { queryKey } from './constants'
 import { roomClassBedTypeDetailStore } from './state'
-import { deleteItem } from '../services/delete'
+import { deleteItem, DeleteItemParams } from '../services/delete'
 
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 import { RoomClassBedTypeListItem } from '@/types/room-class-bed-type'
@@ -27,7 +27,7 @@ export const tableColumns = (props: Props) => {
       variables: deleteVariables,
       isPending: isDeleteLoading,
     } = useMutation({
-      mutationFn: deleteItem,
+      mutationFn: (params: DeleteItemParams) => deleteItem(params),
       onSuccess: () => {
         antdMessage?.success('Room class bed type deleted successfully')
         queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_CLASS_BED_TYPE_LIST] })
@@ -37,20 +37,15 @@ export const tableColumns = (props: Props) => {
       },
     })
 
-    const onDelete = (id: string) => {
-      if (isDeleteLoading) return
-      deleteMutation(id)
-    }
-
     return [
       {
         title: 'Room Class',
-        dataIndex: ['room_class', 'room_class_name'],
+        dataIndex: ['room_class', 'class_name'],
         key: 'room_class_name',
         width: '30%',
         sorter: (a, b) => {
-          const aName = a.room_class?.room_class_name ?? ''
-          const bName = b.room_class?.room_class_name ?? ''
+          const aName = a.room_class?.class_name ?? ''
+          const bName = b.room_class?.class_name ?? ''
           return aName.localeCompare(bName)
         },
       },
@@ -67,10 +62,10 @@ export const tableColumns = (props: Props) => {
       },
       {
         title: 'Quantity',
-        dataIndex: 'quantity',
-        key: 'quantity',
+        dataIndex: 'num_beds',
+        key: 'num_beds',
         width: '20%',
-        sorter: (a, b) => a.quantity - b.quantity,
+        sorter: (a, b) => a.num_beds - b.num_beds,
       },
       {
         title: 'Actions',
@@ -83,26 +78,42 @@ export const tableColumns = (props: Props) => {
                 type="text"
                 icon={<FaPenToSquare />}
                 onClick={() => {
-                  setRoomClassBedTypeDetail(record)
+                  setRoomClassBedTypeDetail({
+                    room_class_id: record.room_class_id,
+                    bed_type_id: record.bed_type_id,
+                    num_beds: record.num_beds,
+                    created_at: record.created_at,
+                    updated_at: record.updated_at,
+                    room_class: record.room_class,
+                    bed_type: record.bed_type,
+                  })
                   onEdit()
                 }}
               />
               <Popconfirm
                 title="Delete Room Class Bed Type"
-                description="Are you sure to delete this room class bed type?"
+                description="Are you sure you want to delete this room class bed type?"
                 placement="leftTop"
                 okText="Yes"
-                okType="danger"
                 cancelText="No"
+                okType="danger"
+                disabled={isDeleteLoading}
                 onConfirm={() => {
-                  onDelete(record.id)
+                  deleteMutation({
+                    roomClassId: record.room_class_id,
+                    bedTypeId: record.bed_type_id,
+                  })
                 }}
               >
                 <Button
                   type="text"
                   danger
                   icon={<FaTrashCan className="text-red-500" />}
-                  loading={isDeleteLoading && deleteVariables === record.id}
+                  loading={
+                    isDeleteLoading &&
+                    deleteVariables.roomClassId === record.room_class_id &&
+                    deleteVariables.bedTypeId === record.bed_type_id
+                  }
                 />
               </Popconfirm>
             </Space>
