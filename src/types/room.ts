@@ -1,26 +1,23 @@
 import type { RoomClassListItem } from './room-class'
-import type { RoomStatus } from './room-status'
+import type { RoomStatusListItem } from './room-status'
 
-export type Room = {
-  id: number
+export type RoomListItem = {
+  id: string
   room_number: string
-  room_class_id: number
-  room_status_id: number
-  created_at?: string
-  updated_at?: string
-  room_class?: RoomClassListItem[]
-  room_status?: RoomStatus[]
+  room_class_id: string
+  room_status_id: string
+  created_at: string
+  updated_at: string
+  room_class: RoomClassListItem[]
+  room_status: RoomStatusListItem[]
 }
 
-export type CreateRoomInput = {
+export type CreateRoomBody = {
   room_number: string
-  room_class_id: number
-  room_status_id: number
+  room_class_id: string
+  room_status_id: string
 }
 
-export type UpdateRoomInput = {
-  id: number
-  room_number?: string
-  room_class_id?: number
-  room_status_id?: number
+export type UpdateRoomBody = Partial<CreateRoomBody> & {
+  id: string
 }

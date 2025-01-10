@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { UpdateRoomInput } from '@/types/room'
+import type { UpdateRoomBody } from '@/types/room'
 
 export async function GET(_request: Request, { params }: { params: { identifier: string } }): Promise<Response> {
   try {
@@ -83,7 +83,7 @@ export async function GET(_request: Request, { params }: { params: { identifier:
 export async function PUT(request: Request, { params }: { params: { identifier: string } }): Promise<Response> {
   try {
     const supabase = await createClient()
-    const updateRoom: UpdateRoomInput = await request.json()
+    const updateRoom: UpdateRoomBody = await request.json()
 
     // Check if room exists
     const { data: existingRoom, error: checkError } = await supabase

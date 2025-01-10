@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { createClient } from '@/providers/supabase/server'
 import { PaginatedDataResponse } from '@/services/apiResponse'
-import type { CreateRoomInput } from '@/types/room'
+import type { CreateRoomBody } from '@/types/room'
 
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -97,7 +97,7 @@ export async function POST(request: Request): Promise<Response> {
     const supabase = await createClient()
     const body = await request.json()
 
-    const newRoom: CreateRoomInput = {
+    const newRoom: CreateRoomBody = {
       room_number: body.room_number,
       room_class_id: body.room_class_id,
       room_status_id: body.room_status_id,

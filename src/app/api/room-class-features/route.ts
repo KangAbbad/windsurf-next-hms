@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
-import type { CreateRoomClassFeatureInput, RoomClassFeatureListItem } from '@/types/room-class-feature'
+import type { CreateRoomClassFeatureBody, RoomClassFeatureListItem } from '@/types/room-class-feature'
 
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -81,7 +81,7 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const newRoomClassFeature: CreateRoomClassFeatureInput = await request.json()
+    const newRoomClassFeature: CreateRoomClassFeatureBody = await request.json()
 
     // Validate required fields
     if (!newRoomClassFeature.room_class_id || !newRoomClassFeature.feature_id) {

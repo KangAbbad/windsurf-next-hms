@@ -17,8 +17,4 @@ export type CreateRoomClassBedTypeBody = {
   num_beds: number
 }
 
-export type UpdateRoomClassBedTypeBody = {
-  room_class_id: string
-  bed_type_id: string
-  num_beds: number
-}
+export type UpdateRoomClassBedTypeBody = CreateRoomClassBedTypeBody

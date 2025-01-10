@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
-import type { CreateGuestInput, Guest, UpdateGuestInput } from '@/types/guest'
+import type { CreateGuestBody, GuestListItem, UpdateGuestBody } from '@/types/guest'
 
 // GET /api/guests - List all guests
 export async function GET(request: Request): Promise<Response> {
@@ -72,7 +72,7 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const newGuest: CreateGuestInput = await request.json()
+    const newGuest: CreateGuestBody = await request.json()
     const { first_name, last_name, email_address, phone_number } = newGuest
 
     // Validate required fields
@@ -156,7 +156,7 @@ export async function POST(request: Request): Promise<Response> {
     return createApiResponse({
       code: 201,
       message: 'Guest created successfully',
-      data: created as Guest,
+      data: created as GuestListItem,
     })
   } catch (error) {
     console.error('Create guest error:', error)
@@ -172,7 +172,7 @@ export async function POST(request: Request): Promise<Response> {
 export async function PUT(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const updateGuest: UpdateGuestInput = await request.json()
+    const updateGuest: UpdateGuestBody = await request.json()
     const { id, first_name, last_name, email_address, phone_number } = updateGuest
 
     // Validate required fields
@@ -270,7 +270,7 @@ export async function PUT(request: Request): Promise<Response> {
     return createApiResponse({
       code: 200,
       message: 'Guest updated successfully',
-      data: updated as Guest,
+      data: updated as GuestListItem,
     })
   } catch (error) {
     console.error('Update guest error:', error)

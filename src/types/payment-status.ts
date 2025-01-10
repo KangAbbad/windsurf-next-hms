@@ -1,15 +1,14 @@
-export type PaymentStatus = {
+export type PaymentStatusListItem = {
   id: number
   payment_status_name: string
-  created_at?: string
-  updated_at?: string
+  created_at: string
+  updated_at: string
 }
 
-export type CreatePaymentStatusInput = {
+export type CreatePaymentStatusBody = {
   payment_status_name: string
 }
 
-export type UpdatePaymentStatusInput = {
+export type UpdatePaymentStatusBody = Partial<CreatePaymentStatusBody> & {
   id: number
-  payment_status_name: string
 }

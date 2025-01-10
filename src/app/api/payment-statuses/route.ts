@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
-import type { CreatePaymentStatusInput, PaymentStatus, UpdatePaymentStatusInput } from '@/types/payment-status'
+import type { CreatePaymentStatusBody, PaymentStatusListItem, UpdatePaymentStatusBody } from '@/types/payment-status'
 
 // GET /api/payment-statuses - List all payment statuses
 export async function GET(request: Request): Promise<Response> {
@@ -64,7 +64,7 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const newPaymentStatus: CreatePaymentStatusInput = await request.json()
+    const newPaymentStatus: CreatePaymentStatusBody = await request.json()
     const { payment_status_name } = newPaymentStatus
 
     // Validate required fields
@@ -118,7 +118,7 @@ export async function POST(request: Request): Promise<Response> {
     return createApiResponse({
       code: 201,
       message: 'Payment status created successfully',
-      data: created as PaymentStatus,
+      data: created as PaymentStatusListItem,
     })
   } catch (error) {
     console.error('Create payment status error:', error)
@@ -134,7 +134,7 @@ export async function POST(request: Request): Promise<Response> {
 export async function PUT(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const updatePaymentStatus: UpdatePaymentStatusInput = await request.json()
+    const updatePaymentStatus: UpdatePaymentStatusBody = await request.json()
     const { id, payment_status_name } = updatePaymentStatus
 
     // Validate required fields
@@ -208,7 +208,7 @@ export async function PUT(request: Request): Promise<Response> {
     return createApiResponse({
       code: 200,
       message: 'Payment status updated successfully',
-      data: updated as PaymentStatus,
+      data: updated as PaymentStatusListItem,
     })
   } catch (error) {
     console.error('Update payment status error:', error)

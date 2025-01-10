@@ -1,21 +1,21 @@
-export type RoomStatus = {
+export type RoomStatusListItem = {
   id: number
   status_name: string
-  description?: string
+  description: string
   is_available: boolean
-  color_code?: string
-  created_at?: string
-  updated_at?: string
+  color_code: string
+  created_at: string
+  updated_at: string
 }
 
-export type CreateRoomStatusInput = {
+export type CreateRoomStatusBody = {
   status_name: string
   description?: string
   is_available: boolean
   color_code?: string
 }
 
-export type UpdateRoomStatusInput = {
+export type UpdateRoomStatusBody = {
   id: number
   status_name?: string
   description?: string

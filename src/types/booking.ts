@@ -1,16 +1,16 @@
 // Shared types for booking-related endpoints
-export type RoomStatus = {
+export type RoomStatusListItem = {
   id: number
   status_name: string
 }
 
-export type Room = {
+export type RoomListItem = {
   id: number
   room_number: string
   floor_id: number
   room_class_id: number
   status_id: number
-  status: RoomStatus
+  status: RoomStatusListItem
 }
 
 export type BookingListItem = {
@@ -26,7 +26,7 @@ export type BookingListItem = {
   updated_at: string
 }
 
-export type Guest = {
+export type GuestListItem = {
   id: number
   first_name: string
   last_name: string
@@ -34,7 +34,7 @@ export type Guest = {
   phone_number: string
 }
 
-export type PaymentStatus = {
+export type PaymentStatusListItem = {
   id: number
   payment_status_name: string
 }
@@ -46,7 +46,7 @@ export type AddonListItem = {
 }
 
 export type BookingRoom = {
-  room: Room
+  room: RoomListItem
 }
 
 export type BookingAddon = {
@@ -55,8 +55,8 @@ export type BookingAddon = {
 
 export type BookingData = {
   id: number
-  guest: Guest
-  payment_status: PaymentStatus
+  guest: GuestListItem
+  payment_status: PaymentStatusListItem
   rooms: BookingRoom[]
   addons: BookingAddon[]
   checkin_date: string
@@ -68,7 +68,7 @@ export type BookingData = {
   updated_at: string
 }
 
-export type CreateBookingInput = {
+export type CreateBookingBody = {
   guest_id: number
   payment_status_id: number
   room_ids: number[]

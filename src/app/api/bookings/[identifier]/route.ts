@@ -1,6 +1,14 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { BookingData, Room, Guest, PaymentStatus, AddonListItem, BookingRoom, BookingAddon } from '@/types/booking'
+import type {
+  BookingData,
+  RoomListItem,
+  GuestListItem,
+  PaymentStatusListItem,
+  AddonListItem,
+  BookingRoom,
+  BookingAddon,
+} from '@/types/booking'
 
 type RoomClass = {
   id: number
@@ -37,10 +45,10 @@ type DatabaseBooking = {
   booking_amount: number
   created_at: string
   updated_at: string
-  guest: Guest
-  payment_status: PaymentStatus
+  guest: GuestListItem
+  payment_status: PaymentStatusListItem
   rooms: {
-    room: Room & {
+    room: RoomListItem & {
       floor: Floor
       room_class: RoomClass
       status: {

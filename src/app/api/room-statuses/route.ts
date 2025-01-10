@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
-import type { CreateRoomStatusInput, RoomStatus } from '@/types/room-status'
+import type { CreateRoomStatusBody, RoomStatusListItem } from '@/types/room-status'
 
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -76,7 +76,7 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const newRoomStatus: CreateRoomStatusInput = await request.json()
+    const newRoomStatus: CreateRoomStatusBody = await request.json()
 
     // Validate required fields
     const validationErrors: string[] = []
@@ -135,7 +135,7 @@ export async function POST(request: Request): Promise<Response> {
     return createApiResponse({
       code: 201,
       message: 'Room status created successfully',
-      data: created as RoomStatus,
+      data: created as RoomStatusListItem,
     })
   } catch (error) {
     console.error('Create room status error:', error)

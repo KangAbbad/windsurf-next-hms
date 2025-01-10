@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { BookingData, CreateBookingInput } from '@/types/booking'
+import type { BookingData, CreateBookingBody } from '@/types/booking'
 
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -201,7 +201,7 @@ export async function POST(request: Request): Promise<Response> {
 
     // Validate all bookings first
     const validationErrors: { index: number; errors: string[] }[] = []
-    const bookingsToCreate = body.map((booking: CreateBookingInput, index) => {
+    const bookingsToCreate = body.map((booking: CreateBookingBody, index) => {
       const errors: string[] = []
       const { guest_id, payment_status_id, room_ids, checkin_date, checkout_date, num_adults, booking_amount } = booking
 

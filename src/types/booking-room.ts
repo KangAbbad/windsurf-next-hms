@@ -1,5 +1,5 @@
 import type { BookingListItem } from './booking'
-import type { Room } from './room'
+import type { RoomListItem } from './room'
 
 export type BookingRoom = {
   id: number
@@ -10,7 +10,7 @@ export type BookingRoom = {
   created_at?: string
   updated_at?: string
   booking?: BookingListItem[]
-  room?: Room[]
+  room?: RoomListItem[]
 }
 
 export type CreateBookingRoomInput = {
