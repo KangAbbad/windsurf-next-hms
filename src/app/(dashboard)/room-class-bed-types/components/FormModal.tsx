@@ -16,7 +16,7 @@ import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 type FormType = {
   room_class_id: string
   bed_type_id: string
-  quantity: number
+  num_beds: number
 }
 
 type Props = {
@@ -80,7 +80,12 @@ export default function FormModal(props: Props) {
   const onSubmit = (values: FormType) => {
     if (isFormLoading) return
     if (roomClassBedTypeDetailState) {
-      updateMutation({ ...values, id: roomClassBedTypeDetailState.id })
+      updateMutation({
+        ...values,
+        num_beds: values.num_beds,
+        bed_type_id: roomClassBedTypeDetailState.bed_type_id,
+        room_class_id: roomClassBedTypeDetailState.room_class_id,
+      })
     } else {
       createMutation(values)
     }
@@ -92,7 +97,7 @@ export default function FormModal(props: Props) {
       form.setFieldsValue({
         room_class_id: roomClassBedTypeDetailState.room_class_id,
         bed_type_id: roomClassBedTypeDetailState.bed_type_id,
-        quantity: roomClassBedTypeDetailState.quantity,
+        num_beds: roomClassBedTypeDetailState.num_beds,
       })
     } else {
       form.resetFields()
@@ -116,7 +121,7 @@ export default function FormModal(props: Props) {
           <Select
             placeholder="Select room class"
             options={roomClasses.map((roomClass) => ({
-              label: roomClass.room_class_name,
+              label: roomClass.class_name,
               value: roomClass.id,
             }))}
           />

@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
-import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { CreateRoomStatusInput, RoomStatus, RoomStatusResponse } from '@/types/room-status'
+import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
+import type { CreateRoomStatusInput, RoomStatus } from '@/types/room-status'
 
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -48,13 +48,13 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    const response: RoomStatusResponse = {
-      room_statuses: (roomStatuses || []) as RoomStatus[],
-      pagination: {
-        total: count,
+    const response: PaginatedDataResponse<any> = {
+      items: roomStatuses ?? [],
+      meta: {
+        total: count ?? 0,
         page,
         limit,
-        total_pages: count ? Math.ceil(count / limit) : null,
+        total_pages: count ? Math.ceil(count / limit) : 0,
       },
     }
 

@@ -13,7 +13,7 @@ export type Room = {
   status: RoomStatus
 }
 
-export type Booking = {
+export type BookingListItem = {
   id: number
   guest_id: number
   payment_status_id: number
@@ -39,7 +39,7 @@ export type PaymentStatus = {
   payment_status_name: string
 }
 
-export type Addon = {
+export type AddonListItem = {
   id: number
   addon_name: string
   price: number
@@ -50,7 +50,7 @@ export type BookingRoom = {
 }
 
 export type BookingAddon = {
-  addon: Addon
+  addon: AddonListItem
 }
 
 export type BookingData = {

@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 
 import { createClient } from '@/providers/supabase/server'
-import type { CreateRoomInput, Room, RoomResponse } from '@/types/room'
+import { PaginatedDataResponse } from '@/services/apiResponse'
+import type { CreateRoomInput } from '@/types/room'
 
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -63,7 +64,7 @@ export async function GET(request: Request): Promise<Response> {
     }
 
     const {
-      data: rooms,
+      data: items,
       error,
       count,
     } = await query.range(offset, offset + limit - 1).order('room_number', { ascending: true })
@@ -72,13 +73,13 @@ export async function GET(request: Request): Promise<Response> {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    const response: RoomResponse = {
-      rooms: (rooms || []) as Room[],
-      pagination: {
-        total: count,
+    const response: PaginatedDataResponse<any> = {
+      items: items ?? [],
+      meta: {
+        total: count ?? 0,
         page,
         limit,
-        total_pages: count ? Math.ceil(count / limit) : null,
+        total_pages: count ? Math.ceil(count / limit) : 0,
       },
     }
 

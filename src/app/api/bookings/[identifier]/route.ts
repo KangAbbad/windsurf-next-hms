@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { BookingData, Room, Guest, PaymentStatus, Addon, BookingRoom, BookingAddon } from '@/types/booking'
+import type { BookingData, Room, Guest, PaymentStatus, AddonListItem, BookingRoom, BookingAddon } from '@/types/booking'
 
 type RoomClass = {
   id: number
@@ -50,7 +50,7 @@ type DatabaseBooking = {
     }
   }[]
   addons: {
-    addon: Addon
+    addon: AddonListItem
   }[]
 }
 

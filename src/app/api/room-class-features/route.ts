@@ -1,10 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
-import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type {
-  CreateRoomClassFeatureInput,
-  RoomClassFeature,
-  RoomClassFeatureResponse,
-} from '@/types/room-class-feature'
+import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
+import type { CreateRoomClassFeatureInput, RoomClassFeatureListItem } from '@/types/room-class-feature'
 
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -57,13 +53,13 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    const response: RoomClassFeatureResponse = {
-      room_class_features: (roomClassFeatures || []) as RoomClassFeature[],
-      pagination: {
-        total: count,
+    const response: PaginatedDataResponse<RoomClassFeatureListItem> = {
+      items: roomClassFeatures || [],
+      meta: {
+        total: count ?? 0,
         page,
         limit,
-        total_pages: count ? Math.ceil(count / limit) : null,
+        total_pages: count ? Math.ceil(count / limit) : 0,
       },
     }
 

@@ -1,11 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
-import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type {
-  CreatePaymentStatusInput,
-  PaymentStatus,
-  PaymentStatusResponse,
-  UpdatePaymentStatusInput,
-} from '@/types/payment-status'
+import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
+import type { CreatePaymentStatusInput, PaymentStatus, UpdatePaymentStatusInput } from '@/types/payment-status'
 
 // GET /api/payment-statuses - List all payment statuses
 export async function GET(request: Request): Promise<Response> {
@@ -28,7 +23,7 @@ export async function GET(request: Request): Promise<Response> {
       .order('payment_status_name', { ascending: true })
 
     // Execute query
-    const { data: paymentStatuses, error, count } = await query
+    const { data: items, error, count } = await query
 
     if (error) {
       return createErrorResponse({
@@ -38,9 +33,9 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    const response: PaymentStatusResponse = {
-      payment_statuses: paymentStatuses as PaymentStatus[],
-      pagination: {
+    const response: PaginatedDataResponse<any> = {
+      items: items ?? [],
+      meta: {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         total: count || 0,
         page,

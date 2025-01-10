@@ -5,12 +5,9 @@ import type { CreateRoomClassBody, RoomClassListItem } from '@/types/room-class'
 export async function GET(request: Request): Promise<Response> {
   try {
     const { searchParams } = new URL(request.url)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const page = parseInt(searchParams.get('page') || '1', 10)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const limit = parseInt(searchParams.get('limit') || '10', 10)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const search = searchParams.get('search') || ''
+    const page = parseInt(searchParams.get('page') ?? '1', 10)
+    const limit = parseInt(searchParams.get('limit') ?? '10', 10)
+    const search = searchParams.get('search') ?? ''
 
     const offset = (page - 1) * limit
 
@@ -18,27 +15,12 @@ export async function GET(request: Request): Promise<Response> {
 
     let query = supabase.from('room_class').select(
       `
-        id,
-        class_name,
-        base_price,
-        created_at,
-        updated_at,
-        features:room_class_feature(
-          feature:feature(
-            id,
-            feature_name,
-            created_at,
-            updated_at
-          )
-        ),
-        bed_types:room_class_bed_type(
-          bed_type:bed_type(
-            id,
-            bed_type_name
-          ),
-          quantity
-        )
-      `,
+      id,
+      class_name,
+      base_price,
+      created_at,
+      updated_at
+    `,
       { count: 'exact' }
     )
 
@@ -62,12 +44,12 @@ export async function GET(request: Request): Promise<Response> {
     }
 
     const response: PaginatedDataResponse<RoomClassListItem> = {
-      items: items || [],
+      items: items ?? [],
       meta: {
         page,
         limit,
         total: count ?? 0,
-        total_pages: count ? Math.ceil(count / limit) : 0,
+        total_pages: count ? Math.ceil(count / limit) : 1,
       },
     }
 
@@ -92,43 +74,29 @@ export async function POST(request: Request): Promise<Response> {
     const newRoomClass: CreateRoomClassBody = await request.json()
 
     // Validate required fields
-    const validationErrors: string[] = []
-    if (!newRoomClass.class_name) validationErrors.push('class_name is required')
-    if (!newRoomClass.base_price) validationErrors.push('base_price is required')
-    if (!Array.isArray(newRoomClass.features)) validationErrors.push('features must be an array')
-    if (!Array.isArray(newRoomClass.bed_types)) validationErrors.push('bed_types must be an array')
-
-    if (validationErrors.length > 0) {
+    if (!newRoomClass.class_name || !newRoomClass.base_price) {
       return createErrorResponse({
         code: 400,
         message: 'Missing required fields',
-        errors: validationErrors,
+        errors: ['class_name and base_price are required'],
       })
     }
 
-    // Additional validation
-    if (newRoomClass.base_price < 0) {
+    // Validate base_price is a positive number
+    if (typeof newRoomClass.base_price !== 'number' || newRoomClass.base_price <= 0) {
       return createErrorResponse({
         code: 400,
         message: 'Invalid base price',
-        errors: ['base_price cannot be negative'],
+        errors: ['Base price must be a positive number'],
       })
     }
 
     // Check if room class name already exists
-    const { data: existingRoomClass, error: checkError } = await supabase
+    const { data: existingRoomClass } = await supabase
       .from('room_class')
       .select('id')
       .ilike('class_name', newRoomClass.class_name)
       .single()
-
-    if (checkError && checkError.code !== 'PGRST116') {
-      return createErrorResponse({
-        code: 400,
-        message: checkError.message,
-        errors: [checkError.message],
-      })
-    }
 
     if (existingRoomClass) {
       return createErrorResponse({
@@ -138,8 +106,8 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    // Start a transaction
-    const { data: roomClass, error: roomClassError } = await supabase
+    // Create new room class
+    const { data: roomClass, error } = await supabase
       .from('room_class')
       .insert([
         {
@@ -150,98 +118,18 @@ export async function POST(request: Request): Promise<Response> {
       .select()
       .single()
 
-    if (roomClassError) {
+    if (error) {
       return createErrorResponse({
         code: 400,
-        message: roomClassError.message,
-        errors: [roomClassError.message],
-      })
-    }
-
-    // Insert features
-    if (newRoomClass.features.length > 0) {
-      const { error: featuresError } = await supabase.from('room_class_feature').insert(
-        newRoomClass.features.map((featureId) => ({
-          room_class_id: roomClass.id,
-          feature_id: featureId,
-        }))
-      )
-
-      if (featuresError) {
-        // Rollback room class creation
-        await supabase.from('room_class').delete().eq('id', roomClass.id)
-        return createErrorResponse({
-          code: 400,
-          message: 'Failed to add features',
-          errors: [featuresError.message],
-        })
-      }
-    }
-
-    // Insert bed types with quantities
-    if (newRoomClass.bed_types.length > 0) {
-      const { error: bedTypesError } = await supabase.from('room_class_bed_type').insert(
-        newRoomClass.bed_types.map((bt) => ({
-          room_class_id: roomClass.id,
-          bed_type_id: bt.bed_type_id,
-          quantity: bt.quantity,
-        }))
-      )
-
-      if (bedTypesError) {
-        // Rollback room class and features
-        await supabase.from('room_class_feature').delete().eq('room_class_id', roomClass.id)
-        await supabase.from('room_class').delete().eq('id', roomClass.id)
-        return createErrorResponse({
-          code: 400,
-          message: 'Failed to add bed types',
-          errors: [bedTypesError.message],
-        })
-      }
-    }
-
-    // Get the complete room class data with relationships
-    const { data: completeRoomClass, error: fetchError } = await supabase
-      .from('room_class')
-      .select(
-        `
-        id,
-        class_name,
-        base_price,
-        created_at,
-        updated_at,
-        features:room_class_feature(
-          feature:feature(
-            id,
-            feature_name,
-            created_at,
-            updated_at
-          )
-        ),
-        bed_types:room_class_bed_type(
-          bed_type:bed_type(
-            id,
-            bed_type_name
-          ),
-          quantity
-        )
-      `
-      )
-      .eq('id', roomClass.id)
-      .single()
-
-    if (fetchError) {
-      return createErrorResponse({
-        code: 400,
-        message: fetchError.message,
-        errors: [fetchError.message],
+        message: error.message,
+        errors: [error.message],
       })
     }
 
     return createApiResponse({
       code: 201,
       message: 'Room class created successfully',
-      data: completeRoomClass as RoomClassListItem,
+      data: roomClass,
     })
   } catch (error) {
     console.error('Create room class error:', error)

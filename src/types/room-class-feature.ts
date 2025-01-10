@@ -1,21 +1,16 @@
-import type { FeatureListItem } from './feature'
-import type { RoomClass } from './room-class'
-
-export type RoomClassFeature = {
-  id: number
-  room_class_id: number
-  feature_id: number
+export type RoomClassFeatureListItem = {
+  id: string
+  room_class_id: string
+  feature_id: string
   created_at?: string
   updated_at?: string
-  room_class?: RoomClass[]
-  feature?: FeatureListItem[]
 }
 
 export type CreateRoomClassFeatureInput = {
-  room_class_id: number
-  feature_id: number
+  room_class_id: string
+  feature_id: string
 }
 
 export type UpdateRoomClassFeatureInput = {
-  id: number
+  id: string
 }

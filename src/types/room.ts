@@ -1,4 +1,4 @@
-import type { RoomClass } from './room-class'
+import type { RoomClassListItem } from './room-class'
 import type { RoomStatus } from './room-status'
 
 export type Room = {
@@ -8,7 +8,7 @@ export type Room = {
   room_status_id: number
   created_at?: string
   updated_at?: string
-  room_class?: RoomClass[]
+  room_class?: RoomClassListItem[]
   room_status?: RoomStatus[]
 }
 

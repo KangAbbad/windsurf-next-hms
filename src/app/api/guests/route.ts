@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
-import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { CreateGuestInput, Guest, GuestResponse, UpdateGuestInput } from '@/types/guest'
+import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
+import type { CreateGuestInput, Guest, UpdateGuestInput } from '@/types/guest'
 
 // GET /api/guests - List all guests
 export async function GET(request: Request): Promise<Response> {
@@ -31,7 +31,7 @@ export async function GET(request: Request): Promise<Response> {
     query = query.range(offset, offset + limit - 1).order('first_name', { ascending: true })
 
     // Execute query
-    const { data: guests, error, count } = await query
+    const { data: items, error, count } = await query
 
     if (error) {
       return createErrorResponse({
@@ -41,9 +41,9 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    const response: GuestResponse = {
-      guests: guests as Guest[],
-      pagination: {
+    const response: PaginatedDataResponse<any> = {
+      items: items ?? [],
+      meta: {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         total: count || 0,
         page,

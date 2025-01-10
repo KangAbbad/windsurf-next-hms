@@ -1,7 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
-import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
+import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
 import type {
-  BookingAddonResponse,
   BulkCreateBookingAddonInput,
   BulkDeleteBookingAddonInput,
   BulkUpdateBookingAddonInput,
@@ -62,7 +61,7 @@ export async function GET(request: Request): Promise<Response> {
       query = query.eq('addon_id', addon_id)
     }
 
-    const { data: booking_addons, error, count } = await query.order('created_at', { ascending: false })
+    const { data: items, error, count } = await query.order('created_at', { ascending: false })
 
     if (error) {
       return createErrorResponse({
@@ -72,13 +71,13 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    const response: BookingAddonResponse = {
-      booking_addons: (booking_addons ?? []) as any[],
-      pagination: {
-        total: count,
+    const response: PaginatedDataResponse<any> = {
+      items: items ?? [],
+      meta: {
+        total: count ?? 0,
         page,
         limit,
-        total_pages: count ? Math.ceil(count / limit) : null,
+        total_pages: count ? Math.ceil(count / limit) : 0,
       },
     }
 

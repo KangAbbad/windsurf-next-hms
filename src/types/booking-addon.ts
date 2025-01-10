@@ -1,5 +1,5 @@
 import { AddonListItem } from './addon'
-import type { Booking } from './booking'
+import type { BookingListItem } from './booking'
 
 export type BookingAddon = {
   id: number
@@ -8,7 +8,7 @@ export type BookingAddon = {
   quantity: number
   created_at?: string
   updated_at?: string
-  booking?: Booking[]
+  booking?: BookingListItem[]
   addon?: AddonListItem[]
 }
 

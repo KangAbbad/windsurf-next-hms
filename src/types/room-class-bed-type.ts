@@ -1,5 +1,5 @@
 import type { BedTypeListItem } from './bed-type'
-import type { RoomClass } from './room-class'
+import type { RoomClassListItem } from './room-class'
 
 export type RoomClassBedTypeListItem = {
   room_class_id: string
@@ -7,7 +7,7 @@ export type RoomClassBedTypeListItem = {
   num_beds: number
   created_at: string
   updated_at: string
-  room_class?: RoomClass
+  room_class?: RoomClassListItem
   bed_type?: BedTypeListItem
 }
 

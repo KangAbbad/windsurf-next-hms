@@ -1,7 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
-import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
+import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
 import type {
-  BookingRoomResponse,
   BulkCreateBookingRoomInput,
   BulkDeleteBookingRoomInput,
   BulkUpdateBookingRoomInput,
@@ -83,7 +82,7 @@ export async function GET(request: Request): Promise<Response> {
       query = query.eq('room_id', room_id)
     }
 
-    const { data: booking_rooms, error, count } = await query.order('created_at', { ascending: false })
+    const { data: items, error, count } = await query.order('created_at', { ascending: false })
 
     if (error) {
       return createErrorResponse({
@@ -93,13 +92,13 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    const response: BookingRoomResponse = {
-      booking_rooms: (booking_rooms ?? []) as any[],
-      pagination: {
-        total: count,
+    const response: PaginatedDataResponse<any> = {
+      items: items ?? [],
+      meta: {
+        total: count ?? 0,
         page,
         limit,
-        total_pages: count ? Math.ceil(count / limit) : null,
+        total_pages: count ? Math.ceil(count / limit) : 0,
       },
     }
 

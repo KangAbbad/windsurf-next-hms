@@ -68,6 +68,20 @@ export const tableColumns = (props: Props) => {
         sorter: (a, b) => a.num_beds - b.num_beds,
       },
       {
+        title: 'Created At',
+        dataIndex: 'created_at',
+        key: 'created_at',
+        width: '30%',
+        sorter: (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+        render: (date) => {
+          return new Date(date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          })
+        },
+      },
+      {
         title: 'Actions',
         key: 'actions',
         width: '20%',
