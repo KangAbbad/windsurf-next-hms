@@ -1,4 +1,4 @@
-import { ApiResponse } from '@/services/apiResponse'
+import { ApiResponse, PaginatedDataResponse } from '@/services/apiResponse'
 import { axiosInstance } from '@/services/axiosInstance'
 import { FeatureListItem } from '@/types/feature'
 
@@ -9,7 +9,7 @@ export type FeatureListPageParams = {
 }
 
 export const getAll = async (params: FeatureListPageParams) => {
-  const { data } = await axiosInstance.get<ApiResponse<FeatureListItem>>('/features', {
+  const { data } = await axiosInstance.get<ApiResponse<PaginatedDataResponse<FeatureListItem>>>('/features', {
     params,
   })
   return data

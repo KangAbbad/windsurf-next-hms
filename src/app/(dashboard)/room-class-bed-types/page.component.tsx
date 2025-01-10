@@ -1,16 +1,16 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Button, Table, Input } from 'antd'
+import { Button, Table, Select } from 'antd'
 import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { FaPlus } from 'react-icons/fa6'
-import { IoSearch } from 'react-icons/io5'
 
 import { queryKey } from './lib/constants'
-import { featureDetailStore } from './lib/state'
+import { roomClassBedTypeDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
-import { type FeatureListPageParams, getAll } from './services/get'
+import { type RoomClassBedTypeListPageParams, getAll } from './services/get'
+import { getAllRoomClasses } from './services/getRoomClasses'
 
 const FormModal = dynamic(() => import('./components/FormModal'), {
   ssr: false,
@@ -18,25 +18,29 @@ const FormModal = dynamic(() => import('./components/FormModal'), {
 
 export function PageComponent() {
   const [isFormVisible, setFormVisible] = useState<boolean>(false)
-  const [keyword, setKeyword] = useState<string>('')
-  const [pageParams, setPageParams] = useState<FeatureListPageParams>({
+  const [pageParams, setPageParams] = useState<RoomClassBedTypeListPageParams>({
     page: 1,
     limit: 10,
-    search: undefined,
+    room_class_id: undefined,
   })
 
-  const { resetData: resetFeatureDetail } = featureDetailStore()
+  const { resetData: resetRoomClassBedTypeDetail } = roomClassBedTypeDetailStore()
+
+  const { data: roomClassesResponse } = useQuery({
+    queryKey: [queryKey.RES_ROOM_CLASS_LIST],
+    queryFn: getAllRoomClasses,
+  })
+  const { items: roomClasses = [] } = roomClassesResponse ?? {}
 
   const { data: dataSourceResponse, isFetching: isDataSourceFetching } = useQuery({
-    queryKey: [queryKey.RES_FEATURE_LIST, pageParams],
+    queryKey: [queryKey.RES_ROOM_CLASS_BED_TYPE_LIST, pageParams],
     queryFn: () => getAll(pageParams),
   })
-  const { data: dataSourceData } = dataSourceResponse ?? {}
-  const { items: dataSource = [], meta: dataSourceMeta } = dataSourceData ?? {}
-  const { total } = dataSourceMeta ?? {}
+  const { items: dataSource = [], meta: pagination } = dataSourceResponse ?? {}
+  const { total } = pagination ?? {}
 
   const showAddModal = () => {
-    resetFeatureDetail()
+    resetRoomClassBedTypeDetail()
     setFormVisible(true)
   }
 
@@ -46,34 +50,26 @@ export function PageComponent() {
     },
   })()
 
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      setPageParams((prev) => ({ ...prev, search: keyword }))
-    }, 500)
-
-    return () => {
-      clearTimeout(delayDebounceFn)
-    }
-  }, [keyword])
-
   return (
     <main className="p-4">
       <div className="bg-white p-4 pb-0 rounded-lg">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-semibold m-0">Features Management</h1>
+          <h1 className="text-2xl font-semibold m-0">Room Class Bed Types Management</h1>
           <Button type="primary" icon={<FaPlus />} onClick={showAddModal}>
             Add New
           </Button>
         </div>
         <div className="mb-4">
-          <Input
+          <Select
             allowClear
-            placeholder="Search features..."
-            size="middle"
-            prefix={<IoSearch />}
-            className="max-w-md"
-            onChange={(e) => {
-              setKeyword(e.target.value)
+            placeholder="Filter by room class..."
+            className="w-72"
+            options={roomClasses.map((roomClass) => ({
+              label: roomClass.room_class_name,
+              value: roomClass.id,
+            }))}
+            onChange={(value) => {
+              setPageParams((prev) => ({ ...prev, room_class_id: value }))
             }}
           />
         </div>
