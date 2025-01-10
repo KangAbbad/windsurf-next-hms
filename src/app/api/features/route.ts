@@ -35,11 +35,11 @@ export async function GET(request: Request): Promise<Response> {
     }
 
     const response: PaginatedDataResponse<FeatureListItem> = {
-      items: items ?? [],
+      items,
       meta: {
-        total: count ?? 0,
         page,
         limit,
+        total: count ?? 0,
         total_pages: Math.ceil((count ?? 0) / limit),
       },
     }
@@ -112,10 +112,10 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    return createApiResponse({
+    return createApiResponse<FeatureListItem>({
       code: 201,
       message: 'Feature created successfully',
-      data: data as FeatureListItem,
+      data,
     })
   } catch (error) {
     console.error('Create feature error:', error)

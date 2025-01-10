@@ -35,12 +35,12 @@ export async function GET(request: Request): Promise<Response> {
     }
 
     const response: PaginatedDataResponse<AddonListItem> = {
-      items: items ?? [],
+      items,
       meta: {
         page,
         limit,
         total: count ?? 0,
-        total_pages: count ? Math.ceil(count / limit) : 1,
+        total_pages: Math.ceil((count ?? 0) / limit),
       },
     }
 

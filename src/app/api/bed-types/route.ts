@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
-import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import { BED_TYPE_NAME_MAX_LENGTH, type CreateBedTypeBody } from '@/types/bed-type'
+import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
+import { BED_TYPE_NAME_MAX_LENGTH, BedTypeListItem, type CreateBedTypeBody } from '@/types/bed-type'
 
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -34,18 +34,20 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    return createApiResponse({
+    const response: PaginatedDataResponse<BedTypeListItem> = {
+      items,
+      meta: {
+        page,
+        limit,
+        total: count ?? 0,
+        total_pages: Math.ceil((count ?? 0) / limit),
+      },
+    }
+
+    return createApiResponse<PaginatedDataResponse<BedTypeListItem>>({
       code: 200,
       message: 'Bed types retrieved successfully',
-      data: {
-        items,
-        meta: {
-          page,
-          limit,
-          total: count ?? 0,
-          total_pages: count ? Math.ceil(count / limit) : 1,
-        },
-      },
+      data: response,
     })
   } catch (error) {
     console.error('Get bed types error:', error)

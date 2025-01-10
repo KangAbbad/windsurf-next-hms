@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import { BED_TYPE_NAME_MAX_LENGTH, type UpdateBedTypeBody } from '@/types/bed-type'
+import { BED_TYPE_NAME_MAX_LENGTH, BedTypeListItem, type UpdateBedTypeBody } from '@/types/bed-type'
 
 export async function GET(
   _request: Request,
@@ -20,7 +20,7 @@ export async function GET(
       })
     }
 
-    return createApiResponse({
+    return createApiResponse<BedTypeListItem>({
       code: 200,
       message: 'Bed type retrieved successfully',
       data,
@@ -106,7 +106,7 @@ export async function PUT(
       })
     }
 
-    return createApiResponse({
+    return createApiResponse<BedTypeListItem>({
       code: 200,
       message: 'Bed type updated successfully',
       data,
