@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { UpdateAddonBody } from '@/types/addon'
+import type { AddonListItem, UpdateAddonBody } from '@/types/addon'
 
 export async function GET(
   _request: Request,
@@ -10,19 +10,7 @@ export async function GET(
     const supabase = await createClient()
     const { identifier } = await params
 
-    const { data, error } = await supabase
-      .from('addon')
-      .select(
-        `
-        id,
-        addon_name,
-        price,
-        created_at,
-        updated_at
-        `
-      )
-      .eq('id', identifier)
-      .single()
+    const { data, error } = await supabase.from('addon').select('*').eq('id', identifier).single()
 
     if (error) {
       return createErrorResponse({
@@ -32,7 +20,7 @@ export async function GET(
       })
     }
 
-    return createApiResponse({
+    return createApiResponse<AddonListItem>({
       code: 200,
       message: 'Addon details retrieved successfully',
       data,

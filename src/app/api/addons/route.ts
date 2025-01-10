@@ -13,16 +13,6 @@ export async function GET(request: Request): Promise<Response> {
 
     const supabase = await createClient()
 
-    // let query = supabase.from('addon').select(
-    //   `
-    //   id,
-    //   addon_name,
-    //   price,
-    //   created_at,
-    //   updated_at
-    //   `,
-    //   { count: 'exact' }
-    // )
     let query = supabase.from('addon').select('*', { count: 'exact' })
 
     // Apply search filter if provided
@@ -54,7 +44,7 @@ export async function GET(request: Request): Promise<Response> {
       },
     }
 
-    return createApiResponse({
+    return createApiResponse<PaginatedDataResponse<AddonListItem>>({
       code: 200,
       message: 'Addon list retrieved successfully',
       data: response,
