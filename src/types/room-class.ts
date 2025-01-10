@@ -1,34 +1,28 @@
 import type { BedTypeListItem } from './bed-type'
 import type { FeatureListItem } from './feature'
 
-export type RoomClassFeature = {
+export type RoomClassFeatureListItem = {
   feature: FeatureListItem[]
 }
 
-export type RoomClassBedType = {
+export type RoomClassBedTypeListItem = {
   bed_type: BedTypeListItem[]
-  num_beds: number
+  quantity: number
 }
 
-export type RoomClass = {
+export type RoomClassListItem = {
   id: string
   class_name: string
-  description?: string
-  base_occupancy: number
-  max_occupancy: number
-  base_rate: number
+  base_price: number
+  features?: RoomClassFeatureListItem[]
+  bed_types?: RoomClassBedTypeListItem[]
   created_at?: string
   updated_at?: string
-  features?: RoomClassFeature[]
-  bed_types?: RoomClassBedType[]
 }
 
-export type CreateRoomClassInput = {
-  room_class_name: string
-  description?: string
-  base_occupancy: number
-  max_occupancy: number
-  base_rate: number
+export type CreateRoomClassBody = {
+  class_name: string
+  base_price: number
   features: number[]
   bed_types: {
     bed_type_id: number
@@ -36,11 +30,6 @@ export type CreateRoomClassInput = {
   }[]
 }
 
-export type UpdateRoomClassInput = {
-  id: number
-  room_class_name?: string
-  description?: string
-  base_occupancy?: number
-  max_occupancy?: number
-  base_rate?: number
+export type UpdateRoomClassBody = Partial<CreateRoomClassBody> & {
+  id: string
 }

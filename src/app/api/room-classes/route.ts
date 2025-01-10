@@ -1,6 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
-import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { CreateRoomClassInput, RoomClass, RoomClassResponse } from '@/types/room-class'
+import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
+import type { CreateRoomClassBody, RoomClassListItem } from '@/types/room-class'
 
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -19,17 +19,16 @@ export async function GET(request: Request): Promise<Response> {
     let query = supabase.from('room_class').select(
       `
         id,
-        room_class_name,
-        description,
-        base_occupancy,
-        max_occupancy,
-        base_rate,
+        class_name,
+        base_price,
         created_at,
         updated_at,
         features:room_class_feature(
           feature:feature(
             id,
-            feature_name
+            feature_name,
+            created_at,
+            updated_at
           )
         ),
         bed_types:room_class_bed_type(
@@ -45,14 +44,14 @@ export async function GET(request: Request): Promise<Response> {
 
     // Apply search filter if provided
     if (search) {
-      query = query.ilike('room_class_name', `%${search}%`)
+      query = query.ilike('class_name', `%${search}%`)
     }
 
     const {
-      data: roomClasses,
+      data: items,
       error,
       count,
-    } = await query.range(offset, offset + limit - 1).order('room_class_name', { ascending: true })
+    } = await query.range(offset, offset + limit - 1).order('class_name', { ascending: true })
 
     if (error) {
       return createErrorResponse({
@@ -62,13 +61,13 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    const response: RoomClassResponse = {
-      room_classes: (roomClasses || []) as RoomClass[],
-      pagination: {
-        total: count,
+    const response: PaginatedDataResponse<RoomClassListItem> = {
+      items: items || [],
+      meta: {
         page,
         limit,
-        total_pages: count ? Math.ceil(count / limit) : null,
+        total: count ?? 0,
+        total_pages: count ? Math.ceil(count / limit) : 0,
       },
     }
 
@@ -90,14 +89,12 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const newRoomClass: CreateRoomClassInput = await request.json()
+    const newRoomClass: CreateRoomClassBody = await request.json()
 
     // Validate required fields
     const validationErrors: string[] = []
-    if (!newRoomClass.room_class_name) validationErrors.push('room_class_name is required')
-    if (!newRoomClass.base_occupancy) validationErrors.push('base_occupancy is required')
-    if (!newRoomClass.max_occupancy) validationErrors.push('max_occupancy is required')
-    if (!newRoomClass.base_rate) validationErrors.push('base_rate is required')
+    if (!newRoomClass.class_name) validationErrors.push('class_name is required')
+    if (!newRoomClass.base_price) validationErrors.push('base_price is required')
     if (!Array.isArray(newRoomClass.features)) validationErrors.push('features must be an array')
     if (!Array.isArray(newRoomClass.bed_types)) validationErrors.push('bed_types must be an array')
 
@@ -110,19 +107,11 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     // Additional validation
-    if (newRoomClass.base_occupancy > newRoomClass.max_occupancy) {
+    if (newRoomClass.base_price < 0) {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid occupancy values',
-        errors: ['base_occupancy cannot be greater than max_occupancy'],
-      })
-    }
-
-    if (newRoomClass.base_rate < 0) {
-      return createErrorResponse({
-        code: 400,
-        message: 'Invalid base rate',
-        errors: ['base_rate cannot be negative'],
+        message: 'Invalid base price',
+        errors: ['base_price cannot be negative'],
       })
     }
 
@@ -130,7 +119,7 @@ export async function POST(request: Request): Promise<Response> {
     const { data: existingRoomClass, error: checkError } = await supabase
       .from('room_class')
       .select('id')
-      .ilike('room_class_name', newRoomClass.room_class_name)
+      .ilike('class_name', newRoomClass.class_name)
       .single()
 
     if (checkError && checkError.code !== 'PGRST116') {
@@ -154,11 +143,8 @@ export async function POST(request: Request): Promise<Response> {
       .from('room_class')
       .insert([
         {
-          room_class_name: newRoomClass.room_class_name,
-          description: newRoomClass.description,
-          base_occupancy: newRoomClass.base_occupancy,
-          max_occupancy: newRoomClass.max_occupancy,
-          base_rate: newRoomClass.base_rate,
+          class_name: newRoomClass.class_name,
+          base_price: newRoomClass.base_price,
         },
       ])
       .select()
@@ -220,17 +206,16 @@ export async function POST(request: Request): Promise<Response> {
       .select(
         `
         id,
-        room_class_name,
-        description,
-        base_occupancy,
-        max_occupancy,
-        base_rate,
+        class_name,
+        base_price,
         created_at,
         updated_at,
         features:room_class_feature(
           feature:feature(
             id,
-            feature_name
+            feature_name,
+            created_at,
+            updated_at
           )
         ),
         bed_types:room_class_bed_type(
@@ -256,7 +241,7 @@ export async function POST(request: Request): Promise<Response> {
     return createApiResponse({
       code: 201,
       message: 'Room class created successfully',
-      data: completeRoomClass as RoomClass,
+      data: completeRoomClass as RoomClassListItem,
     })
   } catch (error) {
     console.error('Create room class error:', error)

@@ -1,5 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
+import type { RoomClassListItem, UpdateRoomClassBody } from '@/types/room-class'
 
 export async function GET(_request: Request, { params }: { params: { identifier: string } }) {
   try {
@@ -10,12 +11,22 @@ export async function GET(_request: Request, { params }: { params: { identifier:
       .from('room_class')
       .select(
         `
-        *,
+        id,
+        class_name,
+        base_price,
+        created_at,
+        updated_at,
         features:room_class_feature(
-          feature:feature(*)
+          feature:feature(
+            id,
+            feature_name
+          )
         ),
         bed_types:room_class_bed_type(
-          bed_type:bed_type(*),
+          bed_type:bed_type(
+            id,
+            bed_type_name
+          ),
           quantity
         )
       `
@@ -34,7 +45,7 @@ export async function GET(_request: Request, { params }: { params: { identifier:
     return createApiResponse({
       code: 200,
       message: 'Room class details retrieved successfully',
-      data,
+      data: data as RoomClassListItem,
     })
   } catch (error) {
     console.error('Get room class details error:', error)
@@ -50,15 +61,12 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
   try {
     const supabase = await createClient()
     const { identifier } = params
-    const { room_class_name, description, base_occupancy, max_occupancy, base_rate, features, bed_types } =
-      await request.json()
+    const { class_name, base_price, features, bed_types }: UpdateRoomClassBody = await request.json()
 
     // Validate required fields
     const validationErrors: string[] = []
-    if (!room_class_name) validationErrors.push('room_class_name is required')
-    if (!base_occupancy) validationErrors.push('base_occupancy is required')
-    if (!max_occupancy) validationErrors.push('max_occupancy is required')
-    if (!base_rate) validationErrors.push('base_rate is required')
+    if (!class_name) validationErrors.push('class_name is required')
+    if (!base_price) validationErrors.push('base_price is required')
     if (!Array.isArray(features)) validationErrors.push('features must be an array')
     if (!Array.isArray(bed_types)) validationErrors.push('bed_types must be an array')
 
@@ -71,19 +79,11 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
     }
 
     // Additional validation
-    if (base_occupancy > max_occupancy) {
+    if ((base_price as number) < 0) {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid occupancy values',
-        errors: ['base_occupancy cannot be greater than max_occupancy'],
-      })
-    }
-
-    if (base_rate < 0) {
-      return createErrorResponse({
-        code: 400,
-        message: 'Invalid base rate',
-        errors: ['base_rate cannot be negative'],
+        message: 'Invalid base price',
+        errors: ['base_price cannot be negative'],
       })
     }
 
@@ -91,7 +91,7 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
     const { data: existingRoomClass } = await supabase
       .from('room_class')
       .select('id')
-      .ilike('room_class_name', room_class_name)
+      .ilike('class_name', class_name ?? '')
       .neq('id', identifier)
       .single()
 
@@ -107,11 +107,8 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
     const { error: roomClassError } = await supabase
       .from('room_class')
       .update({
-        room_class_name,
-        description,
-        base_occupancy,
-        max_occupancy,
-        base_rate,
+        class_name,
+        base_price,
       })
       .eq('id', identifier)
 
@@ -125,9 +122,9 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
 
     // Update features (delete and insert)
     await supabase.from('room_class_feature').delete().eq('room_class_id', identifier)
-    if (features.length > 0) {
+    if ((features ?? []).length > 0) {
       const { error: featuresError } = await supabase.from('room_class_feature').insert(
-        features.map((featureId: string) => ({
+        (features ?? []).map((featureId: number) => ({
           room_class_id: identifier,
           feature_id: featureId,
         }))
@@ -144,9 +141,9 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
 
     // Update bed types (delete and insert)
     await supabase.from('room_class_bed_type').delete().eq('room_class_id', identifier)
-    if (bed_types.length > 0) {
+    if ((bed_types ?? []).length > 0) {
       const { error: bedTypesError } = await supabase.from('room_class_bed_type').insert(
-        bed_types.map((bt: { bed_type_id: string; quantity: number }) => ({
+        (bed_types ?? []).map((bt: { bed_type_id: number; quantity: number }) => ({
           room_class_id: identifier,
           bed_type_id: bt.bed_type_id,
           quantity: bt.quantity,
@@ -167,12 +164,22 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
       .from('room_class')
       .select(
         `
-        *,
+        id,
+        class_name,
+        base_price,
+        created_at,
+        updated_at,
         features:room_class_feature(
-          feature:feature(*)
+          feature:feature(
+            id,
+            feature_name
+          )
         ),
         bed_types:room_class_bed_type(
-          bed_type:bed_type(*),
+          bed_type:bed_type(
+            id,
+            bed_type_name
+          ),
           quantity
         )
       `
@@ -191,7 +198,7 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
     return createApiResponse({
       code: 200,
       message: 'Room class updated successfully',
-      data: updatedRoomClass,
+      data: updatedRoomClass as RoomClassListItem,
     })
   } catch (error) {
     console.error('Update room class error:', error)
@@ -207,17 +214,6 @@ export async function DELETE(_request: Request, { params }: { params: { identifi
   try {
     const supabase = await createClient()
     const { identifier } = params
-
-    // Check if room class has any rooms
-    const { data: rooms } = await supabase.from('room').select('id').eq('room_class_id', identifier).limit(1)
-
-    if (rooms && rooms.length > 0) {
-      return createErrorResponse({
-        code: 400,
-        message: 'Cannot delete room class that has rooms',
-        errors: ['Room class has one or more rooms associated with it'],
-      })
-    }
 
     // Delete related records first
     await supabase.from('room_class_feature').delete().eq('room_class_id', identifier)
