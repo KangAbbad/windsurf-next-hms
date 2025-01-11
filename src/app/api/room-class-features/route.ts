@@ -1,32 +1,78 @@
 import { createClient } from '@/providers/supabase/server'
-import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
+import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
 import { CreateRoomClassFeatureBody, RoomClassFeatureListItem } from '@/types/room-class-feature'
 
 export async function GET(request: Request): Promise<Response> {
   try {
-    const supabase = await createClient()
-    const searchParams = new URL(request.url).searchParams
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') ?? '1', 10)
+    const limit = parseInt(searchParams.get('limit') ?? '10', 10)
+    const search = searchParams.get('search') ?? ''
     const roomClassId = searchParams.get('room_class_id')
 
-    let query = supabase.from('room_class_feature').select('*')
+    const offset = (page - 1) * limit
+
+    const supabase = await createClient()
+
+    let query = supabase.from('room_class_feature').select(
+      `
+        room_class_id,
+        feature_id,
+        created_at,
+        updated_at,
+        room_class:room_class(
+          id,
+          class_name,
+          base_price,
+          created_at,
+          updated_at
+        ),
+        feature:feature(
+          id,
+          feature_name,
+          created_at,
+          updated_at
+        )
+      `,
+      { count: 'exact' }
+    )
+
+    // Apply filters if provided
+    if (search) {
+      query = query.or(`class_name.ilike.%${search}%,features.feature.feature_name.ilike.%${search}%`)
+    }
     if (roomClassId) {
-      query = query.eq('room_class_id', roomClassId)
+      query = query.eq('id', roomClassId)
     }
 
-    const { data, error } = await query
+    const {
+      data: items,
+      error,
+      count,
+    } = await query.range(offset, offset + limit - 1).order('room_class_id', { ascending: false })
 
     if (error) {
       return createErrorResponse({
-        code: 500,
-        message: 'Failed to fetch room class features',
+        code: 400,
+        message: error.message,
         errors: [error.message],
       })
     }
 
-    return createApiResponse<RoomClassFeatureListItem[]>({
+    const response: PaginatedDataResponse<RoomClassFeatureListItem> = {
+      items: items as unknown as RoomClassFeatureListItem[],
+      meta: {
+        page,
+        limit,
+        total: count ?? 0,
+        total_pages: Math.ceil((count ?? 0) / limit),
+      },
+    }
+
+    return createApiResponse<PaginatedDataResponse<RoomClassFeatureListItem>>({
       code: 200,
       message: 'Room class features retrieved successfully',
-      data: data as RoomClassFeatureListItem[],
+      data: response,
     })
   } catch (error) {
     console.error('Get room class features error:', error)
@@ -101,7 +147,7 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    const { data, error } = await supabase.from('room_class_feature').insert(body).select().single()
+    const { data, error } = await supabase.from('room_class_feature').insert(body).select('*').single()
 
     if (error) {
       return createErrorResponse({
@@ -114,7 +160,7 @@ export async function POST(request: Request): Promise<Response> {
     return createApiResponse<RoomClassFeatureListItem>({
       code: 201,
       message: 'Room class feature created successfully',
-      data: data as RoomClassFeatureListItem,
+      data,
     })
   } catch (error) {
     console.error('Create room class feature error:', error)

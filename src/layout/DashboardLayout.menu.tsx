@@ -3,7 +3,7 @@
 import { MenuItemType } from 'antd/es/menu/interface'
 import Link from 'next/link'
 import { BsFillHouseAddFill } from 'react-icons/bs'
-import { MdDashboard } from 'react-icons/md'
+import { MdDashboard, MdOutlineRoomPreferences } from 'react-icons/md'
 import { PiStairsDuotone } from 'react-icons/pi'
 import { RiHotelBedFill } from 'react-icons/ri'
 import { TbBed, TbListDetails } from 'react-icons/tb'
@@ -43,5 +43,10 @@ export const dashboardMenuList: MenuItemType[] = [
     key: '/room-classes',
     icon: <RiHotelBedFill />,
     label: <Link href="/room-classes">Room Classes</Link>,
+  },
+  {
+    key: '/room-class-features',
+    icon: <MdOutlineRoomPreferences />,
+    label: <Link href="/room-class-features">Room Class Features</Link>,
   },
 ]

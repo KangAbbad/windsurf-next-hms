@@ -1,9 +1,13 @@
+import { FeatureListItem } from './feature'
+import { RoomClassListItem } from './room-class'
+
 export type RoomClassFeatureListItem = {
-  id: string
   room_class_id: string
   feature_id: string
   created_at: string
   updated_at: string
+  room_class: RoomClassListItem
+  feature: FeatureListItem
 }
 
 export type CreateRoomClassFeatureBody = {
@@ -12,5 +16,6 @@ export type CreateRoomClassFeatureBody = {
 }
 
 export type UpdateRoomClassFeatureBody = Partial<CreateRoomClassFeatureBody> & {
-  id: string
+  new_room_class_id?: string
+  new_feature_id?: string
 }
