@@ -1,10 +1,14 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
+import type { RoomStatusListItem, UpdateRoomStatusBody } from '@/types/room-status'
 
-export async function GET(_request: Request, { params }: { params: { identifier: string } }) {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ identifier: string }> }
+): Promise<Response> {
   try {
     const supabase = await createClient()
-    const { identifier } = params
+    const { identifier } = await params
 
     const { data, error } = await supabase.from('room_status').select('*').eq('id', identifier).single()
 
@@ -16,7 +20,7 @@ export async function GET(_request: Request, { params }: { params: { identifier:
       })
     }
 
-    return createApiResponse({
+    return createApiResponse<RoomStatusListItem>({
       code: 200,
       message: 'Room status retrieved successfully',
       data,
@@ -31,18 +35,20 @@ export async function GET(_request: Request, { params }: { params: { identifier:
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { identifier: string } }) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ identifier: string }> }
+): Promise<Response> {
   try {
     const supabase = await createClient()
-    const { identifier } = params
-    const { status_name, description, is_available, color_code } = await request.json()
+    const { identifier } = await params
+    const updates: UpdateRoomStatusBody = await request.json()
 
     // Validate required fields
     const validationErrors: string[] = []
-    if (!status_name) validationErrors.push('status_name is required')
-    if (typeof is_available !== 'boolean') validationErrors.push('is_available must be a boolean')
-    if (color_code && !/^#[0-9A-Fa-f]{6}$/.test(color_code)) {
-      validationErrors.push('color_code must be a valid hex color code (e.g., #FF0000)')
+    if (!updates.status_name) validationErrors.push('status_name is required')
+    if (updates.status_number !== undefined && typeof updates.status_number !== 'number') {
+      validationErrors.push('status_number must be a number')
     }
 
     if (validationErrors.length > 0) {
@@ -57,7 +63,7 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
     const { data: existingStatus } = await supabase
       .from('room_status')
       .select('id')
-      .ilike('status_name', status_name)
+      .ilike('status_name', updates.status_name ?? '')
       .neq('id', identifier)
       .single()
 
@@ -69,14 +75,12 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
       })
     }
 
-    // Update room status
     const { data, error } = await supabase
       .from('room_status')
       .update({
-        status_name,
-        description,
-        is_available,
-        color_code,
+        status_name: updates.status_name,
+        status_number: updates.status_number,
+        updated_at: new Date().toISOString(),
       })
       .eq('id', identifier)
       .select()
@@ -90,7 +94,7 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
       })
     }
 
-    return createApiResponse({
+    return createApiResponse<RoomStatusListItem>({
       code: 200,
       message: 'Room status updated successfully',
       data,
@@ -105,10 +109,13 @@ export async function PUT(request: Request, { params }: { params: { identifier: 
   }
 }
 
-export async function DELETE(_request: Request, { params }: { params: { identifier: string } }) {
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ identifier: string }> }
+): Promise<Response> {
   try {
     const supabase = await createClient()
-    const { identifier } = params
+    const { identifier } = await params
 
     // Check if status is used by any rooms
     const { data: rooms } = await supabase.from('room').select('id').eq('status_id', identifier).limit(1)

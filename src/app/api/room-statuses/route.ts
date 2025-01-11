@@ -5,29 +5,15 @@ import type { CreateRoomStatusBody, RoomStatusListItem } from '@/types/room-stat
 export async function GET(request: Request): Promise<Response> {
   try {
     const { searchParams } = new URL(request.url)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const page = parseInt(searchParams.get('page') || '1', 10)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const limit = parseInt(searchParams.get('limit') || '10', 10)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const search = searchParams.get('search') || ''
+    const page = parseInt(searchParams.get('page') ?? '1', 10)
+    const limit = parseInt(searchParams.get('limit') ?? '10', 10)
+    const search = searchParams.get('search') ?? ''
 
     const offset = (page - 1) * limit
 
     const supabase = await createClient()
 
-    let query = supabase.from('room_status').select(
-      `
-        id,
-        status_name,
-        description,
-        is_available,
-        color_code,
-        created_at,
-        updated_at
-      `,
-      { count: 'exact' }
-    )
+    let query = supabase.from('room_status').select('*', { count: 'exact' })
 
     // Apply search filter if provided
     if (search) {
@@ -35,10 +21,10 @@ export async function GET(request: Request): Promise<Response> {
     }
 
     const {
-      data: roomStatuses,
+      data: items,
       error,
       count,
-    } = await query.range(offset, offset + limit - 1).order('status_name', { ascending: true })
+    } = await query.range(offset, offset + limit - 1).order('status_number', { ascending: true })
 
     if (error) {
       return createErrorResponse({
@@ -48,23 +34,23 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    const response: PaginatedDataResponse<any> = {
-      items: roomStatuses ?? [],
+    const response: PaginatedDataResponse<RoomStatusListItem> = {
+      items,
       meta: {
-        total: count ?? 0,
         page,
         limit,
-        total_pages: count ? Math.ceil(count / limit) : 0,
+        total: count ?? 0,
+        total_pages: Math.ceil((count ?? 0) / limit),
       },
     }
 
-    return createApiResponse({
+    return createApiResponse<PaginatedDataResponse<RoomStatusListItem>>({
       code: 200,
       message: 'Room status list retrieved successfully',
       data: response,
     })
   } catch (error) {
-    console.error('Get room statuses error:', error)
+    console.error('Get room status list error:', error)
     return createErrorResponse({
       code: 500,
       message: 'Internal server error',
@@ -76,15 +62,12 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const newRoomStatus: CreateRoomStatusBody = await request.json()
+    const body: CreateRoomStatusBody = await request.json()
 
     // Validate required fields
     const validationErrors: string[] = []
-    if (!newRoomStatus.status_name) validationErrors.push('status_name is required')
-    if (typeof newRoomStatus.is_available !== 'boolean') validationErrors.push('is_available must be a boolean')
-    if (newRoomStatus.color_code && !/^#[0-9A-Fa-f]{6}$/.test(newRoomStatus.color_code)) {
-      validationErrors.push('color_code must be a valid hex color code (e.g., #FF0000)')
-    }
+    if (!body.status_name) validationErrors.push('status_name is required')
+    if (typeof body.status_number !== 'number') validationErrors.push('status_number must be a number')
 
     if (validationErrors.length > 0) {
       return createErrorResponse({
@@ -94,48 +77,30 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    // Check if status name already exists
-    const { data: existingStatus, error: checkError } = await supabase
+    const now = new Date().toISOString()
+    const { data, error } = await supabase
       .from('room_status')
-      .select('id')
-      .ilike('status_name', newRoomStatus.status_name)
-      .single()
-
-    if (checkError && checkError.code !== 'PGRST116') {
-      return createErrorResponse({
-        code: 400,
-        message: checkError.message,
-        errors: [checkError.message],
+      .insert({
+        status_name: body.status_name,
+        status_number: body.status_number,
+        created_at: now,
+        updated_at: now,
       })
-    }
-
-    if (existingStatus) {
-      return createErrorResponse({
-        code: 400,
-        message: 'Room status name already exists',
-        errors: ['Room status name must be unique'],
-      })
-    }
-
-    // Create room status
-    const { data: created, error: createError } = await supabase
-      .from('room_status')
-      .insert([newRoomStatus])
       .select()
       .single()
 
-    if (createError) {
+    if (error) {
       return createErrorResponse({
         code: 400,
-        message: createError.message,
-        errors: [createError.message],
+        message: error.message,
+        errors: [error.message],
       })
     }
 
-    return createApiResponse({
+    return createApiResponse<RoomStatusListItem>({
       code: 201,
       message: 'Room status created successfully',
-      data: created as RoomStatusListItem,
+      data,
     })
   } catch (error) {
     console.error('Create room status error:', error)
