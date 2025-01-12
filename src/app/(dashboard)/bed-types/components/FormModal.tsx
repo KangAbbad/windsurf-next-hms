@@ -35,25 +35,25 @@ export default function FormModal(props: Props) {
 
   const { mutate: createMutation, isPending: isCreateLoading } = useMutation({
     mutationFn: createItem,
-    onSuccess: async () => {
-      antdMessage?.success('Bed type created successfully')
-      await queryClient.invalidateQueries({ queryKey: [queryKey.RES_BED_TYPE_LIST] })
+    onSuccess: (res) => {
+      antdMessage?.success(res?.message ?? 'Bed type created successfully')
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_BED_TYPE_LIST] })
       hideModal()
     },
-    onError: () => {
-      antdMessage?.error('Failed to create bed type')
+    onError: (res) => {
+      antdMessage?.error(res?.message ?? 'Failed to create bed type')
     },
   })
 
   const { mutate: updateMutation, isPending: isUpdateLoading } = useMutation({
     mutationFn: updateItem,
-    onSuccess: async () => {
-      antdMessage?.success('Bed type updated successfully')
-      await queryClient.invalidateQueries({ queryKey: [queryKey.RES_BED_TYPE_LIST] })
+    onSuccess: (res) => {
+      antdMessage?.success(res?.message ?? 'Bed type updated successfully')
       hideModal()
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_BED_TYPE_LIST] })
     },
-    onError: () => {
-      antdMessage?.error('Failed to update bed type')
+    onError: (res) => {
+      antdMessage?.error(res?.message ?? 'Failed to update bed type')
     },
   })
 

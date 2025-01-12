@@ -35,25 +35,25 @@ export default function FormModal(props: Props) {
 
   const { mutate: createMutation, isPending: isCreateLoading } = useMutation({
     mutationFn: createItem,
-    onSuccess: async () => {
-      antdMessage?.success('Addon created successfully')
-      await queryClient.invalidateQueries({ queryKey: [queryKey.RES_ADDON_LIST] })
+    onSuccess: (res) => {
+      antdMessage?.success(res?.message ?? 'Addon created successfully')
       hideModal()
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_ADDON_LIST] })
     },
-    onError: () => {
-      antdMessage?.error('Failed to create addon')
+    onError: (res) => {
+      antdMessage?.error(res?.message ?? 'Failed to create addon')
     },
   })
 
   const { mutate: updateMutation, isPending: isUpdateLoading } = useMutation({
     mutationFn: updateItem,
-    onSuccess: async () => {
-      antdMessage?.success('Addon updated successfully')
-      await queryClient.invalidateQueries({ queryKey: [queryKey.RES_ADDON_LIST] })
+    onSuccess: (res) => {
+      antdMessage?.success(res?.message ?? 'Addon updated successfully')
       hideModal()
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_ADDON_LIST] })
     },
-    onError: () => {
-      antdMessage?.error('Failed to update addon')
+    onError: (res) => {
+      antdMessage?.error(res?.message ?? 'Failed to update addon')
     },
   })
 
