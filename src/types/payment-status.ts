@@ -1,5 +1,5 @@
 export type PaymentStatusListItem = {
-  id: number
+  id: string
   payment_status_name: string
   created_at: string
   updated_at: string
@@ -10,5 +10,5 @@ export type CreatePaymentStatusBody = {
 }
 
 export type UpdatePaymentStatusBody = Partial<CreatePaymentStatusBody> & {
-  id: number
+  id: string
 }
