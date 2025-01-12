@@ -4,6 +4,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Modal, Form, Input, Select } from 'antd'
 import { useEffect } from 'react'
 
+import { queryKey as queryKeyFloorList } from '../../floors/lib/constants'
+import { queryKey as queryKeyRoomClassList } from '../../room-classes/lib/constants'
+import { queryKey as queryKeyRoomStatusList } from '../../room-statuses/lib/constants'
 import { queryKey } from '../lib/constants'
 import { roomDetailStore } from '../lib/state'
 import { createItem } from '../services/post'
@@ -34,19 +37,19 @@ export default function FormModal(props: Props) {
   const { data: roomDetailState } = roomDetailStore()
 
   const { data: roomClassesResponse, isFetching: isLoadingRoomClasses } = useQuery({
-    queryKey: ['room-classes'],
+    queryKey: [queryKeyRoomClassList.RES_ROOM_CLASS_LIST],
     queryFn: () => getRoomClasses({ page: 1, limit: 100 }),
   })
   const roomClasses = roomClassesResponse?.data?.items ?? []
 
   const { data: roomStatusesResponse, isFetching: isLoadingRoomStatuses } = useQuery({
-    queryKey: ['room-statuses'],
+    queryKey: [queryKeyRoomStatusList.RES_ROOM_STATUS_LIST],
     queryFn: () => getRoomStatuses({ page: 1, limit: 100 }),
   })
   const roomStatuses = roomStatusesResponse?.data?.items ?? []
 
   const { data: floorsResponse, isFetching: isLoadingFloors } = useQuery({
-    queryKey: ['floors'],
+    queryKey: [queryKeyFloorList.RES_FLOOR_LIST],
     queryFn: () => getFloors({ page: 1, limit: 100 }),
   })
   const floors = floorsResponse?.data?.items ?? []
@@ -58,25 +61,25 @@ export default function FormModal(props: Props) {
 
   const { mutate: createMutation, isPending: isCreateLoading } = useMutation({
     mutationFn: createItem,
-    onSuccess: async () => {
-      antdMessage?.success('Room created successfully')
-      await queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_LIST] })
+    onSuccess: (res) => {
+      antdMessage?.success(res?.message ?? 'Room created successfully')
       hideModal()
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_LIST] })
     },
-    onError: () => {
-      antdMessage?.error('Failed to create room')
+    onError: (res) => {
+      antdMessage?.error(res?.message ?? 'Failed to create room')
     },
   })
 
   const { mutate: updateMutation, isPending: isUpdateLoading } = useMutation({
     mutationFn: updateItem,
-    onSuccess: async () => {
-      antdMessage?.success('Room updated successfully')
-      await queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_LIST] })
+    onSuccess: (res) => {
+      antdMessage?.success(res?.message ?? 'Room updated successfully')
       hideModal()
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_LIST] })
     },
-    onError: () => {
-      antdMessage?.error('Failed to update room')
+    onError: (res) => {
+      antdMessage?.error(res?.message ?? 'Failed to update room')
     },
   })
 
