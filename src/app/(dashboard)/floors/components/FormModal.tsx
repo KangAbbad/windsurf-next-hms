@@ -35,25 +35,25 @@ export default function FormModal(props: Props) {
 
   const { mutate: createMutation, isPending: isCreateLoading } = useMutation({
     mutationFn: createItem,
-    onSuccess: async () => {
-      antdMessage?.success('Floor created successfully')
-      await queryClient.invalidateQueries({ queryKey: [queryKey.RES_FLOOR_LIST] })
+    onSuccess: (res) => {
+      antdMessage?.success(res?.message ?? 'Floor created successfully')
       hideModal()
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_FLOOR_LIST] })
     },
-    onError: () => {
-      antdMessage?.error('Failed to create floor')
+    onError: (res) => {
+      antdMessage?.error(res?.message ?? 'Failed to create floor')
     },
   })
 
   const { mutate: updateMutation, isPending: isUpdateLoading } = useMutation({
     mutationFn: updateItem,
-    onSuccess: async () => {
-      antdMessage?.success('Floor updated successfully')
-      await queryClient.invalidateQueries({ queryKey: [queryKey.RES_FLOOR_LIST] })
+    onSuccess: (res) => {
+      antdMessage?.success(res?.message ?? 'Floor updated successfully')
       hideModal()
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_FLOOR_LIST] })
     },
-    onError: () => {
-      antdMessage?.error('Failed to update floor')
+    onError: (res) => {
+      antdMessage?.error(res?.message ?? 'Failed to update floor')
     },
   })
 
