@@ -36,25 +36,25 @@ export default function FormModal(props: Props) {
 
   const { mutate: createMutation, isPending: isCreateLoading } = useMutation({
     mutationFn: createItem,
-    onSuccess: async () => {
-      antdMessage?.success('Feature created successfully')
-      await queryClient.invalidateQueries({ queryKey: [queryKey.RES_FEATURE_LIST] })
+    onSuccess: (res) => {
+      antdMessage?.success(res?.message ?? 'Feature created successfully')
       hideModal()
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_FEATURE_LIST] })
     },
-    onError: () => {
-      antdMessage?.error('Failed to create feature')
+    onError: (res) => {
+      antdMessage?.error(res?.message ?? 'Failed to create feature')
     },
   })
 
   const { mutate: updateMutation, isPending: isUpdateLoading } = useMutation({
     mutationFn: updateItem,
-    onSuccess: async () => {
-      antdMessage?.success('Feature updated successfully')
-      await queryClient.invalidateQueries({ queryKey: [queryKey.RES_FEATURE_LIST] })
+    onSuccess: (res) => {
+      antdMessage?.success(res?.message ?? 'Feature updated successfully')
       hideModal()
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_FEATURE_LIST] })
     },
-    onError: () => {
-      antdMessage?.error('Failed to update feature')
+    onError: (res) => {
+      antdMessage?.error(res?.message ?? 'Failed to update feature')
     },
   })
 
