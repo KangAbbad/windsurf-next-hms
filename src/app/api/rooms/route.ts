@@ -48,16 +48,12 @@ export async function GET(request: Request): Promise<Response> {
 
     // Get bed types for all room classes
     const { data: bedTypes, error: bedTypesError } = await supabase
-      .from('room_class_bed_types')
+      .from('room_class_bed_type')
       .select(
         `
-        room_class_id,
-        num_beds,
-        bed_type:bed_type_id(
-          id,
-          bed_type_name
-        )
-      `
+          *,
+          bed_type:bed_type_id(*)
+        `
       )
       .in('room_class_id', roomClassIds)
 
@@ -71,15 +67,12 @@ export async function GET(request: Request): Promise<Response> {
 
     // Get features for all room classes
     const { data: features, error: featuresError } = await supabase
-      .from('room_class_features')
+      .from('room_class_feature')
       .select(
         `
-        room_class_id,
-        feature:feature_id(
-          id,
-          feature_name
-        )
-      `
+          *,
+          feature:feature_id(*)
+        `
       )
       .in('room_class_id', roomClassIds)
 
@@ -102,7 +95,7 @@ export async function GET(request: Request): Promise<Response> {
     }))
 
     const response: PaginatedDataResponse<RoomListItem> = {
-      items: items ?? [],
+      items,
       meta: {
         page,
         limit,
