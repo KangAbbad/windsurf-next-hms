@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Button, Popconfirm, Space } from 'antd'
+import { Button, Popconfirm, Space, Tag } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
@@ -25,9 +25,9 @@ export const tableColumns = (props: Props) => {
 
     const { mutate: deleteMutation } = useMutation({
       mutationFn: deleteItem,
-      onSuccess: async () => {
+      onSuccess: () => {
         antdMessage?.success('Room class deleted successfully')
-        await queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_CLASS_LIST] })
+        queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_CLASS_LIST] })
       },
       onError: () => {
         antdMessage?.error('Failed to delete room class')
@@ -39,20 +39,46 @@ export const tableColumns = (props: Props) => {
         title: 'Name',
         dataIndex: 'class_name',
         key: 'class_name',
-        width: '25%',
+        width: '20%',
       },
       {
         title: 'Price',
         dataIndex: 'base_price',
         key: 'base_price',
-        width: '20%',
+        width: '15%',
         render: (price: number) => formatCurrency(price),
+      },
+      {
+        title: 'Bed Types',
+        key: 'bed_types',
+        width: '20%',
+        render: (_, record) => (
+          <Space direction="vertical">
+            {record.bed_types.map((bt) => (
+              <span key={bt.bed_type.id}>
+                {bt.bed_type.bed_type_name} ({bt.num_beds} bed{bt.num_beds > 1 ? 's' : ''})
+              </span>
+            ))}
+          </Space>
+        ),
+      },
+      {
+        title: 'Features',
+        key: 'features',
+        width: '20%',
+        render: (_, record) => (
+          <Space size={8} wrap>
+            {record.features.map((feature) => (
+              <Tag key={feature.id}>{feature.feature_name}</Tag>
+            ))}
+          </Space>
+        ),
       },
       {
         title: 'Created At',
         dataIndex: 'created_at',
         key: 'created_at',
-        width: '30%',
+        width: '15%',
         sorter: (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
         render: (date) => {
           return new Date(date).toLocaleDateString('en-US', {
@@ -66,6 +92,7 @@ export const tableColumns = (props: Props) => {
         title: 'Actions',
         key: 'actions',
         align: 'center',
+        width: '10%',
         render: (_, record) => (
           <Space>
             <Button

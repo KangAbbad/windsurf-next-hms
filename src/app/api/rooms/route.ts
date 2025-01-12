@@ -13,7 +13,8 @@ export async function GET(request: Request): Promise<Response> {
 
     const supabase = await createClient()
 
-    let query = supabase.from('room').select(
+    // Get rooms with basic relations
+    let roomsQuery = supabase.from('room').select(
       `
         *,
         floor:floor_id(*),
@@ -22,27 +23,86 @@ export async function GET(request: Request): Promise<Response> {
       `,
       { count: 'exact' }
     )
+
     // Apply search filter if provided
     if (search) {
-      query = query.ilike('room_number', `%${search}%`)
+      roomsQuery = roomsQuery.ilike('room_number', `%${search}%`)
     }
 
     const {
-      data: items,
-      error,
+      data: rooms,
+      error: roomsError,
       count,
-    } = await query.range(offset, offset + limit - 1).order('room_number', { ascending: true })
+    } = await roomsQuery.range(offset, offset + limit - 1).order('room_number', { ascending: true })
 
-    if (error) {
+    if (roomsError) {
       return createErrorResponse({
         code: 400,
-        message: error.message,
-        errors: [error.message],
+        message: roomsError.message,
+        errors: [roomsError.message],
       })
     }
 
+    // Get all unique room class IDs
+    const roomClassIds = [...new Set(rooms?.map((room) => room.room_class.id) ?? [])]
+
+    // Get bed types for all room classes
+    const { data: bedTypes, error: bedTypesError } = await supabase
+      .from('room_class_bed_types')
+      .select(
+        `
+        room_class_id,
+        num_beds,
+        bed_type:bed_type_id(
+          id,
+          bed_type_name
+        )
+      `
+      )
+      .in('room_class_id', roomClassIds)
+
+    if (bedTypesError) {
+      return createErrorResponse({
+        code: 400,
+        message: bedTypesError.message,
+        errors: [bedTypesError.message],
+      })
+    }
+
+    // Get features for all room classes
+    const { data: features, error: featuresError } = await supabase
+      .from('room_class_features')
+      .select(
+        `
+        room_class_id,
+        feature:feature_id(
+          id,
+          feature_name
+        )
+      `
+      )
+      .in('room_class_id', roomClassIds)
+
+    if (featuresError) {
+      return createErrorResponse({
+        code: 400,
+        message: featuresError.message,
+        errors: [featuresError.message],
+      })
+    }
+
+    // Combine all data
+    const items = rooms?.map((room) => ({
+      ...room,
+      room_class: {
+        ...room.room_class,
+        bed_types: bedTypes?.filter((bt) => bt.room_class_id === room.room_class.id),
+        features: features?.filter((f) => f.room_class_id === room.room_class.id),
+      },
+    }))
+
     const response: PaginatedDataResponse<RoomListItem> = {
-      items,
+      items: items ?? [],
       meta: {
         page,
         limit,

@@ -10,24 +10,87 @@ export async function GET(
     const supabase = await createClient()
     const { identifier } = await params
 
-    const { data, error } = await supabase
+    // Get room with basic relations
+    const { data: room, error: roomError } = await supabase
       .from('room')
-      .select('*, room_class(*), room_status:status_id(*), floor(*)')
+      .select(
+        `
+          *,
+          floor:floor_id(*),
+          room_class:room_class_id(*),
+          room_status:status_id(*)
+        `
+      )
       .eq('id', identifier)
       .single()
 
-    if (error) {
+    if (roomError) {
       return createErrorResponse({
         code: 404,
         message: 'Room not found',
-        errors: [error.message],
+        errors: [roomError.message],
       })
+    }
+
+    // Get bed types for the room class
+    const { data: bedTypes, error: bedTypesError } = await supabase
+      .from('room_class_bed_types')
+      .select(
+        `
+        room_class_id,
+        num_beds,
+        bed_type:bed_type_id(
+          id,
+          bed_type_name
+        )
+      `
+      )
+      .eq('room_class_id', room.room_class.id)
+
+    if (bedTypesError) {
+      return createErrorResponse({
+        code: 400,
+        message: bedTypesError.message,
+        errors: [bedTypesError.message],
+      })
+    }
+
+    // Get features for the room class
+    const { data: features, error: featuresError } = await supabase
+      .from('room_class_features')
+      .select(
+        `
+        room_class_id,
+        feature:feature_id(
+          id,
+          feature_name
+        )
+      `
+      )
+      .eq('room_class_id', room.room_class.id)
+
+    if (featuresError) {
+      return createErrorResponse({
+        code: 400,
+        message: featuresError.message,
+        errors: [featuresError.message],
+      })
+    }
+
+    // Combine all data
+    const enrichedRoom = {
+      ...room,
+      room_class: {
+        ...room.room_class,
+        bed_types: bedTypes,
+        features,
+      },
     }
 
     return createApiResponse<RoomListItem>({
       code: 200,
       message: 'Room details retrieved successfully',
-      data,
+      data: enrichedRoom,
     })
   } catch (error) {
     console.error('Get room details error:', error)

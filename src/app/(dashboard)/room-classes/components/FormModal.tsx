@@ -1,9 +1,14 @@
 'use client'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Modal, Form, Input, InputNumber } from 'antd'
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Modal, Form, Input, InputNumber, Select, Space, Button } from 'antd'
 import { useEffect } from 'react'
 
+import { queryKey as queryKeyBedTypeList } from '../../bed-types/lib/constants'
+import { getAll as getBedTypes } from '../../bed-types/services/get'
+import { queryKey as queryKeyFeatureList } from '../../features/lib/constants'
+import { getAll as getFeatures } from '../../features/services/get'
 import { queryKey } from '../lib/constants'
 import { roomClassDetailStore } from '../lib/state'
 import { createItem } from '../services/post'
@@ -23,6 +28,18 @@ export default function FormModal(props: Props) {
   const { antdMessage } = useAntdContextHolder()
   const [form] = Form.useForm<CreateRoomClassBody>()
   const { data: roomClassDetailState } = roomClassDetailStore()
+
+  const { data: bedTypesResponse, isFetching: isLoadingBedTypes } = useQuery({
+    queryKey: [queryKeyBedTypeList.RES_BED_TYPE_LIST],
+    queryFn: () => getBedTypes({ page: 1, limit: 100 }),
+  })
+  const bedTypes = bedTypesResponse?.data?.items ?? []
+
+  const { data: featuresResponse, isFetching: isLoadingFeatures } = useQuery({
+    queryKey: [queryKeyFeatureList.RES_FEATURE_LIST],
+    queryFn: () => getFeatures({ page: 1, limit: 100 }),
+  })
+  const features = featuresResponse?.data?.items ?? []
 
   const hideModal = () => {
     form.resetFields()
@@ -53,7 +70,7 @@ export default function FormModal(props: Props) {
     },
   })
 
-  const isFormLoading = isCreateLoading || isUpdateLoading
+  const isFormLoading = isCreateLoading || isUpdateLoading || isLoadingBedTypes || isLoadingFeatures
 
   const onSubmit = (values: CreateRoomClassBody) => {
     if (isFormLoading) return
@@ -70,6 +87,11 @@ export default function FormModal(props: Props) {
       form.setFieldsValue({
         class_name: roomClassDetailState.class_name,
         base_price: roomClassDetailState.base_price,
+        bed_types: roomClassDetailState.bed_types.map((bt) => ({
+          bed_type_id: bt.bed_type.id,
+          num_beds: bt.num_beds,
+        })),
+        feature_ids: roomClassDetailState.features.map((f) => f.id),
       })
     } else {
       form.resetFields()
@@ -110,6 +132,84 @@ export default function FormModal(props: Props) {
               return Number(value.replace(/[^\d]/g, ''))
             }}
             min={0}
+          />
+        </Form.Item>
+
+        <Form.List
+          name="bed_types"
+          rules={[
+            {
+              validator: async (_, value) => {
+                if (!value || value.length === 0) {
+                  return await Promise.reject(new Error('At least one bed type is required'))
+                }
+              },
+            },
+          ]}
+        >
+          {(fields, { add, remove }, { errors }) => (
+            <>
+              {fields.map(({ key, name, ...restField }, index) => (
+                <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                  <Form.Item
+                    {...restField}
+                    name={[name, 'bed_type_id']}
+                    rules={[{ required: true, message: 'Missing bed type' }]}
+                  >
+                    <Select
+                      style={{ width: 200 }}
+                      placeholder="Select bed type"
+                      options={bedTypes.map((bt) => ({
+                        label: bt.bed_type_name,
+                        value: bt.id,
+                      }))}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    {...restField}
+                    name={[name, 'num_beds']}
+                    rules={[{ required: true, message: 'Missing number of beds' }]}
+                  >
+                    <InputNumber min={1} placeholder="Number of beds" />
+                  </Form.Item>
+                  {fields.length > 1 && (
+                    <MinusCircleOutlined
+                      onClick={() => {
+                        remove(name)
+                      }}
+                    />
+                  )}
+                </Space>
+              ))}
+              <Form.Item>
+                <Button
+                  type="dashed"
+                  onClick={() => {
+                    add()
+                  }}
+                  block
+                  icon={<PlusOutlined />}
+                >
+                  Add Bed Type
+                </Button>
+                <Form.ErrorList errors={errors} />
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
+
+        <Form.Item
+          name="feature_ids"
+          label="Features"
+          rules={[{ required: true, message: 'Please select at least one feature' }]}
+        >
+          <Select
+            mode="multiple"
+            placeholder="Select features"
+            options={features.map((f) => ({
+              label: f.feature_name,
+              value: f.id,
+            }))}
           />
         </Form.Item>
       </Form>

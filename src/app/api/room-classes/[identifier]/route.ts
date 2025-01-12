@@ -1,5 +1,6 @@
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
+import { FeatureListItem } from '@/types/feature'
 import type { UpdateRoomClassBody } from '@/types/room-class'
 
 export async function GET(
@@ -60,6 +61,8 @@ export async function PUT(
     const validationErrors: string[] = []
     if (!updateData.class_name) validationErrors.push('class_name is required')
     if (!updateData.base_price) validationErrors.push('base_price is required')
+    if (!updateData.bed_types?.length) validationErrors.push('At least one bed type is required')
+    if (!updateData.feature_ids?.length) validationErrors.push('At least one feature is required')
 
     if (validationErrors.length > 0) {
       return createErrorResponse({
@@ -75,6 +78,16 @@ export async function PUT(
         code: 400,
         message: 'Invalid base price',
         errors: ['Base price must be a positive number'],
+      })
+    }
+
+    // Validate bed types have positive num_beds
+    const invalidBedTypes = updateData.bed_types?.filter((bt) => bt.num_beds <= 0)
+    if (invalidBedTypes?.length) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid number of beds',
+        errors: ['Number of beds must be positive for all bed types'],
       })
     }
 
@@ -94,8 +107,9 @@ export async function PUT(
       })
     }
 
-    // Update room class
-    const { data: updatedRoomClass, error } = await supabase
+    // Start transaction
+    // 1. Update room class
+    const { error: updateError } = await supabase
       .from('room_class')
       .update({
         class_name: updateData.class_name,
@@ -105,18 +119,111 @@ export async function PUT(
       .select()
       .single()
 
-    if (error) {
+    if (updateError) {
       return createErrorResponse({
         code: 400,
-        message: error.message,
-        errors: [error.message],
+        message: updateError.message,
+        errors: [updateError.message],
       })
+    }
+
+    // 2. Delete existing bed types and features
+    const { error: deleteBedTypesError } = await supabase
+      .from('room_class_bed_type')
+      .delete()
+      .eq('room_class_id', identifier)
+
+    if (deleteBedTypesError) {
+      return createErrorResponse({
+        code: 400,
+        message: deleteBedTypesError.message,
+        errors: [deleteBedTypesError.message],
+      })
+    }
+
+    const { error: deleteFeaturesError } = await supabase
+      .from('room_class_feature')
+      .delete()
+      .eq('room_class_id', identifier)
+
+    if (deleteFeaturesError) {
+      return createErrorResponse({
+        code: 400,
+        message: deleteFeaturesError.message,
+        errors: [deleteFeaturesError.message],
+      })
+    }
+
+    // 3. Insert new bed types
+    const { error: insertBedTypesError } = await supabase.from('room_class_bed_type').insert(
+      (updateData.bed_types ?? []).map((bt) => ({
+        room_class_id: identifier,
+        bed_type_id: bt.bed_type_id,
+        num_beds: bt.num_beds,
+      }))
+    )
+
+    if (insertBedTypesError) {
+      return createErrorResponse({
+        code: 400,
+        message: insertBedTypesError.message,
+        errors: [insertBedTypesError.message],
+      })
+    }
+
+    // 4. Insert new features
+    const { error: insertFeaturesError } = await supabase.from('room_class_feature').insert(
+      (updateData.feature_ids ?? []).map((featureId) => ({
+        room_class_id: identifier,
+        feature_id: featureId,
+      }))
+    )
+
+    if (insertFeaturesError) {
+      return createErrorResponse({
+        code: 400,
+        message: insertFeaturesError.message,
+        errors: [insertFeaturesError.message],
+      })
+    }
+
+    // Get the complete updated room class data
+    const { data: completeRoomClass, error: fetchError } = await supabase
+      .from('room_class')
+      .select(
+        `
+        *,
+        room_class_bed_type!inner(
+          num_beds,
+          bed_type:bed_type_id(*)
+        ),
+        room_class_feature!inner(
+          feature(*)
+        )
+      `
+      )
+      .eq('id', identifier)
+      .single()
+
+    if (fetchError) {
+      return createErrorResponse({
+        code: 400,
+        message: fetchError.message,
+        errors: [fetchError.message],
+      })
+    }
+
+    // Transform the response to match RoomClassListItem type
+    const response = {
+      ...completeRoomClass,
+      bed_types: completeRoomClass.room_class_bed_type,
+      features: completeRoomClass.room_class_feature.map((f: { feature: FeatureListItem }) => f.feature),
     }
 
     return createApiResponse({
       code: 200,
       message: 'Room class updated successfully',
-      data: updatedRoomClass,
+      data: response,
     })
   } catch (error) {
     console.error('Update room class error:', error)
