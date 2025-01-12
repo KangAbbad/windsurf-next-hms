@@ -6,7 +6,7 @@ export type RoomListItem = {
   id: string
   room_number: string
   room_class_id: string
-  room_status_id: string
+  status_id: string
   floor_id: string
   created_at: string
   updated_at: string
@@ -18,13 +18,13 @@ export type RoomListItem = {
 export type CreateRoomBody = {
   room_number: string
   room_class_id: string
-  room_status_id: string
+  status_id: string
   floor_id: string
 }
 
 export type UpdateRoomBody = {
   room_number?: string
   room_class_id?: string
-  room_status_id?: string
+  status_id?: string
   floor_id?: string
 }

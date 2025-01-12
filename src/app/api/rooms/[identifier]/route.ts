@@ -12,7 +12,7 @@ export async function GET(
 
     const { data, error } = await supabase
       .from('room')
-      .select('*, room_class(*), room_status(*), floor(*)')
+      .select('*, room_class(*), room_status:status_id(*), floor(*)')
       .eq('id', identifier)
       .single()
 
@@ -49,7 +49,7 @@ export async function PUT(
     const updates: UpdateRoomBody = await request.json()
 
     // Validate required fields if provided
-    if (updates.room_number || updates.room_class_id || updates.room_status_id || updates.floor_id) {
+    if (updates.room_number || updates.room_class_id || updates.status_id || updates.floor_id) {
       if (!updates.room_number) {
         return createErrorResponse({
           code: 400,
@@ -64,11 +64,11 @@ export async function PUT(
           errors: ['room_class_id is required when updating room details'],
         })
       }
-      if (!updates.room_status_id) {
+      if (!updates.status_id) {
         return createErrorResponse({
           code: 400,
           message: 'Missing required fields',
-          errors: ['room_status_id is required when updating room details'],
+          errors: ['status_id is required when updating room details'],
         })
       }
       if (!updates.floor_id) {
@@ -117,7 +117,7 @@ export async function PUT(
       .from('room')
       .update(updates)
       .eq('id', identifier)
-      .select('*, room_class(*), room_status(*), floor(*)')
+      .select('*, room_class(*), room_status:status_id(*), floor(*)')
       .single()
 
     if (error) {

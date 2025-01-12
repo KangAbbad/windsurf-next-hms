@@ -13,7 +13,7 @@ export async function GET(request: Request): Promise<Response> {
 
     const supabase = await createClient()
 
-    let query = supabase.from('room').select('*, room_class(*), room_status(*), floor(*)', { count: 'exact' })
+    let query = supabase.from('room').select('*, room_class(*), room_status:status_id(*), floor(*)', { count: 'exact' })
 
     // Apply search filter if provided
     if (search) {
@@ -65,11 +65,11 @@ export async function POST(request: Request): Promise<Response> {
     const newRoom: CreateRoomBody = await request.json()
 
     // Validate required fields
-    if (!newRoom.room_number || !newRoom.room_class_id || !newRoom.room_status_id || !newRoom.floor_id) {
+    if (!newRoom.room_number || !newRoom.room_class_id || !newRoom.status_id || !newRoom.floor_id) {
       return createErrorResponse({
         code: 400,
         message: 'Missing required fields',
-        errors: ['room_number, room_class_id, room_status_id and floor_id are required'],
+        errors: ['room_number, room_class_id, status_id and floor_id are required'],
       })
     }
 
@@ -91,7 +91,7 @@ export async function POST(request: Request): Promise<Response> {
     const { data, error } = await supabase
       .from('room')
       .insert([newRoom])
-      .select('*, room_class(*), room_status(*), floor(*)')
+      .select('*, room_class(*), room_status:status_id(*), floor(*)')
       .single()
 
     if (error) {
