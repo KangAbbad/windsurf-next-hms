@@ -31,25 +31,25 @@ export default function FormModal(props: Props) {
 
   const { mutate: createMutation, isPending: isCreateLoading } = useMutation({
     mutationFn: createItem,
-    onSuccess: async () => {
-      antdMessage?.success('Room class created successfully')
-      await queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_CLASS_LIST] })
+    onSuccess: (res) => {
+      antdMessage?.success(res?.message ?? 'Room class created successfully')
       hideModal()
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_CLASS_LIST] })
     },
-    onError: () => {
-      antdMessage?.error('Failed to create room class')
+    onError: (res) => {
+      antdMessage?.error(res?.message ?? 'Failed to create room class')
     },
   })
 
   const { mutate: updateMutation, isPending: isUpdateLoading } = useMutation({
     mutationFn: updateItem,
-    onSuccess: async () => {
-      antdMessage?.success('Room class updated successfully')
-      await queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_CLASS_LIST] })
+    onSuccess: (res) => {
+      antdMessage?.success(res?.message ?? 'Room class updated successfully')
       hideModal()
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_CLASS_LIST] })
     },
-    onError: () => {
-      antdMessage?.error('Failed to update room class')
+    onError: (res) => {
+      antdMessage?.error(res?.message ?? 'Failed to update room class')
     },
   })
 

@@ -3,7 +3,7 @@
 import { MenuItemType } from 'antd/es/menu/interface'
 import Link from 'next/link'
 import { BsFillHouseAddFill } from 'react-icons/bs'
-import { MdDashboard, MdOutlineRoomPreferences } from 'react-icons/md'
+import { MdDashboard } from 'react-icons/md'
 import { PiStairsDuotone } from 'react-icons/pi'
 import { RiHotelBedFill } from 'react-icons/ri'
 import { TbBed, TbListDetails, TbStatusChange } from 'react-icons/tb'
@@ -20,9 +20,24 @@ export const dashboardMenuList: MenuItemType[] = [
     label: <Link href="/rooms">Rooms</Link>,
   },
   {
+    key: '/room-classes',
+    icon: <RiHotelBedFill />,
+    label: <Link href="/room-classes">Room Classes</Link>,
+  },
+  {
+    key: '/room-statuses',
+    icon: <TbStatusChange />,
+    label: <Link href="/room-statuses">Room Statuses</Link>,
+  },
+  {
     key: '/addons',
     icon: <BsFillHouseAddFill />,
     label: <Link href="/addons">Addons</Link>,
+  },
+  {
+    key: '/features',
+    icon: <TbListDetails />,
+    label: <Link href="/features">Features</Link>,
   },
   {
     key: '/floors',
@@ -33,30 +48,5 @@ export const dashboardMenuList: MenuItemType[] = [
     key: '/bed-types',
     icon: <TbBed />,
     label: <Link href="/bed-types">Bed Types</Link>,
-  },
-  {
-    key: '/features',
-    icon: <TbListDetails />,
-    label: <Link href="/features">Features</Link>,
-  },
-  {
-    key: '/room-class-bed-types',
-    icon: <RiHotelBedFill />,
-    label: <Link href="/room-class-bed-types">Room Class Bed Types</Link>,
-  },
-  {
-    key: '/room-classes',
-    icon: <RiHotelBedFill />,
-    label: <Link href="/room-classes">Room Classes</Link>,
-  },
-  {
-    key: '/room-class-features',
-    icon: <MdOutlineRoomPreferences />,
-    label: <Link href="/room-class-features">Room Class Features</Link>,
-  },
-  {
-    key: '/room-statuses',
-    icon: <TbStatusChange />,
-    label: <Link href="/room-statuses">Room Statuses</Link>,
   },
 ]
