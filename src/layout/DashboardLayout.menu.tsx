@@ -6,13 +6,18 @@ import { BsFillHouseAddFill } from 'react-icons/bs'
 import { MdDashboard } from 'react-icons/md'
 import { PiStairsDuotone } from 'react-icons/pi'
 import { RiHotelBedFill } from 'react-icons/ri'
-import { TbBed, TbCreditCard, TbListDetails, TbStatusChange } from 'react-icons/tb'
+import { TbBed, TbCreditCard, TbListDetails, TbStatusChange, TbUsers } from 'react-icons/tb'
 
 export const dashboardMenuList: MenuItemType[] = [
   {
     key: '/dashboard',
     icon: <MdDashboard />,
     label: <Link href="/dashboard">Dashboard</Link>,
+  },
+  {
+    key: '/guests',
+    icon: <TbUsers />,
+    label: <Link href="/guests">Guests</Link>,
   },
   {
     key: '/rooms',

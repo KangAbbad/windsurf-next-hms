@@ -1,5 +1,5 @@
 export type GuestListItem = {
-  id: number
+  id: string
   first_name: string
   last_name: string
   email_address: string
@@ -15,6 +15,6 @@ export type CreateGuestBody = {
   phone_number: string
 }
 
-export type UpdateGuestBody = CreateGuestBody & {
-  id: number
+export type UpdateGuestBody = Partial<CreateGuestBody> & {
+  id: string
 }
