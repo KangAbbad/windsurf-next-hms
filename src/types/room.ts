@@ -22,9 +22,6 @@ export type CreateRoomBody = {
   floor_id: string
 }
 
-export type UpdateRoomBody = {
-  room_number?: string
-  room_class_id?: string
-  status_id?: string
-  floor_id?: string
+export type UpdateRoomBody = Partial<CreateRoomBody> & {
+  id: string
 }

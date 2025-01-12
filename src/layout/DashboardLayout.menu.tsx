@@ -15,6 +15,11 @@ export const dashboardMenuList: MenuItemType[] = [
     label: <Link href="/dashboard">Dashboard</Link>,
   },
   {
+    key: '/rooms',
+    icon: <RiHotelBedFill />,
+    label: <Link href="/rooms">Rooms</Link>,
+  },
+  {
     key: '/addons',
     icon: <BsFillHouseAddFill />,
     label: <Link href="/addons">Addons</Link>,

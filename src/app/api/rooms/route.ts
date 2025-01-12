@@ -13,8 +13,15 @@ export async function GET(request: Request): Promise<Response> {
 
     const supabase = await createClient()
 
-    let query = supabase.from('room').select('*, room_class(*), room_status:status_id(*), floor(*)', { count: 'exact' })
-
+    let query = supabase.from('room').select(
+      `
+        *,
+        floor:floor_id(*),
+        room_class:room_class_id(*),
+        room_status:status_id(*)
+      `,
+      { count: 'exact' }
+    )
     // Apply search filter if provided
     if (search) {
       query = query.ilike('room_number', `%${search}%`)
@@ -50,7 +57,7 @@ export async function GET(request: Request): Promise<Response> {
       data: response,
     })
   } catch (error) {
-    console.error('Get rooms error:', error)
+    console.error('[GET /api/rooms]:', error)
     return createErrorResponse({
       code: 500,
       message: 'Internal server error',
@@ -61,24 +68,23 @@ export async function GET(request: Request): Promise<Response> {
 
 export async function POST(request: Request): Promise<Response> {
   try {
-    const supabase = await createClient()
-    const newRoom: CreateRoomBody = await request.json()
+    const body = (await request.json()) as CreateRoomBody
 
     // Validate required fields
-    if (!newRoom.room_number || !newRoom.room_class_id || !newRoom.status_id || !newRoom.floor_id) {
+    const requiredFields = ['room_number', 'room_class_id', 'status_id', 'floor_id']
+    const missingFields = requiredFields.filter((field) => !body[field as keyof CreateRoomBody])
+    if (missingFields.length > 0) {
       return createErrorResponse({
         code: 400,
         message: 'Missing required fields',
-        errors: ['room_number, room_class_id, status_id and floor_id are required'],
+        errors: missingFields.map((field) => `${field} is required`),
       })
     }
 
+    const supabase = await createClient()
+
     // Check if room number already exists
-    const { data: existingRoom } = await supabase
-      .from('room')
-      .select('id')
-      .ilike('room_number', newRoom.room_number)
-      .single()
+    const { data: existingRoom } = await supabase.from('room').select('id').eq('room_number', body.room_number).single()
 
     if (existingRoom) {
       return createErrorResponse({
@@ -88,10 +94,16 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    const { data, error } = await supabase
+    // Create new room
+    const { data: room, error } = await supabase
       .from('room')
-      .insert([newRoom])
-      .select('*, room_class(*), room_status:status_id(*), floor(*)')
+      .insert({
+        room_number: body.room_number,
+        room_class_id: body.room_class_id,
+        status_id: body.status_id,
+        floor_id: body.floor_id,
+      })
+      .select('*, room_class(*), room_status(*), floor(*)')
       .single()
 
     if (error) {
@@ -105,10 +117,10 @@ export async function POST(request: Request): Promise<Response> {
     return createApiResponse<RoomListItem>({
       code: 201,
       message: 'Room created successfully',
-      data,
+      data: room,
     })
   } catch (error) {
-    console.error('Create room error:', error)
+    console.error('[POST /api/rooms]:', error)
     return createErrorResponse({
       code: 500,
       message: 'Internal server error',
