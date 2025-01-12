@@ -6,7 +6,7 @@ import { BsFillHouseAddFill } from 'react-icons/bs'
 import { MdDashboard } from 'react-icons/md'
 import { PiStairsDuotone } from 'react-icons/pi'
 import { RiHotelBedFill } from 'react-icons/ri'
-import { TbBed, TbListDetails, TbStatusChange } from 'react-icons/tb'
+import { TbBed, TbCreditCard, TbListDetails, TbStatusChange } from 'react-icons/tb'
 
 export const dashboardMenuList: MenuItemType[] = [
   {
@@ -28,6 +28,11 @@ export const dashboardMenuList: MenuItemType[] = [
     key: '/room-statuses',
     icon: <TbStatusChange />,
     label: <Link href="/room-statuses">Room Statuses</Link>,
+  },
+  {
+    key: '/payment-statuses',
+    icon: <TbCreditCard />,
+    label: <Link href="/payment-statuses">Payment Statuses</Link>,
   },
   {
     key: '/addons',

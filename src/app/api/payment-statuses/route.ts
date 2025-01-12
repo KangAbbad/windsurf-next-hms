@@ -65,11 +65,20 @@ export async function POST(request: Request): Promise<Response> {
     const newPaymentStatus: CreatePaymentStatusBody = await request.json()
 
     // Validate required fields
-    if (!newPaymentStatus.payment_status_name) {
+    if (!newPaymentStatus.payment_status_name || !newPaymentStatus.payment_status_number) {
       return createErrorResponse({
         code: 400,
         message: 'Missing required fields',
-        errors: ['payment_status_name is required'],
+        errors: ['payment_status_name and payment_status_number are required'],
+      })
+    }
+
+    // Validate payment_status_number is a positive number
+    if (typeof newPaymentStatus.payment_status_number !== 'number' || newPaymentStatus.payment_status_number <= 0) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid payment status number',
+        errors: ['Payment status number must be a positive number'],
       })
     }
 
@@ -88,11 +97,27 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
+    // Check if payment status number already exists
+    const { data: existingNumber } = await supabase
+      .from('payment_status')
+      .select('id')
+      .eq('payment_status_number', newPaymentStatus.payment_status_number)
+      .single()
+
+    if (existingNumber) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Payment status number already exists',
+        errors: ['Payment status number must be unique'],
+      })
+    }
+
     const { data, error } = await supabase
       .from('payment_status')
       .insert([
         {
           payment_status_name: newPaymentStatus.payment_status_name,
+          payment_status_number: newPaymentStatus.payment_status_number,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },

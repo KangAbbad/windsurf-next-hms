@@ -53,20 +53,49 @@ export async function PUT(
       })
     }
 
-    // Check if payment status name already exists (excluding current status)
-    const { data: existingStatus } = await supabase
-      .from('payment_status')
-      .select('id')
-      .ilike('payment_status_name', updates.payment_status_name)
-      .neq('id', identifier)
-      .single()
+    // Validate payment_status_number if provided
+    if (updates.payment_status_number !== undefined) {
+      if (typeof updates.payment_status_number !== 'number' || updates.payment_status_number <= 0) {
+        return createErrorResponse({
+          code: 400,
+          message: 'Invalid payment status number',
+          errors: ['Payment status number must be a positive number'],
+        })
+      }
 
-    if (existingStatus) {
-      return createErrorResponse({
-        code: 400,
-        message: 'Payment status name already exists',
-        errors: ['Payment status name must be unique'],
-      })
+      // Check if payment status number already exists (excluding current status)
+      const { data: existingNumber } = await supabase
+        .from('payment_status')
+        .select('id')
+        .eq('payment_status_number', updates.payment_status_number)
+        .neq('id', identifier)
+        .single()
+
+      if (existingNumber) {
+        return createErrorResponse({
+          code: 400,
+          message: 'Payment status number already exists',
+          errors: ['Payment status number must be unique'],
+        })
+      }
+    }
+
+    // Check if payment status name already exists (excluding current status)
+    if (updates.payment_status_name) {
+      const { data: existingStatus } = await supabase
+        .from('payment_status')
+        .select('id')
+        .ilike('payment_status_name', updates.payment_status_name)
+        .neq('id', identifier)
+        .single()
+
+      if (existingStatus) {
+        return createErrorResponse({
+          code: 400,
+          message: 'Payment status name already exists',
+          errors: ['Payment status name must be unique'],
+        })
+      }
     }
 
     // Check if payment status exists
