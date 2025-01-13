@@ -144,6 +144,11 @@ export async function POST(request: Request): Promise<Response> {
     const checkoutDate = new Date(newBooking.checkout_date)
     const today = new Date()
 
+    // Normalize dates to start of day for comparison
+    checkinDate.setHours(0, 0, 0, 0)
+    checkoutDate.setHours(0, 0, 0, 0)
+    today.setHours(0, 0, 0, 0)
+
     if (isNaN(checkinDate.getTime()) || isNaN(checkoutDate.getTime())) {
       return createErrorResponse({
         code: 400,

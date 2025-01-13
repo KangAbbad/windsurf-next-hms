@@ -70,7 +70,7 @@ export default function FormModal(props: Props) {
     },
   })
 
-  const isFormLoading = isCreateLoading || isUpdateLoading || isLoadingBedTypes || isLoadingFeatures
+  const isFormLoading = isCreateLoading || isUpdateLoading
 
   const onSubmit = (values: CreateRoomClassBody) => {
     if (isFormLoading) return
@@ -157,12 +157,13 @@ export default function FormModal(props: Props) {
                     rules={[{ required: true, message: 'Missing bed type' }]}
                   >
                     <Select
-                      style={{ width: 200 }}
+                      loading={isLoadingBedTypes}
                       placeholder="Select bed type"
                       options={bedTypes.map((bt) => ({
                         label: bt.bed_type_name,
                         value: bt.id,
                       }))}
+                      style={{ width: 200 }}
                     />
                   </Form.Item>
                   <Form.Item
@@ -205,6 +206,7 @@ export default function FormModal(props: Props) {
         >
           <Select
             mode="multiple"
+            loading={isLoadingFeatures}
             placeholder="Select features"
             options={features.map((f) => ({
               label: f.feature_name,

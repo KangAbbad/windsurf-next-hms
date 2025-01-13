@@ -83,8 +83,7 @@ export default function FormModal(props: Props) {
     },
   })
 
-  const isFormLoading =
-    isCreateLoading || isUpdateLoading || isLoadingRoomClasses || isLoadingRoomStatuses || isLoadingFloors
+  const isFormLoading = isCreateLoading || isUpdateLoading
 
   const onSubmit = (values: FormType) => {
     if (isFormLoading) return
