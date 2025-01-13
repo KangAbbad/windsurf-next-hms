@@ -17,3 +17,19 @@ export type BookingListItem = {
   created_at: string
   updated_at: string
 }
+
+export type CreateBookingBody = {
+  guest_id: string
+  payment_status_id: string
+  checkin_date: string
+  checkout_date: string
+  num_adults: number
+  num_children: number
+  booking_amount: number
+  room_ids: string[]
+  addon_ids?: string[]
+}
+
+export type UpdateBookingBody = Partial<CreateBookingBody> & {
+  id: string
+}
