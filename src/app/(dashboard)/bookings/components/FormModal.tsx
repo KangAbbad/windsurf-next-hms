@@ -1,7 +1,7 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Modal, Form, InputNumber, DatePicker, Select } from 'antd'
+import { Modal, Form, InputNumber, DatePicker, Select, Typography } from 'antd'
 import dayjs from 'dayjs'
 import { useEffect } from 'react'
 
@@ -21,6 +21,7 @@ import { updateItem } from '../services/put'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 
 const { RangePicker } = DatePicker
+const { Title } = Typography
 
 type FormType = {
   guest_id: string
@@ -44,6 +45,7 @@ export default function FormModal(props: Props) {
   const { antdMessage } = useAntdContextHolder()
   const [form] = Form.useForm<FormType>()
   const { data: bookingDetailState } = bookingDetailStore()
+  const bookingAmount = Form.useWatch('booking_amount', form)
 
   const { data: guestsResponse, isFetching: isLoadingGuests } = useQuery({
     queryKey: [queryKeyGuestList.RES_GUEST_LIST],
@@ -104,6 +106,33 @@ export default function FormModal(props: Props) {
 
   const isFormLoading = isCreateLoading || isUpdateLoading
 
+  const calculateTotalAmount = (selectedRooms: string[], selectedAddons: string[], nights: number) => {
+    const roomsTotal = selectedRooms.reduce((total, roomId) => {
+      const room = rooms.find((r) => r.id === roomId)
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      return total + (room?.room_class.base_price || 0)
+    }, 0)
+
+    const addonsTotal = selectedAddons.reduce((total, addonId) => {
+      const addon = addons.find((a) => a.id === addonId)
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+      return total + (addon?.price || 0)
+    }, 0)
+
+    return roomsTotal * nights + addonsTotal
+  }
+
+  const onFieldsChange = () => {
+    const values = form.getFieldsValue()
+    const { dates, room_ids = [], addon_ids = [] } = values
+
+    if (dates?.[0] && dates?.[1] && room_ids.length > 0) {
+      const nights = dates[1].diff(dates[0], 'days')
+      const totalAmount = calculateTotalAmount(room_ids, addon_ids || [], nights)
+      form.setFieldValue('booking_amount', totalAmount)
+    }
+  }
+
   const onSubmit = (values: FormType) => {
     if (isFormLoading) return
 
@@ -153,7 +182,7 @@ export default function FormModal(props: Props) {
       onCancel={onCancel}
       onOk={form.submit}
     >
-      <Form form={form} layout="vertical" onFinish={onSubmit} className="!mt-4">
+      <Form form={form} layout="vertical" onFinish={onSubmit} className="!mt-4" onFieldsChange={onFieldsChange}>
         <Form.Item
           name="guest_id"
           label="Guest"
@@ -250,24 +279,10 @@ export default function FormModal(props: Props) {
           />
         </Form.Item>
 
-        <Form.Item
-          name="booking_amount"
-          label="Booking Amount"
-          rules={[{ required: true, message: 'Please enter booking amount' }]}
-          className="!mb-3"
-        >
-          <InputNumber
-            min={0}
-            step={0.01}
-            precision={2}
-            prefix="$"
-            className="w-full"
-            formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-            parser={(value: string | undefined): 0 | number => {
-              if (!value) return 0
-              return Number(value.replace(/\$\s?|(,*)/g, ''))
-            }}
-          />
+        <Form.Item name="booking_amount" label="Total Amount" className="!mb-3">
+          <Title level={4} className="!mb-0">
+            Rp {bookingAmount?.toLocaleString('id-ID') ?? '0'}
+          </Title>
         </Form.Item>
       </Form>
     </Modal>
