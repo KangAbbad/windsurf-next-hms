@@ -14,7 +14,6 @@ export async function GET(request: Request): Promise<Response> {
 
     // Search params
     const search = searchParams.get('search')?.toLowerCase() ?? ''
-    const searchBy = searchParams.get('searchBy') ?? 'guest' // guest, dates
     const startDate = searchParams.get('startDate') ?? ''
     const endDate = searchParams.get('endDate') ?? ''
 
@@ -39,21 +38,26 @@ export async function GET(request: Request): Promise<Response> {
     )
 
     // Apply search filters
+    const searchConditions = []
+
+    // Guest search condition
     if (search) {
-      switch (searchBy) {
-        case 'guest':
-          // Search by guest name or contact info
-          query = query.or(
-            `guest.first_name.ilike.%${search}%,guest.last_name.ilike.%${search}%,guest.email_address.ilike.%${search}%,guest.phone_number.ilike.%${search}%`
-          )
-          break
-        case 'dates':
-          // Search by date range if both start and end dates are provided
-          if (startDate && endDate) {
-            query = query.or(`and(checkin_date.gte.${startDate},checkout_date.lte.${endDate})`)
-          }
-          break
-      }
+      searchConditions.push(
+        `guest.first_name.ilike.%${search}%`,
+        `guest.last_name.ilike.%${search}%`,
+        `guest.email_address.ilike.%${search}%`,
+        `guest.phone_number.ilike.%${search}%`
+      )
+    }
+
+    // Date range condition
+    if (startDate && endDate) {
+      searchConditions.push(`and(checkin_date.gte.${startDate},checkout_date.lte.${endDate})`)
+    }
+
+    // Combine all conditions with OR
+    if (searchConditions.length > 0) {
+      query = query.or(searchConditions.join(','))
     }
 
     // Apply pagination

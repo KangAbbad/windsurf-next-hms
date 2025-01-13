@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Button, Table, Input, Select, DatePicker } from 'antd'
+import { Button, Table, Input, DatePicker } from 'antd'
 import type { RangePickerProps } from 'antd/es/date-picker'
 import dayjs from 'dayjs'
 import dynamic from 'next/dynamic'
@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react'
 import { FaPlus } from 'react-icons/fa6'
 import { IoSearch } from 'react-icons/io5'
 
-import { defaultPageSize, defaultSearchBy, queryKey, searchByOptions } from './lib/constants'
+import { defaultPageSize, queryKey } from './lib/constants'
 import { bookingDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
 import { type BookingListPageParams, getAll } from './services/get'
@@ -23,13 +23,11 @@ const { RangePicker } = DatePicker
 export default function BookingsPage() {
   const [isFormVisible, setFormVisible] = useState<boolean>(false)
   const [keyword, setKeyword] = useState<string>('')
-  const [searchBy, setSearchBy] = useState<'guest' | 'dates'>(defaultSearchBy)
   const [dates, setDates] = useState<[string?, string?]>([undefined, undefined])
   const [pageParams, setPageParams] = useState<BookingListPageParams>({
     page: 1,
     limit: defaultPageSize,
     search: undefined,
-    searchBy: defaultSearchBy,
     startDate: undefined,
     endDate: undefined,
   })
@@ -59,16 +57,16 @@ export default function BookingsPage() {
     const delayDebounceFn = setTimeout(() => {
       setPageParams((prev) => ({
         ...prev,
-        search: searchBy === 'guest' ? keyword : undefined,
-        startDate: searchBy === 'dates' ? dates[0] : undefined,
-        endDate: searchBy === 'dates' ? dates[1] : undefined,
+        search: keyword,
+        startDate: dates[0],
+        endDate: dates[1],
       }))
     }, 500)
 
     return () => {
       clearTimeout(delayDebounceFn)
     }
-  }, [keyword, dates, searchBy])
+  }, [keyword, dates])
 
   const disabledDate: RangePickerProps['disabledDate'] = (current) => {
     return current && current < dayjs().startOf('day')
@@ -84,29 +82,25 @@ export default function BookingsPage() {
           </Button>
         </div>
         <div className="mb-4 flex gap-2">
-          <Select value={searchBy} onChange={setSearchBy} options={searchByOptions} className="w-32" />
-          {searchBy === 'guest' ? (
-            <Input
-              allowClear
-              placeholder="Search by guest name or email..."
-              size="middle"
-              prefix={<IoSearch />}
-              className="max-w-md"
-              value={keyword}
-              onChange={(e) => {
-                setKeyword(e.target.value)
-              }}
-            />
-          ) : (
-            <RangePicker
-              allowClear
-              format="YYYY-MM-DD"
-              disabledDate={disabledDate}
-              onChange={(_, dateStrings) => {
-                setDates(dateStrings)
-              }}
-            />
-          )}
+          <Input
+            allowClear
+            placeholder="Search by guest name or email..."
+            size="middle"
+            prefix={<IoSearch />}
+            className="max-w-md"
+            value={keyword}
+            onChange={(e) => {
+              setKeyword(e.target.value)
+            }}
+          />
+          <RangePicker
+            allowClear
+            format="YYYY-MM-DD"
+            disabledDate={disabledDate}
+            onChange={(_, dateStrings) => {
+              setDates(dateStrings)
+            }}
+          />
         </div>
         <Table
           columns={columns}
