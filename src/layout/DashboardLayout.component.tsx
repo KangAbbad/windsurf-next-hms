@@ -70,7 +70,7 @@ export default function DashboardLayout({ children }: Props) {
             <div className={styles.logoWrapper}>
               {isSidebarCollapsed ? (
                 <Image
-                  src="/portrait-hotel-management-logo.jpg"
+                  src="/hotel-management-portrait-logo.jpeg"
                   alt="Hotel Logo"
                   priority
                   height={50}
@@ -79,7 +79,7 @@ export default function DashboardLayout({ children }: Props) {
                 />
               ) : (
                 <Image
-                  src="/landscape-hotel-management-logo.png"
+                  src="/hotel-management-landscape-logo.jpeg"
                   alt="Hotel Logo"
                   priority
                   height={50}

@@ -12,7 +12,7 @@ export const dashboardMenuList: MenuItemType[] = [
   {
     key: '/dashboard',
     icon: <MdDashboard />,
-    label: <Link href="/dashboard">Dashboard</Link>,
+    label: <Link href="/">Dashboard</Link>,
   },
   {
     key: '/guests',
