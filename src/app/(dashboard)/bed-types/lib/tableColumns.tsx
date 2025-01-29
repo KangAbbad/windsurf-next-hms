@@ -45,10 +45,10 @@ export const tableColumns = (props: Props) => {
     return [
       {
         title: 'Name',
-        dataIndex: 'bed_type_name',
-        key: 'bed_type_name',
+        dataIndex: 'name',
+        key: 'name',
         width: '40%',
-        sorter: (a, b) => a.bed_type_name.localeCompare(b.bed_type_name),
+        sorter: (a, b) => a.name.localeCompare(b.name),
       },
       {
         title: 'Created At',

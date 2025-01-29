@@ -43,14 +43,14 @@ export async function PUT(
     const supabase = await createClient()
     const { identifier } = await params
     const updateData: UpdateBedTypeBody = await request.json()
-    const bedTypeName = updateData.bed_type_name?.trim()
+    const bedTypeName = updateData.name?.trim()
 
     // Validate required fields
     if (!bedTypeName) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['bed_type_name is required'],
+        errors: ['name is required'],
       })
     }
 
@@ -59,7 +59,7 @@ export async function PUT(
       return createErrorResponse({
         code: 400,
         message: 'Invalid bed type name',
-        errors: [`bed_type_name must not exceed ${BED_TYPE_NAME_MAX_LENGTH} characters`],
+        errors: [`name must not exceed ${BED_TYPE_NAME_MAX_LENGTH} characters`],
       })
     }
 
@@ -78,7 +78,7 @@ export async function PUT(
     const { data: duplicateBedType } = await supabase
       .from('bed_type')
       .select('id')
-      .ilike('bed_type_name', bedTypeName)
+      .ilike('name', bedTypeName)
       .neq('id', identifier)
       .single()
 
@@ -93,7 +93,7 @@ export async function PUT(
     // Update bed type
     const { data, error } = await supabase
       .from('bed_type')
-      .update({ bed_type_name: bedTypeName })
+      .update({ name: bedTypeName })
       .eq('id', identifier)
       .select()
       .single()

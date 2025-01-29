@@ -12,7 +12,7 @@ import { updateItem } from '../services/put'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 
 type FormType = {
-  bed_type_name: string
+  name: string
 }
 
 type Props = {
@@ -72,7 +72,7 @@ export default function FormDrawer(props: Props) {
     if (!isVisible) return
     if (bedTypeDetailState) {
       form.setFieldsValue({
-        bed_type_name: bedTypeDetailState.bed_type_name,
+        name: bedTypeDetailState.name,
       })
     } else {
       form.resetFields()
@@ -106,7 +106,7 @@ export default function FormDrawer(props: Props) {
       <Form form={form} layout="vertical" onFinish={onSubmit}>
         <Form.Item
           label="Bed Type Name"
-          name="bed_type_name"
+          name="name"
           rules={[{ required: true, message: 'Please input bed type name' }]}
         >
           <Input className="w-full" placeholder="Enter bed type name" />

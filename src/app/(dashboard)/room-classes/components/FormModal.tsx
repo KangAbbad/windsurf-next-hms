@@ -160,7 +160,7 @@ export default function FormModal(props: Props) {
                       loading={isLoadingBedTypes}
                       placeholder="Select bed type"
                       options={bedTypes.map((bt) => ({
-                        label: bt.bed_type_name,
+                        label: bt.name,
                         value: bt.id,
                       }))}
                       style={{ width: 200 }}

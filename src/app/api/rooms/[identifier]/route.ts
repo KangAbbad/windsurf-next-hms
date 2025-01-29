@@ -41,7 +41,7 @@ export async function GET(
         num_beds,
         bed_type:bed_type_id(
           id,
-          bed_type_name
+          name
         )
       `
       )

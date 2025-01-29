@@ -56,7 +56,7 @@ export const tableColumns = (props: Props) => {
           <Space direction="vertical">
             {record.bed_types.map((bt) => (
               <span key={bt.bed_type.id}>
-                {bt.bed_type.bed_type_name} ({bt.num_beds} bed{bt.num_beds > 1 ? 's' : ''})
+                {bt.bed_type.name} ({bt.num_beds} bed{bt.num_beds > 1 ? 's' : ''})
               </span>
             ))}
           </Space>

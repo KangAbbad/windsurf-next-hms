@@ -17,14 +17,14 @@ export async function GET(request: Request): Promise<Response> {
 
     // Apply search filter if provided
     if (search) {
-      query = query.ilike('bed_type_name', `%${search}%`)
+      query = query.ilike('name', `%${search}%`)
     }
 
     const {
       data: items,
       error,
       count,
-    } = await query.range(offset, offset + limit - 1).order('bed_type_name', { ascending: true })
+    } = await query.range(offset, offset + limit - 1).order('name', { ascending: true })
 
     if (error) {
       return createErrorResponse({
@@ -63,14 +63,14 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
     const newBedType: CreateBedTypeBody = await request.json()
-    const bedTypeName = newBedType.bed_type_name?.trim()
+    const bedTypeName = newBedType.name?.trim()
 
     // Validate required fields
     if (!bedTypeName) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['bed_type_name is required'],
+        errors: ['name is required'],
       })
     }
 
@@ -79,16 +79,12 @@ export async function POST(request: Request): Promise<Response> {
       return createErrorResponse({
         code: 400,
         message: 'Invalid bed type name',
-        errors: [`bed_type_name must not exceed ${BED_TYPE_NAME_MAX_LENGTH} characters`],
+        errors: [`name must not exceed ${BED_TYPE_NAME_MAX_LENGTH} characters`],
       })
     }
 
     // Check if bed type name already exists
-    const { data: existingBedType } = await supabase
-      .from('bed_type')
-      .select('id')
-      .ilike('bed_type_name', bedTypeName)
-      .single()
+    const { data: existingBedType } = await supabase.from('bed_type').select('id').ilike('name', bedTypeName).single()
 
     if (existingBedType) {
       return createErrorResponse({
@@ -101,7 +97,7 @@ export async function POST(request: Request): Promise<Response> {
     // Create bed type
     const { data, error } = await supabase
       .from('bed_type')
-      .insert([{ bed_type_name: bedTypeName }])
+      .insert([{ name: bedTypeName }])
       .select()
       .single()
 
