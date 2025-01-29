@@ -10,7 +10,7 @@ import { TbBed, TbCalendarPin, TbCreditCard, TbListDetails, TbStatusChange, TbUs
 
 export const dashboardMenuList: MenuItemType[] = [
   {
-    key: '/dashboard',
+    key: '/',
     icon: <MdDashboard />,
     label: <Link href="/">Dashboard</Link>,
   },

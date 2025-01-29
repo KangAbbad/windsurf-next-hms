@@ -12,7 +12,7 @@ import { bedTypeDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
 import { type BedTypeListPageParams, getAll } from './services/get'
 
-const FormModal = dynamic(() => import('./components/FormModal'), {
+const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
 })
 
@@ -93,7 +93,7 @@ export default function BedTypesPage() {
         />
       </div>
 
-      <FormModal
+      <FormDrawer
         isVisible={isFormVisible}
         onCancel={() => {
           setFormVisible(false)
