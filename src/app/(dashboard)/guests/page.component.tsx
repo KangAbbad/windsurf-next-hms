@@ -12,7 +12,7 @@ import { guestDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
 import { type GuestListPageParams, getAll } from './services/get'
 
-const FormModal = dynamic(() => import('./components/FormModal'), {
+const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
 })
 
@@ -93,7 +93,7 @@ export default function GuestsPage() {
             },
           }}
         />
-        <FormModal
+        <FormDrawer
           isVisible={isFormVisible}
           onCancel={() => {
             setFormVisible(false)
