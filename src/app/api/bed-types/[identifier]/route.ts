@@ -46,11 +46,11 @@ export async function PUT(
     const bedTypeName = updateData.name?.trim()
 
     // Validate required fields
-    if (!bedTypeName) {
+    if (!bedTypeName || !updateData.length || !updateData.width || !updateData.height || !updateData.material) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['name is required'],
+        errors: ['All fields are required'],
       })
     }
 
@@ -91,12 +91,7 @@ export async function PUT(
     }
 
     // Update bed type
-    const { data, error } = await supabase
-      .from('bed_type')
-      .update({ name: bedTypeName })
-      .eq('id', identifier)
-      .select()
-      .single()
+    const { data, error } = await supabase.from('bed_type').update(updateData).eq('id', identifier).select().single()
 
     if (error) {
       return createErrorResponse({

@@ -1,11 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // api: {
-  //   bodyParser: {
-  //     sizeLimit: '1mb',
-  //   },
-  //   responseLimit: '8mb',
-  // },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
   async headers() {
     return [
       {

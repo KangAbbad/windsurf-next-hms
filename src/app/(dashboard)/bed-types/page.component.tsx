@@ -62,16 +62,16 @@ export default function BedTypesPage() {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-semibold m-0">Bed Types Management</h1>
           <Button type="primary" icon={<FaPlus />} onClick={showAddModal}>
-            Add New
+            Add Bed Type
           </Button>
         </div>
         <div className="mb-4">
           <Input
             allowClear
             placeholder="Search bed types..."
-            size="middle"
+            size="large"
             prefix={<IoSearch />}
-            className="max-w-md"
+            className="max-w-md !text-sm"
             onChange={(e) => {
               setKeyword(e.target.value)
             }}
@@ -82,6 +82,8 @@ export default function BedTypesPage() {
           dataSource={dataSource}
           loading={isDataSourceFetching}
           rowKey="id"
+          size="middle"
+          sticky
           pagination={{
             current: pageParams.page,
             pageSize: pageParams.limit,

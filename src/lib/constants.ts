@@ -5,6 +5,10 @@ export const supabaseConfig = {
   anonKey: process.env.SUPABASE_ANON_KEY ?? '',
 }
 
+export const queryKeyUpload = {
+  UPLOAD_IMAGE: 'UPLOAD_IMAGE',
+}
+
 export const parentRoutesException: Redirect[] = [
   {
     source: '/stocks',

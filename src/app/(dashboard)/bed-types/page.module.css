@@ -1,0 +1,12 @@
+.imagePreviewWrapper {
+  border: 1px solid #f3f4f6;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 100px;
+  width: 100px;
+}
+
+.imagePreview {
+  height: 100% !important;
+  width: 100% !important;
+}

@@ -95,11 +95,7 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     // Create bed type
-    const { data, error } = await supabase
-      .from('bed_type')
-      .insert([{ name: bedTypeName }])
-      .select()
-      .single()
+    const { data, error } = await supabase.from('bed_type').insert([newBedType]).select().single()
 
     if (error) {
       return createErrorResponse({
