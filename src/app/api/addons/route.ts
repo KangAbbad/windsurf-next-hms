@@ -1,6 +1,7 @@
+import { AddonListItem, CreateAddonBody } from './types'
+
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
-import type { AddonListItem, CreateAddonBody } from '@/types/addon'
 
 export async function GET(request: Request): Promise<Response> {
   try {

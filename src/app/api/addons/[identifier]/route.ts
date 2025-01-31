@@ -1,6 +1,7 @@
+import { AddonListItem, UpdateAddonBody } from '../types'
+
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { AddonListItem, UpdateAddonBody } from '@/types/addon'
 
 export async function GET(
   _request: Request,

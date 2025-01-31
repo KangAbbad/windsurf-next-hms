@@ -1,6 +1,6 @@
+import { AddonListItem } from '@/app/api/addons/types'
 import { ApiResponse, PaginatedDataResponse } from '@/services/apiResponse'
 import { axiosInstance } from '@/services/axiosInstance'
-import { AddonListItem } from '@/types/addon'
 
 export type AddonListPageParams = {
   page?: number

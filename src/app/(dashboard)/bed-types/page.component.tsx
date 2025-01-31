@@ -58,14 +58,14 @@ export default function BedTypesPage() {
 
   return (
     <main className="p-4">
-      <div className="bg-white p-4 pb-0 rounded-lg">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white pb-0 rounded-lg">
+        <div className="flex justify-between items-center p-4 pb-0 mb-4">
           <h1 className="text-2xl font-semibold m-0">Bed Types Management</h1>
           <Button type="primary" icon={<FaPlus />} onClick={showAddModal}>
             Add Bed Type
           </Button>
         </div>
-        <div className="mb-4">
+        <div className="px-4 mb-4">
           <Input
             allowClear
             placeholder="Search bed types..."

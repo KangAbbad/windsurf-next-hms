@@ -1,4 +1,5 @@
 import { AntdRegistry } from '@ant-design/nextjs-registry'
+import { ConfigProvider } from 'antd'
 import { ReactNode } from 'react'
 
 type Props = {
@@ -6,5 +7,19 @@ type Props = {
 }
 
 export const AntdProvider = ({ children }: Props) => {
-  return <AntdRegistry>{children}</AntdRegistry>
+  return (
+    <AntdRegistry>
+      <ConfigProvider
+        theme={{
+          components: {
+            Table: {
+              headerBorderRadius: 0,
+            },
+          },
+        }}
+      >
+        {children}
+      </ConfigProvider>
+    </AntdRegistry>
+  )
 }

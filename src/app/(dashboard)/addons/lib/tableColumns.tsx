@@ -7,8 +7,8 @@ import { queryKey } from './constants'
 import { addonDetailStore } from './state'
 import { deleteItem } from '../services/delete'
 
+import { AddonListItem } from '@/app/api/addons/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
-import { AddonListItem } from '@/types/addon'
 
 type Props = {
   onEdit: () => void
