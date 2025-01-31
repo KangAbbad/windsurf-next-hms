@@ -1,6 +1,7 @@
+import { FEATURE_NAME_MAX_LENGTH, type FeatureListItem, type UpdateFeatureBody } from '../types'
+
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import { FEATURE_NAME_MAX_LENGTH, type FeatureListItem, type UpdateFeatureBody } from '@/types/feature'
 
 export async function GET(
   _request: Request,

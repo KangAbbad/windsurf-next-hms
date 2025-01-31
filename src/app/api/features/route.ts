@@ -1,6 +1,7 @@
+import { FEATURE_NAME_MAX_LENGTH, type CreateFeatureBody, type FeatureListItem } from './types'
+
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
-import { FEATURE_NAME_MAX_LENGTH, type CreateFeatureBody, type FeatureListItem } from '@/types/feature'
 
 export async function GET(request: Request): Promise<Response> {
   try {

@@ -1,6 +1,6 @@
+import { FeatureListItem } from '@/app/api/features/types'
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import { FeatureListItem } from '@/types/feature'
 import type { UpdateRoomClassBody } from '@/types/room-class'
 
 export async function GET(

@@ -9,8 +9,8 @@ import { featureDetailStore } from '../lib/state'
 import { createItem } from '../services/post'
 import { updateItem } from '../services/put'
 
+import { FEATURE_NAME_MAX_LENGTH } from '@/app/api/features/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
-import { FEATURE_NAME_MAX_LENGTH } from '@/types/feature'
 
 type FormType = {
   feature_name: string

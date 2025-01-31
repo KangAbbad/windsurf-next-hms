@@ -7,8 +7,8 @@ import { queryKey } from './constants'
 import { featureDetailStore } from './state'
 import { deleteItem } from '../services/delete'
 
+import { FeatureListItem } from '@/app/api/features/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
-import { FeatureListItem } from '@/types/feature'
 
 type Props = {
   onEdit: () => void
