@@ -7,8 +7,8 @@ import { queryKey } from './constants'
 import { roomDetailStore } from './state'
 import { deleteItem } from '../services/delete'
 
+import { RoomListItem } from '@/app/api/rooms/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
-import { RoomListItem } from '@/types/room'
 
 type Props = {
   onEdit: () => void

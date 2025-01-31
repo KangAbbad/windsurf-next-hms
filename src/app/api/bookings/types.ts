@@ -2,7 +2,7 @@ import { GuestListItem } from '../guests/types'
 
 import { AddonListItem } from '@/app/api/addons/types'
 import { PaymentStatusListItem } from '@/app/api/payment-statuses/types'
-import { RoomListItem } from '@/types/room'
+import { RoomListItem } from '@/app/api/rooms/types'
 
 export type BookingListItem = {
   id: string

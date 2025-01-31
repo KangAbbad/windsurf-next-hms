@@ -1,6 +1,7 @@
+import type { RoomListItem, UpdateRoomBody } from '../types'
+
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { RoomListItem, UpdateRoomBody } from '@/types/room'
 
 export async function GET(
   _request: Request,

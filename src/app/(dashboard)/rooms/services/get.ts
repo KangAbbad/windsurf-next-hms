@@ -1,6 +1,6 @@
+import { RoomListItem } from '@/app/api/rooms/types'
 import { ApiResponse, PaginatedDataResponse } from '@/services/apiResponse'
 import { axiosInstance } from '@/services/axiosInstance'
-import { RoomListItem } from '@/types/room'
 
 export type RoomListPageParams = {
   page?: number
