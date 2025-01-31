@@ -1,6 +1,7 @@
+import type { BookingListItem, CreateBookingBody } from './types'
+
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
-import type { BookingListItem, CreateBookingBody } from '@/types/booking'
 
 export async function GET(request: Request): Promise<Response> {
   try {

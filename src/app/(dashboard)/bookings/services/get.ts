@@ -1,6 +1,6 @@
+import { BookingListItem } from '@/app/api/bookings/types'
 import { ApiResponse, PaginatedDataResponse } from '@/services/apiResponse'
 import { axiosInstance } from '@/services/axiosInstance'
-import { BookingListItem } from '@/types/booking'
 
 export type BookingListPageParams = {
   page?: number

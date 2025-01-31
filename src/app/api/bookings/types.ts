@@ -1,8 +1,7 @@
-import { GuestListItem } from './guest'
-import { PaymentStatusListItem } from './payment-status'
-import type { RoomListItem } from './room'
-
 import { AddonListItem } from '@/app/api/addons/types'
+import { GuestListItem } from '@/types/guest'
+import { PaymentStatusListItem } from '@/types/payment-status'
+import type { RoomListItem } from '@/types/room'
 
 export type BookingListItem = {
   id: string

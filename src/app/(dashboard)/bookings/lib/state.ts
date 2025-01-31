@@ -1,6 +1,6 @@
 import { queryKey } from './constants'
 
-import { BookingListItem } from '@/types/booking'
+import { BookingListItem } from '@/app/api/bookings/types'
 import { createGlobalState } from '@/utils/createGlobalState'
 
 export const bookingDetailStore = createGlobalState<BookingListItem>({
