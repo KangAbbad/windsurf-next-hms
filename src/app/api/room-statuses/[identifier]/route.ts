@@ -1,6 +1,7 @@
+import type { RoomStatusListItem, UpdateRoomStatusBody } from '../types'
+
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { RoomStatusListItem, UpdateRoomStatusBody } from '@/types/room-status'
 
 export async function GET(
   _request: Request,

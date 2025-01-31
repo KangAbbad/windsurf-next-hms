@@ -1,6 +1,7 @@
+import type { CreateRoomStatusBody, RoomStatusListItem } from './types'
+
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
-import type { CreateRoomStatusBody, RoomStatusListItem } from '@/types/room-status'
 
 export async function GET(request: Request): Promise<Response> {
   try {

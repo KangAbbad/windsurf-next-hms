@@ -1,6 +1,6 @@
 import { queryKey } from './constants'
 
-import type { RoomStatusListItem } from '@/types/room-status'
+import type { RoomStatusListItem } from '@/app/api/room-statuses/types'
 import { createGlobalState } from '@/utils/createGlobalState'
 
 export const roomStatusDetailStore = createGlobalState<RoomStatusListItem>({
