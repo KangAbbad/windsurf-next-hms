@@ -14,8 +14,8 @@ import { roomClassDetailStore } from '../lib/state'
 import { createItem } from '../services/post'
 import { updateItem } from '../services/put'
 
+import type { CreateRoomClassBody } from '@/app/api/room-classes/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
-import type { CreateRoomClassBody } from '@/types/room-class'
 
 type Props = {
   isVisible: boolean

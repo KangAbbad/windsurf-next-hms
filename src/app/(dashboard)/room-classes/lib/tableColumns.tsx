@@ -7,8 +7,8 @@ import { queryKey } from './constants'
 import { roomClassDetailStore } from './state'
 import { deleteItem } from '../services/delete'
 
+import type { RoomClassListItem } from '@/app/api/room-classes/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
-import type { RoomClassListItem } from '@/types/room-class'
 import { formatCurrency } from '@/utils/formatCurrency'
 
 type Props = {

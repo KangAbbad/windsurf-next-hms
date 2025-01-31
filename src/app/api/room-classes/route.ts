@@ -1,8 +1,8 @@
+import type { CreateRoomClassBody, RoomClassListItem } from './types'
 import { FeatureListItem } from '../features/types'
 
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
-import type { CreateRoomClassBody, RoomClassListItem } from '@/types/room-class'
 
 export async function GET(request: Request): Promise<Response> {
   try {
