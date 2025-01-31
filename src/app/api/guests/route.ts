@@ -1,6 +1,7 @@
+import type { CreateGuestBody, GuestListItem } from './types'
+
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
-import type { CreateGuestBody, GuestListItem } from '@/types/guest'
 
 export async function GET(request: Request): Promise<Response> {
   try {

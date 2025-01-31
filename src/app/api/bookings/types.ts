@@ -1,5 +1,6 @@
+import { GuestListItem } from '../guests/types'
+
 import { AddonListItem } from '@/app/api/addons/types'
-import { GuestListItem } from '@/types/guest'
 import { PaymentStatusListItem } from '@/types/payment-status'
 import type { RoomListItem } from '@/types/room'
 

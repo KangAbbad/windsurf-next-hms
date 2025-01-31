@@ -1,6 +1,6 @@
+import { GuestListItem } from '@/app/api/guests/types'
 import { ApiResponse, PaginatedDataResponse } from '@/services/apiResponse'
 import { axiosInstance } from '@/services/axiosInstance'
-import { GuestListItem } from '@/types/guest'
 
 export type GuestListPageParams = {
   page?: number

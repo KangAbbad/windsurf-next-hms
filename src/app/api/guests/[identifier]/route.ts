@@ -1,6 +1,7 @@
+import type { GuestListItem, UpdateGuestBody } from '../types'
+
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import type { GuestListItem, UpdateGuestBody } from '@/types/guest'
 
 export async function GET(
   _request: Request,
