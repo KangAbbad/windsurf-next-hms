@@ -1,6 +1,6 @@
 import { queryKey } from './constants'
 
-import { PaymentStatusListItem } from '@/types/payment-status'
+import { PaymentStatusListItem } from '@/app/api/payment-statuses/types'
 import { createGlobalState } from '@/utils/createGlobalState'
 
 export const paymentStatusDetailStore = createGlobalState<PaymentStatusListItem>({

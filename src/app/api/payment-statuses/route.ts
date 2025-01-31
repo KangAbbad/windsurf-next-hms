@@ -1,6 +1,7 @@
+import type { CreatePaymentStatusBody, PaymentStatusListItem } from './types'
+
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
-import type { CreatePaymentStatusBody, PaymentStatusListItem } from '@/types/payment-status'
 
 export async function GET(request: Request): Promise<Response> {
   try {

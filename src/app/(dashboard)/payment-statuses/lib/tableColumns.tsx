@@ -7,8 +7,8 @@ import { queryKey } from './constants'
 import { paymentStatusDetailStore } from './state'
 import { deleteItem } from '../services/delete'
 
+import { PaymentStatusListItem } from '@/app/api/payment-statuses/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
-import { PaymentStatusListItem } from '@/types/payment-status'
 
 type Props = {
   onEdit: () => void

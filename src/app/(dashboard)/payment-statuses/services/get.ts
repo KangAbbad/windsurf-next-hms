@@ -1,6 +1,6 @@
+import { PaymentStatusListItem } from '@/app/api/payment-statuses/types'
 import { ApiResponse, PaginatedDataResponse } from '@/services/apiResponse'
 import { axiosInstance } from '@/services/axiosInstance'
-import { PaymentStatusListItem } from '@/types/payment-status'
 
 export type PaymentStatusListPageParams = {
   page?: number
