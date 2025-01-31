@@ -1,6 +1,6 @@
 import { queryKey } from './constants'
 
-import { BedTypeListItem } from '@/types/bed-type'
+import { BedTypeListItem } from '@/app/api/bed-types/types'
 import { createGlobalState } from '@/utils/createGlobalState'
 
 export const bedTypeDetailStore = createGlobalState<BedTypeListItem>({

@@ -13,10 +13,10 @@ import { bedTypeDetailStore } from '../lib/state'
 import { createItem } from '../services/post'
 import { updateItem } from '../services/put'
 
+import { CreateBedTypeBody, UpdateBedTypeBody } from '@/app/api/bed-types/types'
 import { ImageFallback } from '@/components/ImageFallback'
 import { useUploadImage } from '@/hooks/api/useUploadImage'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
-import { CreateBedTypeBody, UpdateBedTypeBody } from '@/types/bed-type'
 import { inputNumberValidation } from '@/utils/inputNumberValidation'
 import { normFile } from '@/utils/normFile'
 

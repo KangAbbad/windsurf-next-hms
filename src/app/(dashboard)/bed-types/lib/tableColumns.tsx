@@ -10,9 +10,9 @@ import { queryKey } from './constants'
 import { bedTypeDetailStore } from './state'
 import { deleteItem } from '../services/delete'
 
+import { BedTypeListItem } from '@/app/api/bed-types/types'
 import { ImageFallback } from '@/components/ImageFallback'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
-import { BedTypeListItem } from '@/types/bed-type'
 
 type Props = {
   onEdit: () => void

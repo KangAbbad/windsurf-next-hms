@@ -1,5 +1,6 @@
-import { BedTypeListItem } from './bed-type'
 import { FeatureListItem } from './feature'
+
+import { BedTypeListItem } from '@/app/api/bed-types/types'
 
 export type RoomClassListItem = {
   id: string
