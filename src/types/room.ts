@@ -1,6 +1,7 @@
-import type { FloorListItem } from './floor'
 import type { RoomClassListItem } from './room-class'
 import type { RoomStatusListItem } from './room-status'
+
+import type { FloorListItem } from '@/app/api/floors/types'
 
 export type RoomListItem = {
   id: string

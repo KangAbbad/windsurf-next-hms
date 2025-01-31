@@ -1,6 +1,7 @@
+import { FloorListItem } from '../types'
+
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
-import { FloorListItem } from '@/types/floor'
 
 export async function GET(_request: Request, { params }: { params: Promise<{ identifier: string }> }) {
   try {

@@ -1,6 +1,7 @@
+import type { CreateFloorBody, FloorListItem } from './types'
+
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
-import type { CreateFloorBody, FloorListItem } from '@/types/floor'
 
 export async function GET(request: Request): Promise<Response> {
   try {

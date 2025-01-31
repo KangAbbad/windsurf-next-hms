@@ -1,6 +1,6 @@
+import { FloorListItem, UpdateFloorBody } from '@/app/api/floors/types'
 import { ApiResponse } from '@/services/apiResponse'
 import { axiosInstance } from '@/services/axiosInstance'
-import { FloorListItem, UpdateFloorBody } from '@/types/floor'
 
 export const updateItem = async (body: UpdateFloorBody) => {
   const { id, ...restBody } = body

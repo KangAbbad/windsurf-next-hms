@@ -1,6 +1,6 @@
+import { FloorListItem } from '@/app/api/floors/types'
 import { ApiResponse, PaginatedDataResponse } from '@/services/apiResponse'
 import { axiosInstance } from '@/services/axiosInstance'
-import { FloorListItem } from '@/types/floor'
 
 export type FloorListPageParams = {
   page?: number
