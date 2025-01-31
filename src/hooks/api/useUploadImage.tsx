@@ -1,11 +1,11 @@
 import { UseMutationOptions, useMutation } from '@tanstack/react-query'
 import { Typography } from 'antd'
 
+import { UploadImageBody } from '@/app/api/upload-image/types'
 import { queryKeyUpload } from '@/lib/constants'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 import { ApiResponse } from '@/services/apiResponse'
 import { uploadImage, UploadImageResponse } from '@/services/upload/post'
-import { UploadImageBody } from '@/types/upload-image'
 
 export type useUploadImageConfig = {
   options?: UseMutationOptions<ApiResponse<UploadImageResponse>, UploadImageBody, unknown>

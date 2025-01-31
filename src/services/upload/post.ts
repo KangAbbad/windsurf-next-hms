@@ -1,7 +1,7 @@
 import { ApiResponse } from '../apiResponse'
 import { axiosInstance } from '../axiosInstance'
 
-import { UploadImageBody } from '@/types/upload-image'
+import { UploadImageBody } from '@/app/api/upload-image/types'
 
 export type UploadImageResponse = {
   id: string
