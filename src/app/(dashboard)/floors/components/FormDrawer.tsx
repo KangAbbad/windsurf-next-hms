@@ -99,7 +99,7 @@ export default function FormDrawer(props: Props) {
       }
       onClose={hideDrawer}
     >
-      <Form form={form} layout="vertical" onFinish={onSubmit} className="!mt-4">
+      <Form form={form} layout="vertical" onFinish={onSubmit}>
         <Form.Item<FormType>
           label="Floor Name"
           name="name"
