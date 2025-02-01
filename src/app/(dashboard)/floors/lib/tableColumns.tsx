@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Button, Popconfirm, Space } from 'antd'
+import { Button, Flex, Popconfirm, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
+import dayjs from 'dayjs'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
 import { queryKey } from './constants'
@@ -44,33 +45,49 @@ export const tableColumns = (props: Props) => {
 
     return [
       {
-        title: 'Floor Number',
-        dataIndex: 'floor_number',
-        key: 'floor_number',
-        width: '40%',
-        sorter: (a, b) => a.floor_number - b.floor_number,
+        title: 'Name',
+        dataIndex: 'name',
+        key: 'name',
+        width: '30%',
+        sorter: (a, b) => a?.name?.localeCompare(b?.name ?? '') ?? 0,
+        render: (_, record) => {
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+          return record?.name || '-'
+        },
       },
       {
-        title: 'Created At',
+        title: 'Number',
+        dataIndex: 'number',
+        key: 'number',
+        width: '30%',
+        sorter: (a, b) => a.number - b.number,
+      },
+      {
+        title: 'Time',
         dataIndex: 'created_at',
         key: 'created_at',
-        width: '40%',
+        width: '15%',
         sorter: (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-        render: (date) => {
-          return new Date(date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          })
+        render: (_, record) => {
+          const createdAt = record.created_at ? dayjs(record.created_at).format('DD MMM YYYY, HH:mm') : '-'
+          const updatedAt = record.updated_at ? dayjs(record.updated_at).format('DD MMM YYYY, HH:mm') : '-'
+          return (
+            <Flex gap={4} vertical>
+              <Typography.Paragraph className="font-semibold !mb-0">Created At</Typography.Paragraph>
+              <Typography.Paragraph className="!mb-0">{createdAt}</Typography.Paragraph>
+              <Typography.Paragraph className="font-semibold !mb-0">Updated At</Typography.Paragraph>
+              <Typography.Paragraph className="!mb-0">{updatedAt}</Typography.Paragraph>
+            </Flex>
+          )
         },
       },
       {
         title: 'Actions',
         key: 'actions',
-        width: '20%',
+        width: '15%',
         render: (_, record) => {
           return (
-            <Space>
+            <Flex gap={4} align="center">
               <Button
                 type="text"
                 icon={<FaPenToSquare />}
@@ -97,7 +114,7 @@ export const tableColumns = (props: Props) => {
                   loading={isDeleteLoading && deleteVariables === record.id}
                 />
               </Popconfirm>
-            </Space>
+            </Flex>
           )
         },
       },

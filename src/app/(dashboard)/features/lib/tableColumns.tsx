@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Button, Flex, Popconfirm, Space, Typography } from 'antd'
+import { Button, Flex, Popconfirm, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import { CSSProperties } from 'react'
@@ -118,7 +118,7 @@ export const tableColumns = (props: Props) => {
         width: '15%',
         render: (_, record) => {
           return (
-            <Space>
+            <Flex gap={4} align="center">
               <Button
                 type="text"
                 icon={<FaPenToSquare />}
@@ -145,7 +145,7 @@ export const tableColumns = (props: Props) => {
                   loading={isDeleteLoading && deleteVariables === record.id}
                 />
               </Popconfirm>
-            </Space>
+            </Flex>
           )
         },
       },

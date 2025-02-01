@@ -165,7 +165,7 @@ export default function FormModal(props: Props) {
           <Select loading={isLoadingFloors}>
             {floors.map((floor) => (
               <Select.Option key={floor.id} value={floor.id}>
-                Floor {floor.floor_number}
+                Floor {floor.number}
               </Select.Option>
             ))}
           </Select>

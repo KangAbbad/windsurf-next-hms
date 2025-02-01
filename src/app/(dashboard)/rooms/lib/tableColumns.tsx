@@ -80,11 +80,11 @@ export const tableColumns = (props: Props) => {
       },
       {
         title: 'Floor',
-        dataIndex: ['floor', 'floor_number'],
+        dataIndex: ['floor', 'number'],
         key: 'floor',
         width: '20%',
-        sorter: (a, b) => a.floor.floor_number - b.floor.floor_number,
-        render: (floor_number) => `Floor ${floor_number}`,
+        sorter: (a, b) => a.floor.number - b.floor.number,
+        render: (number) => `Floor ${number}`,
       },
       {
         title: 'Created At',

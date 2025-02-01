@@ -21,14 +21,14 @@ export async function GET(request: Request): Promise<Response> {
 
     // Apply search filter if provided
     if (search) {
-      query = query.ilike('floor_number', `%${search}%`)
+      query = query.ilike('number', `%${search}%`)
     }
 
     const {
       data: items,
       error,
       count,
-    } = await query.range(offset, offset + limit - 1).order('floor_number', { ascending: true })
+    } = await query.range(offset, offset + limit - 1).order('number', { ascending: true })
 
     if (error) {
       return createErrorResponse({
@@ -69,30 +69,25 @@ export async function POST(request: Request): Promise<Response> {
     const newFloor: CreateFloorBody = await request.json()
 
     // Validate required fields
-    if (typeof newFloor.floor_number !== 'number') {
+    if (typeof newFloor.number !== 'number') {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['floor_number must be a number'],
+        errors: ['number must be a number'],
       })
     }
 
     // Check if floor number already exists
-    const { data: existingFloor } = await supabase
-      .from('floor')
-      .select('id')
-      .eq('floor_number', newFloor.floor_number)
-      .single()
+    const { data: existingFloor } = await supabase.from('floor').select('id').eq('number', newFloor.number).single()
 
     if (existingFloor) {
       return createErrorResponse({
-        code: 400,
+        code: 409,
         message: 'Floor number already exists',
         errors: ['Floor number must be unique'],
       })
     }
 
-    // Create floor
     const { data, error } = await supabase.from('floor').insert([newFloor]).select().single()
 
     if (error) {

@@ -1,18 +1,22 @@
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Modal, Form, InputNumber } from 'antd'
+import { Button, Drawer, Form, Input } from 'antd'
 import { useEffect } from 'react'
+import { IoClose } from 'react-icons/io5'
 
 import { queryKey } from '../lib/constants'
 import { floorDetailStore } from '../lib/state'
 import { createItem } from '../services/post'
 import { updateItem } from '../services/put'
 
+import { FLOOR_NAME_MAX_LENGTH } from '@/app/api/floors/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { inputNumberValidation } from '@/utils/inputNumberValidation'
 
 type FormType = {
-  floor_number: number
+  name: string
+  number: number
 }
 
 type Props = {
@@ -20,14 +24,14 @@ type Props = {
   onCancel: () => void
 }
 
-export default function FormModal(props: Props) {
+export default function FormDrawer(props: Props) {
   const { isVisible, onCancel } = props
   const queryClient = useQueryClient()
   const { antdMessage } = useAntdContextHolder()
   const [form] = Form.useForm<FormType>()
   const { data: floorDetailState, resetData: resetFloorDetail } = floorDetailStore()
 
-  const hideModal = () => {
+  const hideDrawer = () => {
     form.resetFields()
     resetFloorDetail()
     onCancel()
@@ -37,8 +41,8 @@ export default function FormModal(props: Props) {
     mutationFn: createItem,
     onSuccess: (res) => {
       antdMessage?.success(res?.message ?? 'Floor created successfully')
-      hideModal()
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_FLOOR_LIST] })
+      hideDrawer()
     },
     onError: (res) => {
       antdMessage?.error(res?.message ?? 'Failed to create floor')
@@ -49,8 +53,8 @@ export default function FormModal(props: Props) {
     mutationFn: updateItem,
     onSuccess: (res) => {
       antdMessage?.success(res?.message ?? 'Floor updated successfully')
-      hideModal()
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_FLOOR_LIST] })
+      hideDrawer()
     },
     onError: (res) => {
       antdMessage?.error(res?.message ?? 'Failed to update floor')
@@ -72,7 +76,8 @@ export default function FormModal(props: Props) {
     if (!isVisible) return
     if (floorDetailState) {
       form.setFieldsValue({
-        floor_number: floorDetailState.floor_number,
+        name: floorDetailState.name ?? '',
+        number: floorDetailState.number,
       })
     } else {
       form.resetFields()
@@ -80,22 +85,52 @@ export default function FormModal(props: Props) {
   }, [isVisible])
 
   return (
-    <Modal
-      title={floorDetailState ? 'Edit Floor' : 'Add New Floor'}
+    <Drawer
+      title={floorDetailState ? 'Edit Floor' : 'Add Floor'}
       open={isVisible}
-      onCancel={hideModal}
-      onOk={form.submit}
-      confirmLoading={isFormLoading}
+      placement="right"
+      width={520}
+      maskClosable={false}
+      closeIcon={<IoClose className="text-black text-2xl" />}
+      extra={
+        <Button type="primary" loading={isFormLoading} onClick={form.submit}>
+          {floorDetailState ? 'Update' : 'Create'}
+        </Button>
+      }
+      onClose={hideDrawer}
     >
-      <Form form={form} layout="vertical" onFinish={onSubmit}>
-        <Form.Item
-          label="Floor Number"
-          name="floor_number"
-          rules={[{ required: true, message: 'Please input floor number' }]}
+      <Form form={form} layout="vertical" onFinish={onSubmit} className="!mt-4">
+        <Form.Item<FormType>
+          label="Floor Name"
+          name="name"
+          rules={[{ max: FLOOR_NAME_MAX_LENGTH, message: `Maximum length is ${FLOOR_NAME_MAX_LENGTH} characters` }]}
+          className="!mb-3"
         >
-          <InputNumber className="!w-full" placeholder="Enter floor number" />
+          <Input
+            size="large"
+            showCount
+            maxLength={FLOOR_NAME_MAX_LENGTH}
+            placeholder="Enter floor name"
+            className="!text-sm"
+          />
+        </Form.Item>
+
+        <Form.Item<FormType>
+          label="Floor Number"
+          name="number"
+          rules={[
+            { required: true, message: 'Please input price' },
+            {
+              pattern: /^\d+$/,
+              message: 'Invalid number!',
+            },
+          ]}
+          getValueFromEvent={inputNumberValidation}
+          className="!mb-3"
+        >
+          <Input size="large" placeholder="Enter floor number" className="!text-sm" />
         </Form.Item>
       </Form>
-    </Modal>
+    </Drawer>
   )
 }

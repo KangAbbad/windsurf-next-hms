@@ -138,7 +138,7 @@ export const tableColumns = (props: Props) => {
         width: '10%',
         render: (_, record) => {
           return (
-            <Flex gap={4}>
+            <Flex gap={4} align="center">
               <Button
                 type="text"
                 icon={<FaPenToSquare />}

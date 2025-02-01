@@ -12,7 +12,7 @@ import { floorDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
 import { type FloorListPageParams, getAll } from './services/get'
 
-const FormModal = dynamic(() => import('./components/FormModal'), {
+const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
 })
 
@@ -93,7 +93,7 @@ export default function FloorsPage() {
         />
       </div>
 
-      <FormModal
+      <FormDrawer
         isVisible={isFormVisible}
         onCancel={() => {
           setFormVisible(false)

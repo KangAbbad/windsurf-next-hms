@@ -37,14 +37,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ iden
   try {
     const supabase = await createClient()
     const { identifier } = await params
-    const { floor_number } = await request.json()
+    const updates = await request.json()
 
     // Validate required fields
-    if (typeof floor_number !== 'number') {
+    if (typeof updates.number !== 'number') {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['floor_number must be a number'],
+        errors: ['number must be a number'],
       })
     }
 
@@ -52,7 +52,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ iden
     const { data: existingFloor } = await supabase
       .from('floor')
       .select('id')
-      .eq('floor_number', floor_number)
+      .eq('number', updates.number)
       .neq('id', identifier)
       .single()
 
@@ -65,7 +65,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ iden
     }
 
     // Update floor
-    const { data, error } = await supabase.from('floor').update({ floor_number }).eq('id', identifier).select().single()
+    const updateData = {
+      ...(updates.number !== undefined && { number: updates.number }),
+      ...(updates.name !== undefined && { name: updates.name }),
+    }
+
+    const { data, error } = await supabase.from('floor').update(updateData).eq('id', identifier).select().single()
 
     if (error) {
       return createErrorResponse({
