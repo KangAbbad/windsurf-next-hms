@@ -5,7 +5,6 @@ import dayjs from 'dayjs'
 import { CSSProperties } from 'react'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
-import styles from '../page.module.css'
 import { queryKey } from './constants'
 import { bedTypeDetailStore } from './state'
 import { deleteItem } from '../services/delete'
@@ -62,14 +61,14 @@ export const tableColumns = (props: Props) => {
           }
 
           return (
-            <div className={styles.imagePreviewWrapper}>
+            <div className="border rounded-lg overflow-hidden h-[100px] w-[100px]">
               <ImageFallback
                 src={imageUrl}
                 alt={record?.name ?? 'Image Preview'}
                 priority
                 height={100}
                 width={100}
-                className={styles.imagePreview}
+                className="h-full w-full"
                 style={imagePreviewStyles}
               />
             </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { Breadcrumb, Button, Col, Layout, Menu, MenuProps, message, Modal, notification, Row } from 'antd'
+import { Breadcrumb, Button, Col, Flex, Layout, Menu, MenuProps, message, Modal, notification, Row } from 'antd'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -67,27 +67,29 @@ export default function DashboardLayout({ children }: Props) {
           onCollapse={toggleSidebar}
         >
           <Link href="/">
-            <div className={styles.logoWrapper}>
+            <Flex align="center" justify="center" className="overflow-hidden">
               {isSidebarCollapsed ? (
-                <Image
-                  src="/hotel-management-portrait-logo.jpeg"
-                  alt="Hotel Logo"
-                  priority
-                  height={50}
-                  width={50}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
+                <div className="px-4 py-2">
+                  <Image
+                    src="/v3-hotel-management-portrait-logo.png"
+                    alt="Hotel Logo"
+                    priority
+                    height={50}
+                    width={50}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  />
+                </div>
               ) : (
                 <Image
-                  src="/hotel-management-landscape-logo.jpeg"
+                  src="/v3-hotel-management-landscape-logo.png"
                   alt="Hotel Logo"
                   priority
-                  height={50}
-                  width={170}
-                  className={styles.logoImage}
+                  height={190}
+                  width={190}
+                  className="object-contain"
                 />
               )}
-            </div>
+            </Flex>
           </Link>
           <Menu
             mode="inline"

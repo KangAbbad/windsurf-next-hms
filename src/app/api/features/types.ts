@@ -17,4 +17,4 @@ export type UpdateFeatureBody = Partial<CreateFeatureBody> & {
   id: string
 }
 
-export const FEATURE_NAME_MAX_LENGTH = 200
+export const FEATURE_NAME_MAX_LENGTH = 50

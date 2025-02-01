@@ -29,7 +29,7 @@ const homepageIconStyles: CSSProperties = {
 
 const HomepageLink = () => {
   return (
-    <Link href="/" aria-label="Home" data-testid="breadcrumb-link-/">
+    <Link href="/" aria-label="Home">
       <div style={homepageIconStyles}>
         <FaHome />
       </div>
@@ -43,18 +43,12 @@ type LinkProps = {
 }
 
 const LinkItem = ({ href, path }: LinkProps) => {
-  const dataTestId = `breadcrumb-link-${href}`
-  return (
-    <Link href={href} data-testid={dataTestId}>
-      {path}
-    </Link>
-  )
+  return <Link href={href}>{path}</Link>
 }
 
 const LinkItemBtn = ({ href, path }: LinkProps) => {
-  const dataTestId = `breadcrumb-link-${href}`
   return (
-    <Link href={href} data-testid={dataTestId}>
+    <Link href={href}>
       <Button type="link" style={pathStyles}>
         {path}
       </Button>

@@ -77,11 +77,20 @@ export async function POST(request: Request): Promise<Response> {
     const featureName = newFeature.name?.trim()
 
     // Validate required fields
-    if (!featureName || !newFeature.image_url || typeof newFeature.price !== 'number') {
+    if (!featureName && !newFeature.image_url && typeof newFeature.price !== 'number') {
       return createErrorResponse({
         code: 400,
-        message: 'Missing required fields',
-        errors: ['name, image_url, and price are required'],
+        message: 'Missing or invalid required fields',
+        errors: ['All fields are required'],
+      })
+    }
+
+    // Validate feature name
+    if (!featureName) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid feature name',
+        errors: ['Feature name is required'],
       })
     }
 
@@ -91,6 +100,24 @@ export async function POST(request: Request): Promise<Response> {
         code: 400,
         message: 'Invalid feature name',
         errors: [`name must not exceed ${FEATURE_NAME_MAX_LENGTH} characters`],
+      })
+    }
+
+    // Validate image URL
+    if (!newFeature.image_url) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid image URL',
+        errors: ['Image URL is required'],
+      })
+    }
+
+    // Validate price
+    if (newFeature.price < 0) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid price',
+        errors: ['Price must be a positive number'],
       })
     }
 
@@ -105,17 +132,7 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    const { data, error } = await supabase
-      .from('feature')
-      .insert([
-        {
-          name: featureName,
-          image_url: newFeature.image_url,
-          price: newFeature.price,
-        },
-      ])
-      .select()
-      .single()
+    const { data, error } = await supabase.from('feature').insert([newFeature]).select().single()
 
     if (error) {
       return createErrorResponse({

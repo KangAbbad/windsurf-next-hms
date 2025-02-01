@@ -9,11 +9,11 @@ import { LuRefreshCcw } from 'react-icons/lu'
 import { TbArrowRight } from 'react-icons/tb'
 
 import { queryKey } from '../lib/constants'
-import { bedTypeDetailStore } from '../lib/state'
+import { featureDetailStore } from '../lib/state'
 import { createItem } from '../services/post'
 import { updateItem } from '../services/put'
 
-import { BED_TYPE_NAME_MAX_LENGTH, CreateBedTypeBody, UpdateBedTypeBody } from '@/app/api/bed-types/types'
+import { CreateFeatureBody, FEATURE_NAME_MAX_LENGTH, UpdateFeatureBody } from '@/app/api/features/types'
 import { ImageFallback } from '@/components/ImageFallback'
 import { useUploadImage } from '@/hooks/api/useUploadImage'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
@@ -23,10 +23,7 @@ import { normFile } from '@/utils/normFile'
 type FormType = {
   uploadList: UploadFile[]
   name: string
-  length: number
-  width: number
-  height: number
-  material: string
+  price: number
 }
 
 type Props = {
@@ -40,38 +37,38 @@ export default function FormDrawer(props: Props) {
   const { antdMessage } = useAntdContextHolder()
   const [form] = Form.useForm<FormType>()
   const watchUploadList = Form.useWatch('uploadList', form) ?? []
-  const { data: bedTypeDetailState, resetData: resetBedTypeDetail } = bedTypeDetailStore()
-  const imagePreviewUrl = bedTypeDetailState?.image_url?.includes('http')
-    ? bedTypeDetailState?.image_url
+  const { data: featureDetailState, resetData: resetFeatureDetail } = featureDetailStore()
+  const imagePreviewUrl = featureDetailState?.image_url?.includes('http')
+    ? featureDetailState?.image_url
     : require('@/assets/images/empty-placeholder.png')
 
   const hideDrawer = () => {
     form.resetFields()
-    resetBedTypeDetail()
+    resetFeatureDetail()
     onCancel()
   }
 
   const { mutate: createMutation, isPending: isCreateLoading } = useMutation({
     mutationFn: createItem,
     onSuccess: (res) => {
-      antdMessage?.success(res?.message ?? 'Bed type created successfully')
-      queryClient.invalidateQueries({ queryKey: [queryKey.RES_BED_TYPE_LIST] })
+      antdMessage?.success(res?.message ?? 'Feature created successfully')
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_FEATURE_LIST] })
       hideDrawer()
     },
     onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to create bed type')
+      antdMessage?.error(res?.message ?? 'Failed to create feature')
     },
   })
 
   const { mutate: updateMutation, isPending: isUpdateLoading } = useMutation({
     mutationFn: updateItem,
     onSuccess: (res) => {
-      antdMessage?.success(res?.message ?? 'Bed type updated successfully')
-      queryClient.invalidateQueries({ queryKey: [queryKey.RES_BED_TYPE_LIST] })
+      antdMessage?.success(res?.message ?? 'Feature updated successfully')
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_FEATURE_LIST] })
       hideDrawer()
     },
     onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to update bed type')
+      antdMessage?.error(res?.message ?? 'Failed to update feature')
     },
   })
 
@@ -79,7 +76,7 @@ export default function FormDrawer(props: Props) {
     options: {
       onSuccess: (res) => {
         const imageUrl = res.data?.image_url ?? ''
-        if (bedTypeDetailState?.id ?? '') handleUpdate(imageUrl)
+        if (featureDetailState?.id ?? '') handleUpdate(imageUrl)
         else handleCreate(imageUrl)
       },
     },
@@ -87,19 +84,21 @@ export default function FormDrawer(props: Props) {
 
   const handleCreate = (imageUrl: string) => {
     const { uploadList, ...restValues } = form.getFieldsValue()
-    const payload: CreateBedTypeBody = {
+    const payload: CreateFeatureBody = {
       ...restValues,
       image_url: imageUrl,
+      price: Number(restValues.price),
     }
     createMutation(payload)
   }
 
   const handleUpdate = (imageUrl: string) => {
     const { uploadList, ...restValues } = form.getFieldsValue()
-    const payload: UpdateBedTypeBody = {
+    const payload: UpdateFeatureBody = {
       ...restValues,
-      id: bedTypeDetailState?.id ?? '',
+      id: featureDetailState?.id ?? '',
       image_url: imageUrl,
+      price: Number(restValues.price),
     }
     updateMutation(payload)
   }
@@ -113,7 +112,7 @@ export default function FormDrawer(props: Props) {
       uploadImage({ file: values.uploadList[0].originFileObj as File })
       return
     }
-    handleUpdate(bedTypeDetailState?.image_url ?? '')
+    handleUpdate(featureDetailState?.image_url ?? '')
   }
 
   const onCreate = () => {
@@ -124,19 +123,16 @@ export default function FormDrawer(props: Props) {
 
   const onSubmit = () => {
     if (isFormLoading) return
-    if (bedTypeDetailState?.id) onEdit()
+    if (featureDetailState?.id) onEdit()
     else onCreate()
   }
 
   useEffect(() => {
     if (!isVisible) return
-    if (bedTypeDetailState) {
+    if (featureDetailState) {
       form.setFieldsValue({
-        name: bedTypeDetailState.name,
-        length: bedTypeDetailState.length,
-        width: bedTypeDetailState.width,
-        height: bedTypeDetailState.height,
-        material: bedTypeDetailState.material,
+        name: featureDetailState.name,
+        price: featureDetailState.price,
       })
     } else {
       form.resetFields()
@@ -145,7 +141,7 @@ export default function FormDrawer(props: Props) {
 
   return (
     <Drawer
-      title={bedTypeDetailState ? 'Edit Bed Type' : 'Add Bed Type'}
+      title={featureDetailState ? 'Edit Feature' : 'Add Feature'}
       open={isVisible}
       placement="right"
       width={520}
@@ -153,21 +149,21 @@ export default function FormDrawer(props: Props) {
       closeIcon={<IoClose className="text-black text-2xl" />}
       extra={
         <Button type="primary" loading={isFormLoading} onClick={form.submit}>
-          {bedTypeDetailState ? 'Update' : 'Create'}
+          {featureDetailState ? 'Update' : 'Create'}
         </Button>
       }
       onClose={hideDrawer}
     >
       <Form form={form} layout="vertical" onFinish={onSubmit}>
         <Flex gap={16} align="center">
-          {bedTypeDetailState?.image_url && (
+          {featureDetailState?.image_url && (
             <>
               <Flex gap={8} vertical className="!mb-3">
                 <Typography.Paragraph className="!mb-0">Old Image</Typography.Paragraph>
                 <div className="rounded-lg border border-[#D9D9D9] border-dashed bg-[rgba(0,0,0,0.02)] h-[100px] w-[100px] overflow-hidden p-2">
                   <ImageFallback
                     src={imagePreviewUrl}
-                    alt={bedTypeDetailState?.name ?? 'Image Preview'}
+                    alt={featureDetailState?.name ?? 'Image Preview'}
                     priority
                     height={100}
                     width={100}
@@ -180,12 +176,12 @@ export default function FormDrawer(props: Props) {
           )}
           <Form.Item<FormType>
             name="uploadList"
-            label={bedTypeDetailState?.image_url ? 'New Image' : 'Upload Image'}
+            label={featureDetailState?.image_url ? 'New Image' : 'Upload Image'}
             valuePropName="fileList"
             getValueFromEvent={normFile}
             rules={[
               {
-                required: !bedTypeDetailState?.image_url,
+                required: !featureDetailState?.image_url,
                 message: 'Please select an image!',
               },
             ]}
@@ -216,28 +212,28 @@ export default function FormDrawer(props: Props) {
         </Flex>
 
         <Form.Item<FormType>
-          label="Bed Type Name"
+          label="Feature Name"
           name="name"
           rules={[
-            { required: true, message: 'Please input bed type name' },
-            { max: BED_TYPE_NAME_MAX_LENGTH, message: `Maximum length is ${BED_TYPE_NAME_MAX_LENGTH} characters` },
+            { required: true, message: 'Please input feature name' },
+            { max: FEATURE_NAME_MAX_LENGTH, message: `Maximum length is ${FEATURE_NAME_MAX_LENGTH} characters` },
           ]}
           className="!mb-3"
         >
           <Input
             size="large"
             showCount
-            maxLength={BED_TYPE_NAME_MAX_LENGTH}
-            placeholder="Enter bed type name"
+            maxLength={FEATURE_NAME_MAX_LENGTH}
             className="!text-sm"
+            placeholder="Enter feature name"
           />
         </Form.Item>
 
         <Form.Item<FormType>
-          label="Length (cm)"
-          name="length"
+          label="Price"
+          name="price"
           rules={[
-            { required: true, message: 'Please input bed length' },
+            { required: true, message: 'Please input price' },
             {
               pattern: /^\d+$/,
               message: 'Invalid number!',
@@ -246,48 +242,12 @@ export default function FormDrawer(props: Props) {
           getValueFromEvent={inputNumberValidation}
           className="!mb-3"
         >
-          <Input size="large" placeholder="Enter bed length" className="!text-sm" />
-        </Form.Item>
-
-        <Form.Item<FormType>
-          label="Width (cm)"
-          name="width"
-          rules={[
-            { required: true, message: 'Please input bed width' },
-            {
-              pattern: /^\d+$/,
-              message: 'Invalid number!',
-            },
-          ]}
-          getValueFromEvent={inputNumberValidation}
-          className="!mb-3"
-        >
-          <Input size="large" type="number" placeholder="Enter bed width" className="!text-sm" />
-        </Form.Item>
-
-        <Form.Item<FormType>
-          label="Height (cm)"
-          name="height"
-          rules={[
-            { required: true, message: 'Please input bed height' },
-            {
-              pattern: /^\d+$/,
-              message: 'Invalid number!',
-            },
-          ]}
-          getValueFromEvent={inputNumberValidation}
-          className="!mb-3"
-        >
-          <Input size="large" type="number" placeholder="Enter bed height" className="!text-sm" />
-        </Form.Item>
-
-        <Form.Item<FormType>
-          label="Material"
-          name="material"
-          rules={[{ required: true, message: 'Please input bed material' }]}
-          className="!mb-3"
-        >
-          <Input size="large" placeholder="Enter bed material" className="!text-sm" />
+          <Input
+            size="large"
+            addonBefore={<Typography.Text className="!text-sm">Rp</Typography.Text>}
+            placeholder="Enter price"
+            classNames={{ input: '!text-sm' }}
+          />
         </Form.Item>
       </Form>
     </Drawer>

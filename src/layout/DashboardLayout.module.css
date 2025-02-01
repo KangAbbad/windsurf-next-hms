@@ -20,18 +20,6 @@
   padding: 6px;
 }
 
-.logoWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  padding: 12px 16px;
-}
-
-.logoImage {
-  object-fit: contain !important;
-}
-
 .headerContainer {
   background-color: white !important;
   line-height: 0px !important;

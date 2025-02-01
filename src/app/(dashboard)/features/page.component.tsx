@@ -12,7 +12,7 @@ import { featureDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
 import { type FeatureListPageParams, getAll } from './services/get'
 
-const FormModal = dynamic(() => import('./components/FormModal'), {
+const FormModal = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
 })
 

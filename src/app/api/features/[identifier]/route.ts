@@ -43,15 +43,24 @@ export async function PUT(
   try {
     const supabase = await createClient()
     const { identifier } = await params
-    const updates: UpdateFeatureBody = await request.json()
-    const featureName = updates.name?.trim()
+    const updateData: UpdateFeatureBody = await request.json()
+    const featureName = updateData.name?.trim()
 
     // Validate required fields
-    if (!featureName || !updates.image_url || typeof updates.price !== 'number') {
+    if (!featureName && !updateData.image_url && typeof updateData.price !== 'number') {
       return createErrorResponse({
         code: 400,
-        message: 'Missing required fields',
-        errors: ['name, image_url, and price are required'],
+        message: 'Missing or invalid required fields',
+        errors: ['All fields are required'],
+      })
+    }
+
+    // Validate feature name
+    if (!featureName) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid feature name',
+        errors: ['Feature name is required'],
       })
     }
 
@@ -61,6 +70,24 @@ export async function PUT(
         code: 400,
         message: 'Invalid feature name',
         errors: [`name must not exceed ${FEATURE_NAME_MAX_LENGTH} characters`],
+      })
+    }
+
+    // Validate image_url
+    if (!updateData.image_url) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid image URL',
+        errors: ['Image URL is required'],
+      })
+    }
+
+    // Validate price
+    if (typeof updateData.price !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid price',
+        errors: ['Price must be a number'],
       })
     }
 
@@ -89,12 +116,6 @@ export async function PUT(
         message: 'Feature name already exists',
         errors: ['Feature name must be unique'],
       })
-    }
-
-    const updateData = {
-      name: featureName,
-      image_url: updates.image_url,
-      price: updates.price,
     }
 
     const { data, error } = await supabase.from('feature').update(updateData).eq('id', identifier).select().single()
