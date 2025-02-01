@@ -14,6 +14,7 @@ import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 
 type FormType = {
   name: string
+  price: number
 }
 
 type Props = {
@@ -65,7 +66,7 @@ export default function FormModal(props: Props) {
     if (featureDetailState) {
       updateMutation({ ...values, id: featureDetailState.id })
     } else {
-      createMutation(values)
+      createMutation({ ...values, image_url: '' })
     }
   }
 

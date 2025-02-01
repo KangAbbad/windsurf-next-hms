@@ -9,6 +9,8 @@ export async function GET(request: Request): Promise<Response> {
     const page = parseInt(searchParams.get('page') ?? '1', 10)
     const limit = parseInt(searchParams.get('limit') ?? '10', 10)
     const search = searchParams.get('search') ?? ''
+    const minPrice = parseFloat(searchParams.get('min_price') ?? '0')
+    const maxPrice = parseFloat(searchParams.get('max_price') ?? '0')
 
     const offset = (page - 1) * limit
 
@@ -19,6 +21,14 @@ export async function GET(request: Request): Promise<Response> {
     // Apply search filter if provided
     if (search) {
       query = query.ilike('name', `%${search}%`)
+    }
+
+    // Apply price range filter if provided
+    if (maxPrice > 0) {
+      query = query.lte('price', maxPrice)
+    }
+    if (minPrice > 0) {
+      query = query.gte('price', minPrice)
     }
 
     const {
@@ -67,11 +77,11 @@ export async function POST(request: Request): Promise<Response> {
     const featureName = newFeature.name?.trim()
 
     // Validate required fields
-    if (!featureName) {
+    if (!featureName || !newFeature.image_url || typeof newFeature.price !== 'number') {
       return createErrorResponse({
         code: 400,
         message: 'Missing required fields',
-        errors: ['name is required'],
+        errors: ['name, image_url, and price are required'],
       })
     }
 
@@ -97,7 +107,13 @@ export async function POST(request: Request): Promise<Response> {
 
     const { data, error } = await supabase
       .from('feature')
-      .insert([{ name: featureName }])
+      .insert([
+        {
+          name: featureName,
+          image_url: newFeature.image_url,
+          price: newFeature.price,
+        },
+      ])
       .select()
       .single()
 

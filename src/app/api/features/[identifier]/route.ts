@@ -47,11 +47,11 @@ export async function PUT(
     const featureName = updates.name?.trim()
 
     // Validate required fields
-    if (!featureName) {
+    if (!featureName || !updates.image_url || typeof updates.price !== 'number') {
       return createErrorResponse({
         code: 400,
         message: 'Missing required fields',
-        errors: ['name is required'],
+        errors: ['name, image_url, and price are required'],
       })
     }
 
@@ -91,12 +91,13 @@ export async function PUT(
       })
     }
 
-    const { data, error } = await supabase
-      .from('feature')
-      .update({ name: featureName })
-      .eq('id', identifier)
-      .select()
-      .single()
+    const updateData = {
+      name: featureName,
+      image_url: updates.image_url,
+      price: updates.price,
+    }
+
+    const { data, error } = await supabase.from('feature').update(updateData).eq('id', identifier).select().single()
 
     if (error) {
       return createErrorResponse({
