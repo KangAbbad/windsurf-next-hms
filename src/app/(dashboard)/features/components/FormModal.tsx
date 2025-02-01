@@ -13,7 +13,7 @@ import { FEATURE_NAME_MAX_LENGTH } from '@/app/api/features/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 
 type FormType = {
-  feature_name: string
+  name: string
 }
 
 type Props = {
@@ -73,7 +73,7 @@ export default function FormModal(props: Props) {
     if (!isVisible) return
     if (featureDetailState) {
       form.setFieldsValue({
-        feature_name: featureDetailState.feature_name,
+        name: featureDetailState.name,
       })
     } else {
       form.resetFields()
@@ -91,7 +91,7 @@ export default function FormModal(props: Props) {
       <Form form={form} layout="vertical" onFinish={onSubmit}>
         <Form.Item
           label="Feature Name"
-          name="feature_name"
+          name="name"
           rules={[
             { required: true, message: 'Please input feature name' },
             { max: FEATURE_NAME_MAX_LENGTH, message: `Maximum length is ${FEATURE_NAME_MAX_LENGTH} characters` },

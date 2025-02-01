@@ -18,14 +18,14 @@ export async function GET(request: Request): Promise<Response> {
 
     // Apply search filter if provided
     if (search) {
-      query = query.ilike('feature_name', `%${search}%`)
+      query = query.ilike('name', `%${search}%`)
     }
 
     const {
       data: items,
       error,
       count,
-    } = await query.range(offset, offset + limit - 1).order('feature_name', { ascending: true })
+    } = await query.range(offset, offset + limit - 1).order('name', { ascending: true })
 
     if (error) {
       return createErrorResponse({
@@ -64,14 +64,14 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
     const newFeature: CreateFeatureBody = await request.json()
-    const featureName = newFeature.feature_name?.trim()
+    const featureName = newFeature.name?.trim()
 
     // Validate required fields
     if (!featureName) {
       return createErrorResponse({
         code: 400,
         message: 'Missing required fields',
-        errors: ['feature_name is required'],
+        errors: ['name is required'],
       })
     }
 
@@ -80,16 +80,12 @@ export async function POST(request: Request): Promise<Response> {
       return createErrorResponse({
         code: 400,
         message: 'Invalid feature name',
-        errors: [`feature_name must not exceed ${FEATURE_NAME_MAX_LENGTH} characters`],
+        errors: [`name must not exceed ${FEATURE_NAME_MAX_LENGTH} characters`],
       })
     }
 
     // Check if feature name already exists
-    const { data: existingFeature } = await supabase
-      .from('feature')
-      .select('id')
-      .ilike('feature_name', featureName)
-      .single()
+    const { data: existingFeature } = await supabase.from('feature').select('id').ilike('name', featureName).single()
 
     if (existingFeature) {
       return createErrorResponse({
@@ -101,7 +97,7 @@ export async function POST(request: Request): Promise<Response> {
 
     const { data, error } = await supabase
       .from('feature')
-      .insert([{ feature_name: featureName }])
+      .insert([{ name: featureName }])
       .select()
       .single()
 

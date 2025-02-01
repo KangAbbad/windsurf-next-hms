@@ -1,12 +1,12 @@
 export type FeatureListItem = {
   id: string
-  feature_name: string
+  name: string
   created_at: string
   updated_at: string
 }
 
 export type CreateFeatureBody = {
-  feature_name: string
+  name: string
 }
 
 export type UpdateFeatureBody = Partial<CreateFeatureBody> & {

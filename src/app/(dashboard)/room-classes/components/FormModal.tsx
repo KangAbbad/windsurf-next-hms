@@ -209,7 +209,7 @@ export default function FormModal(props: Props) {
             loading={isLoadingFeatures}
             placeholder="Select features"
             options={features.map((f) => ({
-              label: f.feature_name,
+              label: f.name,
               value: f.id,
             }))}
           />

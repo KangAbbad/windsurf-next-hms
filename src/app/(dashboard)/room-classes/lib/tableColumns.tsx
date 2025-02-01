@@ -69,7 +69,7 @@ export const tableColumns = (props: Props) => {
         render: (_, record) => (
           <Space size={8} wrap>
             {record.features.map((feature) => (
-              <Tag key={feature.id}>{feature.feature_name}</Tag>
+              <Tag key={feature.id}>{feature.name}</Tag>
             ))}
           </Space>
         ),

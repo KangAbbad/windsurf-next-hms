@@ -44,14 +44,14 @@ export async function PUT(
     const supabase = await createClient()
     const { identifier } = await params
     const updates: UpdateFeatureBody = await request.json()
-    const featureName = updates.feature_name?.trim()
+    const featureName = updates.name?.trim()
 
     // Validate required fields
     if (!featureName) {
       return createErrorResponse({
         code: 400,
         message: 'Missing required fields',
-        errors: ['feature_name is required'],
+        errors: ['name is required'],
       })
     }
 
@@ -60,7 +60,7 @@ export async function PUT(
       return createErrorResponse({
         code: 400,
         message: 'Invalid feature name',
-        errors: [`feature_name must not exceed ${FEATURE_NAME_MAX_LENGTH} characters`],
+        errors: [`name must not exceed ${FEATURE_NAME_MAX_LENGTH} characters`],
       })
     }
 
@@ -79,7 +79,7 @@ export async function PUT(
     const { data: duplicateFeature } = await supabase
       .from('feature')
       .select('id')
-      .ilike('feature_name', featureName)
+      .ilike('name', featureName)
       .neq('id', identifier)
       .single()
 
@@ -93,7 +93,7 @@ export async function PUT(
 
     const { data, error } = await supabase
       .from('feature')
-      .update({ feature_name: featureName })
+      .update({ name: featureName })
       .eq('id', identifier)
       .select()
       .single()

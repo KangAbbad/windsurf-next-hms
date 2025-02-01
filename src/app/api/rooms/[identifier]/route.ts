@@ -64,7 +64,7 @@ export async function GET(
         room_class_id,
         feature:feature_id(
           id,
-          feature_name
+          name
         )
       `
       )
