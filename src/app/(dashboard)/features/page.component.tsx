@@ -82,6 +82,7 @@ export function PageComponent() {
           dataSource={dataSource}
           loading={isDataSourceFetching}
           rowKey="id"
+          size="middle"
           pagination={{
             current: pageParams.page,
             pageSize: pageParams.limit,

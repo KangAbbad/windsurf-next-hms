@@ -89,7 +89,7 @@ export async function POST(request: Request): Promise<Response> {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['Feature name is required'],
+        errors: ['Addon name is required'],
       })
     }
 
@@ -115,7 +115,7 @@ export async function POST(request: Request): Promise<Response> {
     if (typeof newAddon.price !== 'number') {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid feature price',
+        message: 'Invalid addon price',
         errors: ['Price must be a number'],
       })
     }
