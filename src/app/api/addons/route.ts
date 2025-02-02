@@ -1,4 +1,4 @@
-import { AddonListItem, CreateAddonBody } from './types'
+import { ADDON_NAME_MAX_LENGTH, AddonListItem, CreateAddonBody } from './types'
 
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
@@ -9,6 +9,8 @@ export async function GET(request: Request): Promise<Response> {
     const page = parseInt(searchParams.get('page') ?? '1', 10)
     const limit = parseInt(searchParams.get('limit') ?? '10', 10)
     const search = searchParams.get('search') ?? ''
+    const minPrice = parseFloat(searchParams.get('min_price') ?? '0')
+    const maxPrice = parseFloat(searchParams.get('max_price') ?? '0')
 
     const offset = (page - 1) * limit
 
@@ -18,14 +20,22 @@ export async function GET(request: Request): Promise<Response> {
 
     // Apply search filter if provided
     if (search) {
-      query = query.ilike('addon_name', `%${search}%`)
+      query = query.ilike('name', `%${search}%`)
+    }
+
+    // Apply price range filter if provided
+    if (maxPrice > 0) {
+      query = query.lte('price', maxPrice)
+    }
+    if (minPrice > 0) {
+      query = query.gte('price', minPrice)
     }
 
     const {
       data: items,
       error,
       count,
-    } = await query.range(offset, offset + limit - 1).order('addon_name', { ascending: true })
+    } = await query.range(offset, offset + limit - 1).order('name', { ascending: true })
 
     if (error) {
       return createErrorResponse({
@@ -66,29 +76,52 @@ export async function POST(request: Request): Promise<Response> {
     const newAddon: CreateAddonBody = await request.json()
 
     // Validate required fields
-    if (!newAddon.addon_name || !newAddon.price) {
+    if (!newAddon.name && !newAddon.image_url && typeof newAddon.price !== 'number') {
       return createErrorResponse({
         code: 400,
-        message: 'Missing required fields',
-        errors: ['addon_name and price are required'],
+        message: 'Missing or invalid required fields',
+        errors: ['All fields are required'],
       })
     }
 
-    // Validate price is a positive number
-    if (typeof newAddon.price !== 'number' || newAddon.price <= 0) {
+    // Validate addon name
+    if (!newAddon.name) {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid price',
-        errors: ['Price must be a positive number'],
+        message: 'Missing or invalid required fields',
+        errors: ['Feature name is required'],
+      })
+    }
+
+    // Validate addon name length
+    if (newAddon.name.length > ADDON_NAME_MAX_LENGTH) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid addon name',
+        errors: [`name must not exceed ${ADDON_NAME_MAX_LENGTH} characters`],
+      })
+    }
+
+    // Validate image URL
+    if (!newAddon.image_url) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Image URL is required'],
+      })
+    }
+
+    // Validate price
+    if (typeof newAddon.price !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid feature price',
+        errors: ['Price must be a number'],
       })
     }
 
     // Check if addon name already exists
-    const { data: existingAddon } = await supabase
-      .from('addon')
-      .select('id')
-      .ilike('addon_name', newAddon.addon_name)
-      .single()
+    const { data: existingAddon } = await supabase.from('addon').select('id').ilike('name', newAddon.name).single()
 
     if (existingAddon) {
       return createErrorResponse({
@@ -98,19 +131,7 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    const { data, error } = await supabase
-      .from('addon')
-      .insert([newAddon])
-      .select(
-        `
-        id,
-        addon_name,
-        price,
-        created_at,
-        updated_at
-        `
-      )
-      .single()
+    const { data, error } = await supabase.from('addon').insert([newAddon]).select().single()
 
     if (error) {
       return createErrorResponse({

@@ -74,10 +74,9 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
     const newFeature: CreateFeatureBody = await request.json()
-    const featureName = newFeature.name?.trim()
 
     // Validate required fields
-    if (!featureName && !newFeature.image_url && typeof newFeature.price !== 'number') {
+    if (!newFeature.name && !newFeature.image_url && typeof newFeature.price !== 'number') {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
@@ -86,7 +85,7 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     // Validate feature name
-    if (!featureName) {
+    if (!newFeature.name) {
       return createErrorResponse({
         code: 400,
         message: 'Invalid feature name',
@@ -95,7 +94,7 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     // Validate feature name length
-    if (featureName.length > FEATURE_NAME_MAX_LENGTH) {
+    if (newFeature.name.length > FEATURE_NAME_MAX_LENGTH) {
       return createErrorResponse({
         code: 400,
         message: 'Invalid feature name',
@@ -107,22 +106,26 @@ export async function POST(request: Request): Promise<Response> {
     if (!newFeature.image_url) {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid image URL',
+        message: 'Missing or invalid required fields',
         errors: ['Image URL is required'],
       })
     }
 
     // Validate price
-    if (newFeature.price < 0) {
+    if (typeof newFeature.price !== 'number') {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid price',
-        errors: ['Price must be a positive number'],
+        message: 'Invalid feature price',
+        errors: ['Price must be a number'],
       })
     }
 
     // Check if feature name already exists
-    const { data: existingFeature } = await supabase.from('feature').select('id').ilike('name', featureName).single()
+    const { data: existingFeature } = await supabase
+      .from('feature')
+      .select('id')
+      .ilike('name', newFeature.name)
+      .single()
 
     if (existingFeature) {
       return createErrorResponse({

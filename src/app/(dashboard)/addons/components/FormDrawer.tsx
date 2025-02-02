@@ -1,7 +1,7 @@
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Button, Drawer, Flex, Form, Input, Typography, Upload, UploadFile } from 'antd'
+import { Form, Input, Typography, Drawer, Button, UploadFile, Flex, Upload } from 'antd'
 import { useEffect } from 'react'
 import { FiPlus } from 'react-icons/fi'
 import { IoClose } from 'react-icons/io5'
@@ -9,11 +9,11 @@ import { LuRefreshCcw } from 'react-icons/lu'
 import { TbArrowRight } from 'react-icons/tb'
 
 import { queryKey } from '../lib/constants'
-import { featureDetailStore } from '../lib/state'
+import { addonDetailStore } from '../lib/state'
 import { createItem } from '../services/post'
 import { updateItem } from '../services/put'
 
-import { CreateFeatureBody, FEATURE_NAME_MAX_LENGTH, UpdateFeatureBody } from '@/app/api/features/types'
+import { ADDON_NAME_MAX_LENGTH, CreateAddonBody, UpdateAddonBody } from '@/app/api/addons/types'
 import { ImageFallback } from '@/components/ImageFallback'
 import { useUploadImage } from '@/hooks/api/useUploadImage'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
@@ -37,38 +37,38 @@ export default function FormDrawer(props: Props) {
   const { antdMessage } = useAntdContextHolder()
   const [form] = Form.useForm<FormType>()
   const watchUploadList = Form.useWatch('uploadList', form) ?? []
-  const { data: featureDetailState, resetData: resetFeatureDetail } = featureDetailStore()
-  const imagePreviewUrl = featureDetailState?.image_url?.includes('http')
-    ? featureDetailState?.image_url
+  const { data: addonDetailState, resetData: resetAddonDetail } = addonDetailStore()
+  const imagePreviewUrl = addonDetailState?.image_url?.includes('http')
+    ? addonDetailState?.image_url
     : require('@/assets/images/empty-placeholder.png')
 
   const hideDrawer = () => {
     form.resetFields()
-    resetFeatureDetail()
+    resetAddonDetail()
     onCancel()
   }
 
   const { mutate: createMutation, isPending: isCreateLoading } = useMutation({
     mutationFn: createItem,
     onSuccess: (res) => {
-      antdMessage?.success(res?.message ?? 'Feature created successfully')
-      queryClient.invalidateQueries({ queryKey: [queryKey.RES_FEATURE_LIST] })
+      antdMessage?.success(res?.message ?? 'Addon created successfully')
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_ADDON_LIST] })
       hideDrawer()
     },
     onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to create feature')
+      antdMessage?.error(res?.message ?? 'Failed to create addon')
     },
   })
 
   const { mutate: updateMutation, isPending: isUpdateLoading } = useMutation({
     mutationFn: updateItem,
     onSuccess: (res) => {
-      antdMessage?.success(res?.message ?? 'Feature updated successfully')
-      queryClient.invalidateQueries({ queryKey: [queryKey.RES_FEATURE_LIST] })
+      antdMessage?.success(res?.message ?? 'Addon updated successfully')
+      queryClient.invalidateQueries({ queryKey: [queryKey.RES_ADDON_LIST] })
       hideDrawer()
     },
     onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to update feature')
+      antdMessage?.error(res?.message ?? 'Failed to update addon')
     },
   })
 
@@ -76,7 +76,7 @@ export default function FormDrawer(props: Props) {
     options: {
       onSuccess: (res) => {
         const imageUrl = res.data?.image_url ?? ''
-        if (featureDetailState?.id ?? '') handleUpdate(imageUrl)
+        if (addonDetailState?.id ?? '') handleUpdate(imageUrl)
         else handleCreate(imageUrl)
       },
     },
@@ -84,7 +84,7 @@ export default function FormDrawer(props: Props) {
 
   const handleCreate = (imageUrl: string) => {
     const { uploadList, ...restValues } = form.getFieldsValue()
-    const payload: CreateFeatureBody = {
+    const payload: CreateAddonBody = {
       ...restValues,
       image_url: imageUrl,
       price: Number(restValues.price),
@@ -94,9 +94,9 @@ export default function FormDrawer(props: Props) {
 
   const handleUpdate = (imageUrl: string) => {
     const { uploadList, ...restValues } = form.getFieldsValue()
-    const payload: UpdateFeatureBody = {
+    const payload: UpdateAddonBody = {
       ...restValues,
-      id: featureDetailState?.id ?? '',
+      id: addonDetailState?.id ?? '',
       image_url: imageUrl,
       price: Number(restValues.price),
     }
@@ -112,7 +112,7 @@ export default function FormDrawer(props: Props) {
       uploadImage({ file: values.uploadList[0].originFileObj as File })
       return
     }
-    handleUpdate(featureDetailState?.image_url ?? '')
+    handleUpdate(addonDetailState?.image_url ?? '')
   }
 
   const onCreate = () => {
@@ -123,16 +123,16 @@ export default function FormDrawer(props: Props) {
 
   const onSubmit = () => {
     if (isFormLoading) return
-    if (featureDetailState?.id) onEdit()
+    if (addonDetailState?.id) onEdit()
     else onCreate()
   }
 
   useEffect(() => {
     if (!isVisible) return
-    if (featureDetailState) {
+    if (addonDetailState) {
       form.setFieldsValue({
-        name: featureDetailState.name,
-        price: featureDetailState.price,
+        name: addonDetailState.name,
+        price: addonDetailState.price,
       })
     } else {
       form.resetFields()
@@ -141,7 +141,7 @@ export default function FormDrawer(props: Props) {
 
   return (
     <Drawer
-      title={featureDetailState ? 'Edit Feature' : 'Add Feature'}
+      title={addonDetailState ? 'Edit Addon' : 'Add Addon'}
       open={isVisible}
       placement="right"
       width={520}
@@ -149,21 +149,21 @@ export default function FormDrawer(props: Props) {
       closeIcon={<IoClose className="text-black text-2xl" />}
       extra={
         <Button type="primary" loading={isFormLoading} onClick={form.submit}>
-          {featureDetailState ? 'Update' : 'Create'}
+          {addonDetailState ? 'Update' : 'Create'}
         </Button>
       }
       onClose={hideDrawer}
     >
-      <Form form={form} layout="vertical" onFinish={onSubmit}>
+      <Form form={form} layout="vertical" onFinish={onSubmit} className="!mt-4">
         <Flex gap={16} align="center">
-          {featureDetailState?.image_url && (
+          {addonDetailState?.image_url && (
             <>
               <Flex gap={8} vertical className="!mb-3">
                 <Typography.Paragraph className="!mb-0">Old Image</Typography.Paragraph>
                 <div className="rounded-lg border border-[#D9D9D9] border-dashed bg-[rgba(0,0,0,0.02)] h-[100px] w-[100px] overflow-hidden p-2">
                   <ImageFallback
                     src={imagePreviewUrl}
-                    alt={featureDetailState?.name ?? 'Image Preview'}
+                    alt={addonDetailState?.name ?? 'Image Preview'}
                     priority
                     height={100}
                     width={100}
@@ -176,12 +176,12 @@ export default function FormDrawer(props: Props) {
           )}
           <Form.Item<FormType>
             name="uploadList"
-            label={featureDetailState?.image_url ? 'New Image' : 'Upload Image'}
+            label={addonDetailState?.image_url ? 'New Image' : 'Upload Image'}
             valuePropName="fileList"
             getValueFromEvent={normFile}
             rules={[
               {
-                required: !featureDetailState?.image_url,
+                required: !addonDetailState?.image_url,
                 message: 'Please select an image!',
               },
             ]}
@@ -212,26 +212,23 @@ export default function FormDrawer(props: Props) {
         </Flex>
 
         <Form.Item<FormType>
-          label="Name"
           name="name"
-          rules={[
-            { required: true, message: 'Please enter name' },
-            { max: FEATURE_NAME_MAX_LENGTH, message: `Maximum length is ${FEATURE_NAME_MAX_LENGTH} characters` },
-          ]}
+          label="Name"
+          rules={[{ required: true, message: 'Please enter name' }]}
           className="!mb-3"
         >
           <Input
             size="large"
             showCount
-            maxLength={FEATURE_NAME_MAX_LENGTH}
+            maxLength={ADDON_NAME_MAX_LENGTH}
             className="!text-sm"
             placeholder="Enter name"
           />
         </Form.Item>
 
         <Form.Item<FormType>
-          label="Price"
           name="price"
+          label="Price"
           rules={[
             { required: true, message: 'Please enter price' },
             {

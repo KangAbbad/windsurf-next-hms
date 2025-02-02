@@ -44,10 +44,9 @@ export async function PUT(
     const supabase = await createClient()
     const { identifier } = await params
     const updateData: UpdateFeatureBody = await request.json()
-    const featureName = updateData.name?.trim()
 
     // Validate required fields
-    if (!featureName && !updateData.image_url && typeof updateData.price !== 'number') {
+    if (!updateData.name && !updateData.image_url && typeof updateData.price !== 'number') {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
@@ -56,16 +55,16 @@ export async function PUT(
     }
 
     // Validate feature name
-    if (!featureName) {
+    if (!updateData.name) {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid feature name',
+        message: 'Missing or invalid required fields',
         errors: ['Feature name is required'],
       })
     }
 
     // Validate feature name length
-    if (featureName.length > FEATURE_NAME_MAX_LENGTH) {
+    if (updateData.name.length > FEATURE_NAME_MAX_LENGTH) {
       return createErrorResponse({
         code: 400,
         message: 'Invalid feature name',
@@ -77,7 +76,7 @@ export async function PUT(
     if (!updateData.image_url) {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid image URL',
+        message: 'Missing or invalid required fields',
         errors: ['Image URL is required'],
       })
     }
@@ -86,7 +85,7 @@ export async function PUT(
     if (typeof updateData.price !== 'number') {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid price',
+        message: 'Invalid feature price',
         errors: ['Price must be a number'],
       })
     }
@@ -106,7 +105,7 @@ export async function PUT(
     const { data: duplicateFeature } = await supabase
       .from('feature')
       .select('id')
-      .ilike('name', featureName)
+      .ilike('name', updateData.name)
       .neq('id', identifier)
       .single()
 

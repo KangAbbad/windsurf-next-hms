@@ -66,9 +66,13 @@ export default function FormDrawer(props: Props) {
   const onSubmit = (values: FormType) => {
     if (isFormLoading) return
     if (floorDetailState) {
-      updateMutation({ id: floorDetailState.id, ...values })
+      updateMutation({
+        id: floorDetailState.id,
+        ...values,
+        number: Number(values.number),
+      })
     } else {
-      createMutation(values)
+      createMutation({ ...values, number: Number(values.number) })
     }
   }
 
@@ -101,7 +105,7 @@ export default function FormDrawer(props: Props) {
     >
       <Form form={form} layout="vertical" onFinish={onSubmit}>
         <Form.Item<FormType>
-          label="Floor Name"
+          label="Name"
           name="name"
           rules={[{ max: FLOOR_NAME_MAX_LENGTH, message: `Maximum length is ${FLOOR_NAME_MAX_LENGTH} characters` }]}
           className="!mb-3"
@@ -110,16 +114,16 @@ export default function FormDrawer(props: Props) {
             size="large"
             showCount
             maxLength={FLOOR_NAME_MAX_LENGTH}
-            placeholder="Enter floor name"
+            placeholder="Enter name"
             className="!text-sm"
           />
         </Form.Item>
 
         <Form.Item<FormType>
-          label="Floor Number"
+          label="Number"
           name="number"
           rules={[
-            { required: true, message: 'Please input price' },
+            { required: true, message: 'Please enter price' },
             {
               pattern: /^\d+$/,
               message: 'Invalid number!',
@@ -128,7 +132,7 @@ export default function FormDrawer(props: Props) {
           getValueFromEvent={inputNumberValidation}
           className="!mb-3"
         >
-          <Input size="large" placeholder="Enter floor number" className="!text-sm" />
+          <Input size="large" placeholder="Enter number" className="!text-sm" />
         </Form.Item>
       </Form>
     </Drawer>

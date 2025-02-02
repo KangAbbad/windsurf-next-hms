@@ -43,10 +43,16 @@ export async function PUT(
     const supabase = await createClient()
     const { identifier } = await params
     const updateData: UpdateBedTypeBody = await request.json()
-    const bedTypeName = updateData.name?.trim()
 
     // Validate required fields
-    if (!bedTypeName || !updateData.length || !updateData.width || !updateData.height || !updateData.material) {
+    if (
+      !updateData.name &&
+      !updateData.image_url &&
+      !updateData.length &&
+      !updateData.width &&
+      !updateData.height &&
+      !updateData.material
+    ) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
@@ -54,12 +60,66 @@ export async function PUT(
       })
     }
 
+    // Validate bed type name
+    if (!updateData.name) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Bed type name is required'],
+      })
+    }
+
     // Validate bed type name length
-    if (bedTypeName.length > BED_TYPE_NAME_MAX_LENGTH) {
+    if (updateData.name.length > BED_TYPE_NAME_MAX_LENGTH) {
       return createErrorResponse({
         code: 400,
         message: 'Invalid bed type name',
         errors: [`name must not exceed ${BED_TYPE_NAME_MAX_LENGTH} characters`],
+      })
+    }
+
+    // Validate image_url
+    if (!updateData.image_url) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Image URL is required'],
+      })
+    }
+
+    // Validate length
+    if (typeof updateData.length !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid bed type length',
+        errors: ['Length must be a number'],
+      })
+    }
+
+    // Validate width
+    if (typeof updateData.width !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid bed type width',
+        errors: ['Width must be a number'],
+      })
+    }
+
+    // Validate height
+    if (typeof updateData.height !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid bed type height',
+        errors: ['Height must be a number'],
+      })
+    }
+
+    // Validate material
+    if (!updateData.material) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Material is required'],
       })
     }
 
@@ -78,7 +138,7 @@ export async function PUT(
     const { data: duplicateBedType } = await supabase
       .from('bed_type')
       .select('id')
-      .ilike('name', bedTypeName)
+      .ilike('name', updateData.name)
       .neq('id', identifier)
       .single()
 

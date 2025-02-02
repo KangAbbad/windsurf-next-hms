@@ -63,19 +63,25 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
     const newBedType: CreateBedTypeBody = await request.json()
-    const bedTypeName = newBedType.name?.trim()
 
     // Validate required fields
-    if (!bedTypeName) {
+    if (
+      !newBedType.name ||
+      !newBedType.image_url ||
+      !newBedType.length ||
+      !newBedType.width ||
+      !newBedType.height ||
+      !newBedType.material
+    ) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['name is required'],
+        errors: ['All fields are required'],
       })
     }
 
     // Validate bed type name length
-    if (bedTypeName.length > BED_TYPE_NAME_MAX_LENGTH) {
+    if (newBedType.name.length > BED_TYPE_NAME_MAX_LENGTH) {
       return createErrorResponse({
         code: 400,
         message: 'Invalid bed type name',
@@ -83,8 +89,57 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
+    // Validate image URL
+    if (!newBedType.image_url) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Image URL is required'],
+      })
+    }
+
+    // Validate length
+    if (typeof newBedType.length !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid bed type length',
+        errors: ['Length must be a number'],
+      })
+    }
+
+    // Validate width
+    if (typeof newBedType.width !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid bed type width',
+        errors: ['Width must be a number'],
+      })
+    }
+
+    // Validate height
+    if (typeof newBedType.height !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid bed type height',
+        errors: ['Height must be a number'],
+      })
+    }
+
+    // Validate material
+    if (!newBedType.material) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Material is required'],
+      })
+    }
+
     // Check if bed type name already exists
-    const { data: existingBedType } = await supabase.from('bed_type').select('id').ilike('name', bedTypeName).single()
+    const { data: existingBedType } = await supabase
+      .from('bed_type')
+      .select('id')
+      .ilike('name', newBedType.name)
+      .single()
 
     if (existingBedType) {
       return createErrorResponse({

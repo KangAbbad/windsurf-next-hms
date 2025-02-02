@@ -102,7 +102,7 @@ export default function FormModal(props: Props) {
           rules={[
             {
               required: true,
-              message: 'Please input status name',
+              message: 'Please enter status name',
             },
           ]}
         >
@@ -115,11 +115,11 @@ export default function FormModal(props: Props) {
           rules={[
             {
               required: true,
-              message: 'Please input status number',
+              message: 'Please enter status number',
             },
             {
               type: 'number',
-              message: 'Please input a valid number',
+              message: 'Please enter a valid number',
             },
           ]}
         >

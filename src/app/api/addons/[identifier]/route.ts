@@ -1,4 +1,4 @@
-import { AddonListItem, UpdateAddonBody } from '../types'
+import { ADDON_NAME_MAX_LENGTH, AddonListItem, UpdateAddonBody } from '../types'
 
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
@@ -43,92 +43,94 @@ export async function PUT(
   try {
     const supabase = await createClient()
     const { identifier } = await params
-    const updates: UpdateAddonBody = await request.json()
+    const updateData: UpdateAddonBody = await request.json()
 
     // Validate required fields if provided
-    if (updates.addon_name || updates.price) {
-      if (!updates.addon_name) {
-        return createErrorResponse({
-          code: 400,
-          message: 'Missing required fields',
-          errors: ['addon_name is required when updating name'],
-        })
-      }
-      if (!updates.price) {
-        return createErrorResponse({
-          code: 400,
-          message: 'Missing required fields',
-          errors: ['price is required when updating price'],
-        })
-      }
-    }
-
-    // Validate price is a positive number if provided
-    if (updates.price !== undefined && (typeof updates.price !== 'number' || updates.price <= 0)) {
+    if (!updateData.name && !updateData.image_url && typeof updateData.price !== 'number') {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid price',
-        errors: ['Price must be a positive number'],
+        message: 'Missing or invalid required fields',
+        errors: ['All fields are required'],
       })
     }
 
-    // Check if addon name already exists (excluding current addon)
-    if (updates.addon_name) {
-      const { data: existingAddon } = await supabase
-        .from('addon')
-        .select('id')
-        .ilike('addon_name', updates.addon_name)
-        .neq('id', identifier)
-        .single()
-
-      if (existingAddon) {
-        return createErrorResponse({
-          code: 400,
-          message: 'Addon name already exists',
-          errors: ['Addon name must be unique'],
-        })
-      }
+    // Validate addon name
+    if (!updateData.name) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Addon name is required'],
+      })
     }
 
-    // Check if addon exists
-    const { data: existingAddon, error: checkError } = await supabase
-      .from('addon')
-      .select('id')
-      .eq('id', identifier)
-      .single()
+    // Validate addon name length
+    if (updateData.name.length > ADDON_NAME_MAX_LENGTH) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid addon name',
+        errors: [`name must not exceed ${ADDON_NAME_MAX_LENGTH} characters`],
+      })
+    }
 
-    if (checkError || !existingAddon) {
+    // Validate image_url
+    if (!updateData.image_url) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Image URL is required'],
+      })
+    }
+
+    // Validate price
+    if (typeof updateData.price !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid addon price',
+        errors: ['Price must be a number'],
+      })
+    }
+
+    const { data: existingAddon } = await supabase.from('addon').select('id').eq('id', identifier).single()
+
+    if (!existingAddon) {
       return createErrorResponse({
         code: 404,
         message: 'Addon not found',
-        errors: ['Invalid addon ID'],
+        errors: ['The specified addon does not exist'],
+      })
+    }
+
+    // Check if addon exists
+    const { data: duplicateAddon } = await supabase
+      .from('addon')
+      .select('id')
+      .ilike('name', updateData.name)
+      .neq('id', identifier)
+      .single()
+
+    if (duplicateAddon) {
+      return createErrorResponse({
+        code: 409,
+        message: 'Addon name already exists',
+        errors: ['Addon name must be unique'],
       })
     }
 
     // Update addon
-    const { data: updatedAddon, error: updateError } = await supabase
-      .from('addon')
-      .update({
-        addon_name: updates.addon_name,
-        price: updates.price,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', identifier)
-      .select()
-      .single()
+    const { data, error } = await supabase.from('addon').update(updateData).eq('id', identifier).select().single()
 
-    if (updateError) {
+    if (error) {
       return createErrorResponse({
         code: 400,
-        message: updateError.message,
-        errors: [updateError.message],
+        message: error.message,
+        errors: [error.message],
       })
     }
 
     return createApiResponse<AddonListItem>({
       code: 200,
       message: 'Addon updated successfully',
-      data: updatedAddon,
+      data,
     })
   } catch (error) {
     console.error('Update addon error:', error)

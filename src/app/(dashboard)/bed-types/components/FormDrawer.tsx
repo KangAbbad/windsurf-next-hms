@@ -216,10 +216,10 @@ export default function FormDrawer(props: Props) {
         </Flex>
 
         <Form.Item<FormType>
-          label="Bed Type Name"
+          label="Name"
           name="name"
           rules={[
-            { required: true, message: 'Please input bed type name' },
+            { required: true, message: 'Please enter name' },
             { max: BED_TYPE_NAME_MAX_LENGTH, message: `Maximum length is ${BED_TYPE_NAME_MAX_LENGTH} characters` },
           ]}
           className="!mb-3"
@@ -228,7 +228,7 @@ export default function FormDrawer(props: Props) {
             size="large"
             showCount
             maxLength={BED_TYPE_NAME_MAX_LENGTH}
-            placeholder="Enter bed type name"
+            placeholder="Enter name"
             className="!text-sm"
           />
         </Form.Item>
@@ -237,7 +237,7 @@ export default function FormDrawer(props: Props) {
           label="Length (cm)"
           name="length"
           rules={[
-            { required: true, message: 'Please input bed length' },
+            { required: true, message: 'Please enter length' },
             {
               pattern: /^\d+$/,
               message: 'Invalid number!',
@@ -246,14 +246,14 @@ export default function FormDrawer(props: Props) {
           getValueFromEvent={inputNumberValidation}
           className="!mb-3"
         >
-          <Input size="large" placeholder="Enter bed length" className="!text-sm" />
+          <Input size="large" placeholder="Enter length" className="!text-sm" />
         </Form.Item>
 
         <Form.Item<FormType>
           label="Width (cm)"
           name="width"
           rules={[
-            { required: true, message: 'Please input bed width' },
+            { required: true, message: 'Please enter width' },
             {
               pattern: /^\d+$/,
               message: 'Invalid number!',
@@ -262,14 +262,14 @@ export default function FormDrawer(props: Props) {
           getValueFromEvent={inputNumberValidation}
           className="!mb-3"
         >
-          <Input size="large" type="number" placeholder="Enter bed width" className="!text-sm" />
+          <Input size="large" type="number" placeholder="Enter width" className="!text-sm" />
         </Form.Item>
 
         <Form.Item<FormType>
           label="Height (cm)"
           name="height"
           rules={[
-            { required: true, message: 'Please input bed height' },
+            { required: true, message: 'Please enter height' },
             {
               pattern: /^\d+$/,
               message: 'Invalid number!',
@@ -278,16 +278,16 @@ export default function FormDrawer(props: Props) {
           getValueFromEvent={inputNumberValidation}
           className="!mb-3"
         >
-          <Input size="large" type="number" placeholder="Enter bed height" className="!text-sm" />
+          <Input size="large" type="number" placeholder="Enter height" className="!text-sm" />
         </Form.Item>
 
         <Form.Item<FormType>
           label="Material"
           name="material"
-          rules={[{ required: true, message: 'Please input bed material' }]}
+          rules={[{ required: true, message: 'Please enter material' }]}
           className="!mb-3"
         >
-          <Input size="large" placeholder="Enter bed material" className="!text-sm" />
+          <Input size="large" placeholder="Enter material" className="!text-sm" />
         </Form.Item>
       </Form>
     </Drawer>

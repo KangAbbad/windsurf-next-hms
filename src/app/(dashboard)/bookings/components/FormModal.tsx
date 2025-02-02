@@ -274,7 +274,7 @@ export default function FormModal(props: Props) {
             placeholder="Select addons"
             options={addons.map((addon) => ({
               value: addon.id,
-              label: `${addon.addon_name} ($${addon.price})`,
+              label: `${addon.name} ($${addon.price})`,
             }))}
           />
         </Form.Item>
