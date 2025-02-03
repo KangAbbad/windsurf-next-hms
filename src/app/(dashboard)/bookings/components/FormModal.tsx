@@ -212,7 +212,7 @@ export default function FormModal(props: Props) {
             placeholder="Select a payment status"
             options={paymentStatuses.map((status) => ({
               value: status.id,
-              label: status.payment_status_name,
+              label: status.name,
             }))}
           />
         </Form.Item>

@@ -12,7 +12,7 @@ import { paymentStatusDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
 import { type PaymentStatusListPageParams, getAll } from './services/get'
 
-const FormModal = dynamic(() => import('./components/FormModal'), {
+const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
 })
 
@@ -93,7 +93,7 @@ export default function PaymentStatusesPage() {
             },
           }}
         />
-        <FormModal
+        <FormDrawer
           isVisible={isFormVisible}
           onCancel={() => {
             setFormVisible(false)

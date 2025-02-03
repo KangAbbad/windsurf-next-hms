@@ -18,14 +18,14 @@ export async function GET(request: Request): Promise<Response> {
 
     // Apply search filter if provided
     if (search) {
-      query = query.ilike('payment_status_name', `%${search}%`)
+      query = query.ilike('name', `%${search}%`)
     }
 
     const {
       data: items,
       error,
       count,
-    } = await query.range(offset, offset + limit - 1).order('payment_status_name', { ascending: true })
+    } = await query.range(offset, offset + limit - 1).order('number', { ascending: true })
 
     if (error) {
       return createErrorResponse({
@@ -66,16 +66,16 @@ export async function POST(request: Request): Promise<Response> {
     const newPaymentStatus: CreatePaymentStatusBody = await request.json()
 
     // Validate required fields
-    if (!newPaymentStatus.payment_status_name || !newPaymentStatus.payment_status_number) {
+    if (!newPaymentStatus.name || !newPaymentStatus.number) {
       return createErrorResponse({
         code: 400,
-        message: 'Missing required fields',
-        errors: ['payment_status_name and payment_status_number are required'],
+        message: 'Missing or invalid required fields',
+        errors: ['All fields are required'],
       })
     }
 
-    // Validate payment_status_number is a positive number
-    if (typeof newPaymentStatus.payment_status_number !== 'number' || newPaymentStatus.payment_status_number <= 0) {
+    // Validate payment_status_number is a number
+    if (typeof newPaymentStatus.number !== 'number') {
       return createErrorResponse({
         code: 400,
         message: 'Invalid payment status number',
@@ -87,7 +87,7 @@ export async function POST(request: Request): Promise<Response> {
     const { data: existingStatus } = await supabase
       .from('payment_status')
       .select('id')
-      .ilike('payment_status_name', newPaymentStatus.payment_status_name)
+      .ilike('name', newPaymentStatus.name)
       .single()
 
     if (existingStatus) {
@@ -102,7 +102,7 @@ export async function POST(request: Request): Promise<Response> {
     const { data: existingNumber } = await supabase
       .from('payment_status')
       .select('id')
-      .eq('payment_status_number', newPaymentStatus.payment_status_number)
+      .eq('number', newPaymentStatus.number)
       .single()
 
     if (existingNumber) {
@@ -113,18 +113,7 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    const { data, error } = await supabase
-      .from('payment_status')
-      .insert([
-        {
-          payment_status_name: newPaymentStatus.payment_status_name,
-          payment_status_number: newPaymentStatus.payment_status_number,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        },
-      ])
-      .select()
-      .single()
+    const { data, error } = await supabase.from('payment_status').insert([newPaymentStatus]).select().single()
 
     if (error) {
       return createErrorResponse({

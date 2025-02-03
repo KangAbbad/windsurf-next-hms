@@ -11,7 +11,7 @@ export async function GET(
     const supabase = await createClient()
     const { identifier } = await params
 
-    const { data, error } = await supabase.from('payment-status').select('*').eq('id', identifier).single()
+    const { data, error } = await supabase.from('payment_status').select().eq('id', identifier).single()
 
     if (error) {
       return createErrorResponse({
@@ -43,70 +43,34 @@ export async function PUT(
   try {
     const supabase = await createClient()
     const { identifier } = await params
-    const updates: UpdatePaymentStatusBody = await request.json()
+    const updateData: UpdatePaymentStatusBody = await request.json()
 
     // Validate required fields
-    if (!updates.payment_status_name) {
+    if (!updateData.name) {
       return createErrorResponse({
         code: 400,
-        message: 'Missing required fields',
-        errors: ['payment_status_name is required'],
+        message: 'Missing or invalid required fields',
+        errors: ['name is required'],
       })
     }
 
     // Validate payment_status_number if provided
-    if (updates.payment_status_number !== undefined) {
-      if (typeof updates.payment_status_number !== 'number' || updates.payment_status_number <= 0) {
-        return createErrorResponse({
-          code: 400,
-          message: 'Invalid payment status number',
-          errors: ['Payment status number must be a positive number'],
-        })
-      }
-
-      // Check if payment status number already exists (excluding current status)
-      const { data: existingNumber } = await supabase
-        .from('payment_status')
-        .select('id')
-        .eq('payment_status_number', updates.payment_status_number)
-        .neq('id', identifier)
-        .single()
-
-      if (existingNumber) {
-        return createErrorResponse({
-          code: 400,
-          message: 'Payment status number already exists',
-          errors: ['Payment status number must be unique'],
-        })
-      }
-    }
-
-    // Check if payment status name already exists (excluding current status)
-    if (updates.payment_status_name) {
-      const { data: existingStatus } = await supabase
-        .from('payment_status')
-        .select('id')
-        .ilike('payment_status_name', updates.payment_status_name)
-        .neq('id', identifier)
-        .single()
-
-      if (existingStatus) {
-        return createErrorResponse({
-          code: 400,
-          message: 'Payment status name already exists',
-          errors: ['Payment status name must be unique'],
-        })
-      }
+    if (typeof updateData.number !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid payment status number',
+        errors: ['Payment status number must be a number'],
+      })
     }
 
     // Check if payment status exists
-    const { data: existingPaymentStatus, error: checkError } = await supabase
+    const { data: existingPaymentStatus } = await supabase
       .from('payment_status')
       .select('id')
       .eq('id', identifier)
       .single()
 
-    if (checkError || !existingPaymentStatus) {
+    if (!existingPaymentStatus) {
       return createErrorResponse({
         code: 404,
         message: 'Payment status not found',
@@ -114,12 +78,41 @@ export async function PUT(
       })
     }
 
+    // Check if payment status number already exists (excluding current status)
+    const { data: existingNumber } = await supabase
+      .from('payment_status')
+      .select('id')
+      .eq('number', updateData.number)
+      .neq('id', identifier)
+      .single()
+
+    if (existingNumber) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Payment status number already exists',
+        errors: ['Payment status number must be unique'],
+      })
+    }
+
+    // Check if payment status name already exists (excluding current status)
+    const { data: existingName } = await supabase
+      .from('payment_status')
+      .select('id')
+      .ilike('name', updateData.name)
+      .neq('id', identifier)
+      .single()
+
+    if (existingName) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Payment status name already exists',
+        errors: ['Payment status name must be unique'],
+      })
+    }
+
     const { data, error } = await supabase
       .from('payment_status')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', identifier)
       .select()
       .single()

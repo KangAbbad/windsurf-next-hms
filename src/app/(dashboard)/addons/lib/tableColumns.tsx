@@ -89,7 +89,7 @@ export const tableColumns = (props: Props) => {
         key: 'price',
         width: '30%',
         sorter: (a, b) => a.price - b.price,
-        render: (price) => <span className="font-medium">{formatCurrency(price)}</span>,
+        render: (price) => <Typography.Text className="font-medium">{formatCurrency(price)}</Typography.Text>,
       },
       {
         title: 'Time',
@@ -113,10 +113,10 @@ export const tableColumns = (props: Props) => {
       {
         title: 'Actions',
         key: 'actions',
-        width: '10%',
         align: 'center',
+        width: '10%',
         render: (_, record) => (
-          <Flex gap={4} align="center">
+          <Flex gap={4} align="center" justify="center">
             <Button
               type="text"
               icon={<FaPenToSquare />}

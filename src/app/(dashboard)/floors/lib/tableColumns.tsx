@@ -84,10 +84,11 @@ export const tableColumns = (props: Props) => {
       {
         title: 'Actions',
         key: 'actions',
+        align: 'center',
         width: '15%',
         render: (_, record) => {
           return (
-            <Flex gap={4} align="center">
+            <Flex gap={4} align="center" justify="center">
               <Button
                 type="text"
                 icon={<FaPenToSquare />}

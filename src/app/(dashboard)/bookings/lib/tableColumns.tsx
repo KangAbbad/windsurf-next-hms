@@ -135,17 +135,17 @@ export const tableColumns = (props: Props) => {
         render: (_, record) => (
           <Tag
             color={
-              record.payment_status.payment_status_name.toLowerCase() === 'paid'
+              record.payment_status.name.toLowerCase() === 'paid'
                 ? 'success'
-                : record.payment_status.payment_status_name.toLowerCase() === 'pending'
+                : record.payment_status.name.toLowerCase() === 'pending'
                   ? 'warning'
                   : 'error'
             }
           >
-            {record.payment_status.payment_status_name}
+            {record.payment_status.name}
           </Tag>
         ),
-        sorter: (a, b) => a.payment_status.payment_status_name.localeCompare(b.payment_status.payment_status_name),
+        sorter: (a, b) => a.payment_status.name.localeCompare(b.payment_status.name),
       },
       {
         title: 'Actions',
