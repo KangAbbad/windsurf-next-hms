@@ -12,7 +12,7 @@ import { roomStatusDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
 import { type RoomStatusListPageParams, getAll } from './services/get'
 
-const FormModal = dynamic(() => import('./components/FormModal'), {
+const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
 })
 
@@ -93,7 +93,7 @@ export default function RoomStatusesPage() {
             },
           }}
         />
-        <FormModal
+        <FormDrawer
           isVisible={isFormVisible}
           onCancel={() => {
             setFormVisible(false)

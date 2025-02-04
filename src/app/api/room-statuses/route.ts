@@ -18,14 +18,14 @@ export async function GET(request: Request): Promise<Response> {
 
     // Apply search filter if provided
     if (search) {
-      query = query.ilike('status_name', `%${search}%`)
+      query = query.ilike('name', `%${search}%`)
     }
 
     const {
       data: items,
       error,
       count,
-    } = await query.range(offset, offset + limit - 1).order('status_number', { ascending: true })
+    } = await query.range(offset, offset + limit - 1).order('number', { ascending: true })
 
     if (error) {
       return createErrorResponse({
@@ -63,32 +63,90 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const body: CreateRoomStatusBody = await request.json()
+    const newRoomStatus: CreateRoomStatusBody = await request.json()
 
     // Validate required fields
-    const validationErrors: string[] = []
-    if (!body.status_name) validationErrors.push('status_name is required')
-    if (typeof body.status_number !== 'number') validationErrors.push('status_number must be a number')
-
-    if (validationErrors.length > 0) {
+    if (!newRoomStatus.name && typeof newRoomStatus.number !== 'number' && !newRoomStatus.color) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: validationErrors,
+        errors: ['All fields are required'],
       })
     }
 
-    const now = new Date().toISOString()
-    const { data, error } = await supabase
-      .from('room_status')
-      .insert({
-        status_name: body.status_name,
-        status_number: body.status_number,
-        created_at: now,
-        updated_at: now,
+    // Validate name
+    if (!newRoomStatus.name || typeof newRoomStatus.name !== 'string' || newRoomStatus.name.trim() === '') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room status name is required'],
       })
-      .select()
+    }
+
+    // Validate number
+    if (typeof newRoomStatus.number !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room status number is required'],
+      })
+    }
+
+    // Validate color
+    if (!newRoomStatus.color) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room status color is required'],
+      })
+    }
+
+    // Check if room status name already exists
+    const { data: existingName } = await supabase
+      .from('room_status')
+      .select('id')
+      .ilike('name', newRoomStatus.name)
       .single()
+
+    if (existingName) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Room status name already exists',
+        errors: ['Room status name must be unique'],
+      })
+    }
+
+    // Check if room status number already exists
+    const { data: existingNumber } = await supabase
+      .from('room_status')
+      .select('id')
+      .eq('number', newRoomStatus.number)
+      .single()
+
+    if (existingNumber) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Room status number already exists',
+        errors: ['Room status number must be unique'],
+      })
+    }
+
+    // Check if payment status color already exists
+    const { data: existingColor } = await supabase
+      .from('room_status')
+      .select('id')
+      .eq('color', newRoomStatus.color)
+      .single()
+
+    if (existingColor) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Room status color already exists',
+        errors: ['Room status color must be unique'],
+      })
+    }
+
+    const { data, error } = await supabase.from('room_status').insert([newRoomStatus]).select().single()
 
     if (error) {
       return createErrorResponse({

@@ -43,20 +43,41 @@ export async function PUT(
   try {
     const supabase = await createClient()
     const { identifier } = await params
-    const updates: UpdateRoomStatusBody = await request.json()
+    const updateData: UpdateRoomStatusBody = await request.json()
 
     // Validate required fields
-    const validationErrors: string[] = []
-    if (!updates.status_name) validationErrors.push('status_name is required')
-    if (updates.status_number !== undefined && typeof updates.status_number !== 'number') {
-      validationErrors.push('status_number must be a number')
-    }
-
-    if (validationErrors.length > 0) {
+    if (!updateData.name && typeof updateData.number !== 'number' && !updateData.color) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: validationErrors,
+        errors: ['All fields are required'],
+      })
+    }
+
+    // Validate name
+    if (!updateData.name || typeof updateData.name !== 'string' || updateData.name.trim() === '') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room status name is required'],
+      })
+    }
+
+    // Validate number
+    if (typeof updateData.number !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room status number is required'],
+      })
+    }
+
+    // Validate color
+    if (!updateData.color) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room status color is required'],
       })
     }
 
@@ -64,7 +85,7 @@ export async function PUT(
     const { data: existingStatus } = await supabase
       .from('room_status')
       .select('id')
-      .ilike('status_name', updates.status_name ?? '')
+      .ilike('status_name', updateData.name ?? '')
       .neq('id', identifier)
       .single()
 
@@ -76,16 +97,39 @@ export async function PUT(
       })
     }
 
-    const { data, error } = await supabase
+    // Check if status number already exists (excluding current status)
+    const { data: existingNumber } = await supabase
       .from('room_status')
-      .update({
-        status_name: updates.status_name,
-        status_number: updates.status_number,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', identifier)
-      .select()
+      .select('id')
+      .eq('status_number', updateData.number)
+      .neq('id', identifier)
       .single()
+
+    if (existingNumber) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Room status number already exists',
+        errors: ['Room status number must be unique'],
+      })
+    }
+
+    // Check if status color already exists (excluding current status)
+    const { data: existingColor } = await supabase
+      .from('room_status')
+      .select('id')
+      .eq('status_color', updateData.color)
+      .neq('id', identifier)
+      .single()
+
+    if (existingColor) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Room status color already exists',
+        errors: ['Room status color must be unique'],
+      })
+    }
+
+    const { data, error } = await supabase.from('room_status').update(updateData).eq('id', identifier).select().single()
 
     if (error) {
       return createErrorResponse({

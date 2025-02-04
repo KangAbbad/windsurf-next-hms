@@ -1,14 +1,16 @@
 export type RoomStatusListItem = {
   id: number
-  status_name: string
-  status_number: number
+  name: string
+  number: number
+  color: string
   created_at: string
   updated_at: string
 }
 
 export type CreateRoomStatusBody = {
-  status_name: string
-  status_number: number
+  name: string
+  number: number
+  color: string
 }
 
 export type UpdateRoomStatusBody = Partial<CreateRoomStatusBody> & {

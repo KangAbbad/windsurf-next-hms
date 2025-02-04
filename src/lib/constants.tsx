@@ -1,5 +1,7 @@
+import { Tag } from 'antd'
 import { PresetColors } from 'antd/es/theme/interface/presetColors'
 import { Redirect } from 'next/dist/lib/load-custom-routes'
+import { ReactNode } from 'react'
 
 export const supabaseConfig = {
   url: process.env.SUPABASE_URL ?? '',
@@ -23,7 +25,11 @@ export const parentRoutesException: Redirect[] = [
   },
 ]
 
-export const tagColorOptions: { label: string; value: string }[] = PresetColors.map((color) => ({
-  label: color,
+export const tagColorOptions: { label: ReactNode; value: ReactNode }[] = PresetColors.map((color) => ({
+  label: (
+    <Tag color={color ?? 'default'} className="capitalize">
+      {color}
+    </Tag>
+  ),
   value: color,
 }))

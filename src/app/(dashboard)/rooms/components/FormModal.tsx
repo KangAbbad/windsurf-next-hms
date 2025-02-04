@@ -151,7 +151,7 @@ export default function FormModal(props: Props) {
           <Select loading={isLoadingRoomStatuses}>
             {roomStatuses.map((status) => (
               <Select.Option key={status.id} value={status.id}>
-                {status.status_name}
+                {status.name}
               </Select.Option>
             ))}
           </Select>

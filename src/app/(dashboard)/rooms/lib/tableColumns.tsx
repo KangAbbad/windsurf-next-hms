@@ -62,7 +62,7 @@ export const tableColumns = (props: Props) => {
         dataIndex: ['room_status', 'status_name'],
         key: 'status',
         width: '20%',
-        sorter: (a, b) => a.room_status.status_name.localeCompare(b.room_status.status_name),
+        sorter: (a, b) => a.room_status.name.localeCompare(b.room_status.name),
         render: (_, record) => {
           const statusColor: { [key: number]: string } = {
             1: 'green',
@@ -71,11 +71,7 @@ export const tableColumns = (props: Props) => {
             4: 'red',
           }
 
-          return (
-            <Tag color={statusColor[record.room_status.status_number] ?? 'default'}>
-              {record.room_status.status_name}
-            </Tag>
-          )
+          return <Tag color={statusColor[record.room_status.number] ?? 'default'}>{record.room_status.name}</Tag>
         },
       },
       {
