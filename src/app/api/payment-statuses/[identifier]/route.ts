@@ -50,7 +50,7 @@ export async function PUT(
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['name is required'],
+        errors: ['Payment status name is required'],
       })
     }
 
@@ -60,6 +60,15 @@ export async function PUT(
         code: 400,
         message: 'Invalid payment status number',
         errors: ['Payment status number must be a number'],
+      })
+    }
+
+    // Validate payment status color
+    if (!updateData.color) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Payment status color field is required'],
       })
     }
 
@@ -75,6 +84,22 @@ export async function PUT(
         code: 404,
         message: 'Payment status not found',
         errors: ['Payment status with the specified ID does not exist'],
+      })
+    }
+
+    // Check if payment status name already exists (excluding current status)
+    const { data: existingName } = await supabase
+      .from('payment_status')
+      .select('id')
+      .ilike('name', updateData.name)
+      .neq('id', identifier)
+      .single()
+
+    if (existingName) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Payment status name already exists',
+        errors: ['Payment status name must be unique'],
       })
     }
 
@@ -94,19 +119,19 @@ export async function PUT(
       })
     }
 
-    // Check if payment status name already exists (excluding current status)
-    const { data: existingName } = await supabase
+    // Check if payment status color already exists (excluding current status)
+    const { data: existingColor } = await supabase
       .from('payment_status')
       .select('id')
-      .ilike('name', updateData.name)
+      .eq('color', updateData.color)
       .neq('id', identifier)
       .single()
 
-    if (existingName) {
+    if (existingColor) {
       return createErrorResponse({
         code: 400,
-        message: 'Payment status name already exists',
-        errors: ['Payment status name must be unique'],
+        message: 'Payment status color already exists',
+        errors: ['Payment status color must be unique'],
       })
     }
 

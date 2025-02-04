@@ -4,7 +4,7 @@ import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
-import { paymentStatusTagColor, queryKey } from './constants'
+import { queryKey } from './constants'
 import { paymentStatusDetailStore } from './state'
 import { deleteItem } from '../services/delete'
 
@@ -58,7 +58,7 @@ export const tableColumns = (props: Props) => {
         width: '30%',
         sorter: (a, b) => a.name.localeCompare(b.name),
         render: (_, record) => {
-          return <Tag color={paymentStatusTagColor[record.name] ?? 'default'}>{record.name}</Tag>
+          return <Tag color={record.color ?? 'default'}>{record.name}</Tag>
         },
       },
       {

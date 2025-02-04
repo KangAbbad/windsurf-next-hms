@@ -1,7 +1,7 @@
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Button, Drawer, Form, Input } from 'antd'
+import { Button, Drawer, Form, Input, Select } from 'antd'
 import { useEffect } from 'react'
 import { IoClose } from 'react-icons/io5'
 
@@ -10,11 +10,13 @@ import { paymentStatusDetailStore } from '../lib/state'
 import { createItem } from '../services/post'
 import { updateItem } from '../services/put'
 
+import { tagColorOptions } from '@/lib/constants'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 
 type FormType = {
   name: string
   number: number
+  color: string
 }
 
 type Props = {
@@ -75,6 +77,7 @@ export default function FormDrawer(props: Props) {
       form.setFieldsValue({
         name: paymentStatusDetailState.name,
         number: paymentStatusDetailState.number,
+        color: paymentStatusDetailState.color,
       })
     } else {
       form.resetFields()
@@ -96,7 +99,7 @@ export default function FormDrawer(props: Props) {
       }
       onClose={hideDrawer}
     >
-      <Form form={form} layout="vertical" onFinish={onSubmit} className="!mt-4">
+      <Form form={form} layout="vertical" onFinish={onSubmit}>
         <Form.Item<FormType>
           name="number"
           label="Number"
@@ -119,6 +122,15 @@ export default function FormDrawer(props: Props) {
           className="!mb-3"
         >
           <Input size="large" placeholder="Enter name" className="!text-sm" />
+        </Form.Item>
+
+        <Form.Item<FormType>
+          name="color"
+          label="Color"
+          rules={[{ required: true, message: 'Please select color' }]}
+          className="!mb-3"
+        >
+          <Select allowClear showSearch placeholder="Select color" options={tagColorOptions} className="!h-9" />
         </Form.Item>
       </Form>
     </Drawer>

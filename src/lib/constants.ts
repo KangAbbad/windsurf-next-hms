@@ -1,3 +1,4 @@
+import { PresetColors } from 'antd/es/theme/interface/presetColors'
 import { Redirect } from 'next/dist/lib/load-custom-routes'
 
 export const supabaseConfig = {
@@ -21,3 +22,8 @@ export const parentRoutesException: Redirect[] = [
     permanent: true,
   },
 ]
+
+export const tagColorOptions: { label: string; value: string }[] = PresetColors.map((color) => ({
+  label: color,
+  value: color,
+}))

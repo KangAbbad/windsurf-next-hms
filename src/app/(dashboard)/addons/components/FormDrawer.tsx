@@ -154,7 +154,7 @@ export default function FormDrawer(props: Props) {
       }
       onClose={hideDrawer}
     >
-      <Form form={form} layout="vertical" onFinish={onSubmit} className="!mt-4">
+      <Form form={form} layout="vertical" onFinish={onSubmit}>
         <Flex gap={16} align="center">
           {addonDetailState?.image_url && (
             <>

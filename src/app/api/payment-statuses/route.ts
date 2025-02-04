@@ -66,11 +66,20 @@ export async function POST(request: Request): Promise<Response> {
     const newPaymentStatus: CreatePaymentStatusBody = await request.json()
 
     // Validate required fields
-    if (!newPaymentStatus.name || !newPaymentStatus.number) {
+    if (!newPaymentStatus.name && !newPaymentStatus.number && !newPaymentStatus.color) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
         errors: ['All fields are required'],
+      })
+    }
+
+    // Validate payment_status_name
+    if (!newPaymentStatus.name) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Payment status name field is required'],
       })
     }
 
@@ -83,14 +92,23 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
+    // Validate payment_status_color
+    if (!newPaymentStatus.color) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Payment status color field is required'],
+      })
+    }
+
     // Check if payment status name already exists
-    const { data: existingStatus } = await supabase
+    const { data: existingName } = await supabase
       .from('payment_status')
       .select('id')
       .ilike('name', newPaymentStatus.name)
       .single()
 
-    if (existingStatus) {
+    if (existingName) {
       return createErrorResponse({
         code: 400,
         message: 'Payment status name already exists',
@@ -110,6 +128,21 @@ export async function POST(request: Request): Promise<Response> {
         code: 400,
         message: 'Payment status number already exists',
         errors: ['Payment status number must be unique'],
+      })
+    }
+
+    // Check if payment status color already exists
+    const { data: existingColor } = await supabase
+      .from('payment_status')
+      .select('id')
+      .ilike('color', newPaymentStatus.color)
+      .single()
+
+    if (existingColor) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Payment status color already exists',
+        errors: ['Payment status color must be unique'],
       })
     }
 
