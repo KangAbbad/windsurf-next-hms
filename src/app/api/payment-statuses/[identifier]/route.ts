@@ -45,6 +45,15 @@ export async function PUT(
     const { identifier } = await params
     const updateData: UpdatePaymentStatusBody = await request.json()
 
+    // Validate all fields are provided
+    if (!updateData.name && typeof updateData.number !== 'number' && !updateData.color) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['All fields are required'],
+      })
+    }
+
     // Validate required fields
     if (!updateData.name) {
       return createErrorResponse({

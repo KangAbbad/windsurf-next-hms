@@ -1,4 +1,4 @@
-import type { CreatePaymentStatusBody, PaymentStatusListItem } from './types'
+import { PAYMENT_STATUS_NAME_LENGTH, type CreatePaymentStatusBody, type PaymentStatusListItem } from './types'
 
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
@@ -66,7 +66,7 @@ export async function POST(request: Request): Promise<Response> {
     const newPaymentStatus: CreatePaymentStatusBody = await request.json()
 
     // Validate required fields
-    if (!newPaymentStatus.name && !newPaymentStatus.number && !newPaymentStatus.color) {
+    if (!newPaymentStatus.name && typeof newPaymentStatus.number !== 'number' && !newPaymentStatus.color) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
@@ -74,7 +74,7 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    // Validate payment_status_name
+    // Validate payment status name
     if (!newPaymentStatus.name) {
       return createErrorResponse({
         code: 400,
@@ -83,7 +83,16 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    // Validate payment_status_number is a number
+    // Validate payment status name length
+    if (newPaymentStatus.name.length > PAYMENT_STATUS_NAME_LENGTH) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid payment status name',
+        errors: [`name must be less than ${PAYMENT_STATUS_NAME_LENGTH} characters`],
+      })
+    }
+
+    // Validate payment status number is a number
     if (typeof newPaymentStatus.number !== 'number') {
       return createErrorResponse({
         code: 400,

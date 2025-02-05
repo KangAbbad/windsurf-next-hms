@@ -16,3 +16,5 @@ export type CreatePaymentStatusBody = {
 export type UpdatePaymentStatusBody = Partial<CreatePaymentStatusBody> & {
   id: string
 }
+
+export const PAYMENT_STATUS_NAME_LENGTH = 10
