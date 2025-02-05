@@ -88,7 +88,7 @@ export async function POST(request: Request): Promise<Response> {
     if (!newFeature.name) {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid feature name',
+        message: 'Missing or invalid required fields',
         errors: ['Feature name is required'],
       })
     }

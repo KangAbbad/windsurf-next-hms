@@ -23,9 +23,9 @@ export async function GET(request: Request): Promise<Response> {
     } = await supabase
       .from('room_class')
       .select('*', { count: 'exact' })
-      .ilike('class_name', `%${search}%`)
+      .ilike('name', `%${search}%`)
       .range(offset, offset + limit - 1)
-      .order('class_name', { ascending: true })
+      .order('name', { ascending: true })
 
     if (roomClassError) {
       return createErrorResponse({
@@ -119,20 +119,62 @@ export async function POST(request: Request): Promise<Response> {
     const newRoomClass: CreateRoomClassBody = await request.json()
 
     // Validate required fields
-    if (!newRoomClass.class_name || !newRoomClass.base_price) {
+    if (
+      !newRoomClass.name &&
+      typeof newRoomClass.price !== 'number' &&
+      !newRoomClass.image_url &&
+      !newRoomClass.bed_types.length &&
+      !newRoomClass.feature_ids
+    ) {
       return createErrorResponse({
         code: 400,
-        message: 'Missing required fields',
-        errors: ['class_name and base_price are required'],
+        message: 'Missing or invalid required fields',
+        errors: ['All fields are required'],
       })
     }
 
-    // Validate base_price is a positive number
-    if (typeof newRoomClass.base_price !== 'number' || newRoomClass.base_price <= 0) {
+    // Validate name is not empty
+    if (!newRoomClass.name) {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid base price',
-        errors: ['Base price must be a positive number'],
+        message: 'Missing or invalid required fields',
+        errors: ['Room class name is required'],
+      })
+    }
+
+    // Validate price is not empty
+    if (typeof newRoomClass.price !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid room class price',
+        errors: ['Room class price must be a number'],
+      })
+    }
+
+    // Validate image_url is not empty
+    if (!newRoomClass.image_url) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room class image is required'],
+      })
+    }
+
+    // Validate bed_types is not empty
+    if (!newRoomClass.bed_types.length) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room class bed types are required'],
+      })
+    }
+
+    // Validate feature_ids is not empty
+    if (!newRoomClass.feature_ids.length) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room class features are required'],
       })
     }
 
@@ -142,7 +184,7 @@ export async function POST(request: Request): Promise<Response> {
       .select('id')
       .in(
         'id',
-        newRoomClass.bed_types.map((bt) => bt.bed_type_id)
+        newRoomClass.bed_types.map((bt) => bt.id)
       )
 
     if (bedTypesError || !bedTypes || bedTypes.length !== newRoomClass.bed_types.length) {
@@ -180,7 +222,7 @@ export async function POST(request: Request): Promise<Response> {
     const { data: existingRoomClass } = await supabase
       .from('room_class')
       .select('id')
-      .ilike('class_name', newRoomClass.class_name)
+      .ilike('class_name', newRoomClass.name)
       .single()
 
     if (existingRoomClass) {
@@ -196,8 +238,8 @@ export async function POST(request: Request): Promise<Response> {
       .from('room_class')
       .insert([
         {
-          class_name: newRoomClass.class_name,
-          base_price: newRoomClass.base_price,
+          class_name: newRoomClass.name,
+          base_price: newRoomClass.price,
         },
       ])
       .select()
@@ -215,7 +257,7 @@ export async function POST(request: Request): Promise<Response> {
     const { error: bedTypesInsertError } = await supabase.from('room_class_bed_type').insert(
       newRoomClass.bed_types.map((bt) => ({
         room_class_id: roomClass.id,
-        bed_type_id: bt.bed_type_id,
+        bed_type_id: bt.id,
         num_beds: bt.num_beds,
       }))
     )

@@ -85,8 +85,8 @@ export default function FormModal(props: Props) {
     if (!isVisible) return
     if (roomClassDetailState) {
       form.setFieldsValue({
-        class_name: roomClassDetailState.class_name,
-        base_price: roomClassDetailState.base_price,
+        name: roomClassDetailState.name,
+        price: roomClassDetailState.price,
         bed_types: roomClassDetailState.bed_types.map((bt) => ({
           bed_type_id: bt.bed_type.id,
           num_beds: bt.num_beds,
@@ -110,16 +110,16 @@ export default function FormModal(props: Props) {
       onOk={form.submit}
     >
       <Form form={form} layout="vertical" onFinish={onSubmit} className="!mt-4">
-        <Form.Item
-          name="class_name"
+        <Form.Item<CreateRoomClassBody>
+          name="name"
           label="Name"
           rules={[{ required: true, message: 'Please enter room class name' }]}
           className="!mb-3"
         >
           <Input />
         </Form.Item>
-        <Form.Item
-          name="base_price"
+        <Form.Item<CreateRoomClassBody>
+          name="price"
           label="Base Price"
           rules={[{ required: true, message: 'Please enter room class base price' }]}
           className="!mb-3"
@@ -149,7 +149,7 @@ export default function FormModal(props: Props) {
         >
           {(fields, { add, remove }, { errors }) => (
             <>
-              {fields.map(({ key, name, ...restField }, index) => (
+              {fields.map(({ key, name, ...restField }) => (
                 <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
                   <Form.Item
                     {...restField}
@@ -199,7 +199,7 @@ export default function FormModal(props: Props) {
           )}
         </Form.List>
 
-        <Form.Item
+        <Form.Item<CreateRoomClassBody>
           name="feature_ids"
           label="Features"
           rules={[{ required: true, message: 'Please select at least one feature' }]}
