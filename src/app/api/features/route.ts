@@ -76,7 +76,7 @@ export async function POST(request: Request): Promise<Response> {
     const newFeature: CreateFeatureBody = await request.json()
 
     // Validate required fields
-    if (!newFeature.name && !newFeature.image_url && typeof newFeature.price !== 'number') {
+    if (!newFeature.name && typeof newFeature.price !== 'number' && !newFeature.image_url) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
@@ -102,21 +102,21 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    // Validate image URL
-    if (!newFeature.image_url) {
-      return createErrorResponse({
-        code: 400,
-        message: 'Missing or invalid required fields',
-        errors: ['Image URL is required'],
-      })
-    }
-
-    // Validate price
+    // Validate feature price
     if (typeof newFeature.price !== 'number') {
       return createErrorResponse({
         code: 400,
         message: 'Invalid feature price',
         errors: ['Price must be a number'],
+      })
+    }
+
+    // Validate feature image url
+    if (!newFeature.image_url) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Image URL is required'],
       })
     }
 

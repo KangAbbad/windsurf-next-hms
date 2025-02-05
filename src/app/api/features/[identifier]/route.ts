@@ -46,7 +46,7 @@ export async function PUT(
     const updateData: UpdateFeatureBody = await request.json()
 
     // Validate required fields
-    if (!updateData.name && !updateData.image_url && typeof updateData.price !== 'number') {
+    if (!updateData.name && typeof updateData.price !== 'number' && !updateData.image_url) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
@@ -72,21 +72,21 @@ export async function PUT(
       })
     }
 
-    // Validate image_url
-    if (!updateData.image_url) {
-      return createErrorResponse({
-        code: 400,
-        message: 'Missing or invalid required fields',
-        errors: ['Image URL is required'],
-      })
-    }
-
-    // Validate price
+    // Validate feature price
     if (typeof updateData.price !== 'number') {
       return createErrorResponse({
         code: 400,
         message: 'Invalid feature price',
         errors: ['Price must be a number'],
+      })
+    }
+
+    // Validate feature image_url
+    if (!updateData.image_url) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Image URL is required'],
       })
     }
 
