@@ -45,8 +45,8 @@ export async function PUT(
     const { identifier } = await params
     const updateData: UpdateAddonBody = await request.json()
 
-    // Validate required fields if provided
-    if (!updateData.name && !updateData.image_url && typeof updateData.price !== 'number') {
+    // Validate required fields
+    if (!updateData.name && typeof updateData.price !== 'number' && !updateData.image_url) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
@@ -72,16 +72,7 @@ export async function PUT(
       })
     }
 
-    // Validate image_url
-    if (!updateData.image_url) {
-      return createErrorResponse({
-        code: 400,
-        message: 'Missing or invalid required fields',
-        errors: ['Image URL is required'],
-      })
-    }
-
-    // Validate price
+    // Validate addon price
     if (typeof updateData.price !== 'number') {
       return createErrorResponse({
         code: 400,
@@ -90,6 +81,16 @@ export async function PUT(
       })
     }
 
+    // Validate addon image url
+    if (!updateData.image_url) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Image URL is required'],
+      })
+    }
+
+    // Check if addon does not exists
     const { data: existingAddon } = await supabase.from('addon').select('id').eq('id', identifier).single()
 
     if (!existingAddon) {
@@ -151,13 +152,9 @@ export async function DELETE(
     const { identifier } = await params
 
     // Check if addon exists
-    const { data: existingAddon, error: checkError } = await supabase
-      .from('addon')
-      .select('id')
-      .eq('id', identifier)
-      .single()
+    const { data: existingAddon } = await supabase.from('addon').select('id').eq('id', identifier).single()
 
-    if (checkError || !existingAddon) {
+    if (!existingAddon) {
       return createErrorResponse({
         code: 404,
         message: 'Addon not found',
@@ -177,21 +174,6 @@ export async function DELETE(
         code: 400,
         message: 'Cannot delete addon that is used in bookings',
         errors: ['Addon has associated bookings'],
-      })
-    }
-
-    // Check if addon is used in any room classes
-    const { data: roomClasses } = await supabase
-      .from('room_class_addon')
-      .select('room_class_id')
-      .eq('addon_id', identifier)
-      .limit(1)
-
-    if (roomClasses && roomClasses.length > 0) {
-      return createErrorResponse({
-        code: 400,
-        message: 'Cannot delete addon that is used in room classes',
-        errors: ['Addon has associated room classes'],
       })
     }
 

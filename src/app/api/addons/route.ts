@@ -76,7 +76,7 @@ export async function POST(request: Request): Promise<Response> {
     const newAddon: CreateAddonBody = await request.json()
 
     // Validate required fields
-    if (!newAddon.name && !newAddon.image_url && typeof newAddon.price !== 'number') {
+    if (!newAddon.name && typeof newAddon.price !== 'number' && !newAddon.image_url) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
@@ -102,21 +102,21 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    // Validate image URL
-    if (!newAddon.image_url) {
-      return createErrorResponse({
-        code: 400,
-        message: 'Missing or invalid required fields',
-        errors: ['Image URL is required'],
-      })
-    }
-
-    // Validate price
+    // Validate addon price
     if (typeof newAddon.price !== 'number') {
       return createErrorResponse({
         code: 400,
         message: 'Invalid addon price',
         errors: ['Price must be a number'],
+      })
+    }
+
+    // Validate addon image url
+    if (!newAddon.image_url) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Image URL is required'],
       })
     }
 
