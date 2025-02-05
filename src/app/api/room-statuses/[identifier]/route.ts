@@ -173,21 +173,6 @@ export async function DELETE(
       })
     }
 
-    // Check if this is the last available status
-    const { data: availableStatuses } = await supabase
-      .from('room_status')
-      .select('id')
-      .eq('is_available', true)
-      .limit(2)
-
-    if (availableStatuses && availableStatuses.length === 1 && availableStatuses[0].id === identifier) {
-      return createErrorResponse({
-        code: 400,
-        message: 'Cannot delete the last available room status',
-        errors: ['At least one available room status must exist'],
-      })
-    }
-
     const { error } = await supabase.from('room_status').delete().eq('id', identifier)
 
     if (error) {

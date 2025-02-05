@@ -49,7 +49,7 @@ export async function GET(request: Request): Promise<Response> {
         // Fetch bed types
         const { data: bedTypes, error: bedTypesError } = await supabase
           .from('room_class_bed_type')
-          .select('num_beds, bed_type:bed_type_id(*)')
+          .select('num_beds, bed_type_id, bed_type:bed_type_id(*)')
           .eq('room_class_id', roomClass.id)
 
         if (bedTypesError) {
@@ -124,7 +124,7 @@ export async function POST(request: Request): Promise<Response> {
       typeof newRoomClass.price !== 'number' &&
       !newRoomClass.image_url &&
       !newRoomClass.bed_types.length &&
-      !newRoomClass.feature_ids
+      !newRoomClass.feature_ids.length
     ) {
       return createErrorResponse({
         code: 400,
@@ -133,7 +133,7 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    // Validate name is not empty
+    // Validate room class name is not empty
     if (!newRoomClass.name) {
       return createErrorResponse({
         code: 400,
@@ -142,7 +142,7 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    // Validate price is not empty
+    // Validate room class price is not empty
     if (typeof newRoomClass.price !== 'number') {
       return createErrorResponse({
         code: 400,
@@ -151,7 +151,7 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    // Validate image_url is not empty
+    // Validate room class image_url is not empty
     if (!newRoomClass.image_url) {
       return createErrorResponse({
         code: 400,
@@ -160,7 +160,7 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    // Validate bed_types is not empty
+    // Validate room class bed_types is not empty
     if (!newRoomClass.bed_types.length) {
       return createErrorResponse({
         code: 400,
@@ -169,7 +169,7 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    // Validate feature_ids is not empty
+    // Validate room class feature_ids is not empty
     if (!newRoomClass.feature_ids.length) {
       return createErrorResponse({
         code: 400,
@@ -222,7 +222,7 @@ export async function POST(request: Request): Promise<Response> {
     const { data: existingRoomClass } = await supabase
       .from('room_class')
       .select('id')
-      .ilike('class_name', newRoomClass.name)
+      .ilike('name', newRoomClass.name)
       .single()
 
     if (existingRoomClass) {
@@ -238,8 +238,9 @@ export async function POST(request: Request): Promise<Response> {
       .from('room_class')
       .insert([
         {
-          class_name: newRoomClass.name,
-          base_price: newRoomClass.price,
+          name: newRoomClass.name,
+          price: newRoomClass.price,
+          image_url: newRoomClass.image_url,
         },
       ])
       .select()
@@ -298,6 +299,7 @@ export async function POST(request: Request): Promise<Response> {
           *,
           room_class_bed_type!inner(
             num_beds,
+            bed_type_id,
             bed_type:bed_type_id(*)
           ),
           room_class_feature!inner(

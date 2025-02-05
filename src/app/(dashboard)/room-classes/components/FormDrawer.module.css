@@ -1,0 +1,8 @@
+.bedTypeCheckbox {
+  display: flex !important;
+  align-items: flex-start !important;
+}
+
+.bedTypeCheckbox :global(.ant-checkbox) {
+  align-self: flex-start !important;
+}

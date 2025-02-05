@@ -12,19 +12,7 @@ export async function GET(
     const supabase = await createClient()
     const { identifier } = await params
 
-    const { data, error } = await supabase
-      .from('room_class')
-      .select(
-        `
-        id,
-        class_name,
-        base_price,
-        created_at,
-        updated_at
-      `
-      )
-      .eq('id', identifier)
-      .single()
+    const { data, error } = await supabase.from('room_class').select('*').eq('id', identifier).single()
 
     if (error) {
       return createErrorResponse({
@@ -59,26 +47,62 @@ export async function PUT(
     const updateData: UpdateRoomClassBody = await request.json()
 
     // Validate required fields
-    const validationErrors: string[] = []
-    if (!updateData.name) validationErrors.push('name is required')
-    if (!updateData.price) validationErrors.push('price is required')
-    if (!updateData.bed_types?.length) validationErrors.push('At least one bed type is required')
-    if (!updateData.feature_ids?.length) validationErrors.push('At least one feature is required')
-
-    if (validationErrors.length > 0) {
+    if (
+      !updateData.name &&
+      typeof updateData.price !== 'number' &&
+      !updateData.image_url &&
+      !updateData.bed_types?.length &&
+      !updateData.feature_ids?.length
+    ) {
       return createErrorResponse({
         code: 400,
         message: 'Missing required fields',
-        errors: validationErrors,
+        errors: ['All fields are required'],
       })
     }
 
-    // Validate base_price is a positive number
-    if (typeof updateData.price !== 'number' || updateData.price <= 0) {
+    // Validate room class name
+    if (!updateData.name) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room class name is required'],
+      })
+    }
+
+    // Validate room class price is a positive number
+    if (typeof updateData.price !== 'number') {
       return createErrorResponse({
         code: 400,
         message: 'Invalid base price',
-        errors: ['Base price must be a positive number'],
+        errors: ['Price must be a number'],
+      })
+    }
+
+    // Validate room class image url
+    if (!updateData.image_url) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Image URL is required'],
+      })
+    }
+
+    // Validate bed types
+    const bedTypeIds = updateData.bed_types?.map((bt) => bt.id)
+    if (!updateData.bed_types?.length || !bedTypeIds?.length) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room class bed types are required'],
+      })
+    }
+
+    if (new Set(bedTypeIds).size !== bedTypeIds?.length) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid bed types',
+        errors: ['Bed types must have unique ids'],
       })
     }
 
@@ -96,7 +120,7 @@ export async function PUT(
     const { data: existingRoomClass } = await supabase
       .from('room_class')
       .select('id')
-      .ilike('class_name', updateData.name ?? '')
+      .ilike('name', updateData.name)
       .neq('id', identifier)
       .single()
 
@@ -113,8 +137,9 @@ export async function PUT(
     const { error: updateError } = await supabase
       .from('room_class')
       .update({
-        class_name: updateData.name,
-        base_price: updateData.price,
+        name: updateData.name,
+        price: updateData.price,
+        image_url: updateData.image_url,
       })
       .eq('id', identifier)
       .select()
@@ -189,28 +214,29 @@ export async function PUT(
     }
 
     // Get the complete updated room class data
-    const { data: completeRoomClass, error: fetchError } = await supabase
+    const { data: completeRoomClass, error: completeRoomClassError } = await supabase
       .from('room_class')
       .select(
         `
-        *,
-        room_class_bed_type!inner(
-          num_beds,
-          bed_type:bed_type_id(*)
-        ),
-        room_class_feature!inner(
-          feature(*)
-        )
-      `
+          *,
+          room_class_bed_type!inner(
+            num_beds,
+            bed_type_id,
+            bed_type:bed_type_id(*)
+          ),
+          room_class_feature!inner(
+            feature(*)
+          )
+        `
       )
       .eq('id', identifier)
       .single()
 
-    if (fetchError) {
+    if (completeRoomClassError) {
       return createErrorResponse({
         code: 400,
-        message: fetchError.message,
-        errors: [fetchError.message],
+        message: completeRoomClassError.message,
+        errors: [completeRoomClassError.message],
       })
     }
 
@@ -244,6 +270,28 @@ export async function DELETE(
     const supabase = await createClient()
     const { identifier } = await params
 
+    // Check if room class exists
+    const { error: roomClassError } = await supabase.from('room_class').select('id').eq('id', identifier).single()
+
+    if (roomClassError) {
+      return createErrorResponse({
+        code: 404,
+        message: 'Room class not found',
+        errors: [roomClassError.message],
+      })
+    }
+
+    // Check if room class is associated with any rooms
+    const { data: existingRooms } = await supabase.from('room').select('id').eq('room_class_id', identifier)
+
+    if (existingRooms && existingRooms.length > 0) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Room class is associated with one or more rooms',
+        errors: ['Cannot delete room class with associated rooms'],
+      })
+    }
+
     const { error } = await supabase.from('room_class').delete().eq('id', identifier)
 
     if (error) {
@@ -251,6 +299,34 @@ export async function DELETE(
         code: 400,
         message: error.message,
         errors: [error.message],
+      })
+    }
+
+    // Delete all room_class_bed_type records associated with the room class
+    const { error: deleteBedTypesError } = await supabase
+      .from('room_class_bed_type')
+      .delete()
+      .eq('room_class_id', identifier)
+
+    if (deleteBedTypesError) {
+      return createErrorResponse({
+        code: 400,
+        message: deleteBedTypesError.message,
+        errors: [deleteBedTypesError.message],
+      })
+    }
+
+    // Delete all room_class_feature records associated with the room class
+    const { error: deleteFeaturesError } = await supabase
+      .from('room_class_feature')
+      .delete()
+      .eq('room_class_id', identifier)
+
+    if (deleteFeaturesError) {
+      return createErrorResponse({
+        code: 400,
+        message: deleteFeaturesError.message,
+        errors: [deleteFeaturesError.message],
       })
     }
 

@@ -26,7 +26,11 @@ export const tableColumns = (props: Props) => {
     const { antdMessage } = useAntdContextHolder()
     const { setData: setRoomClassDetail } = roomClassDetailStore()
 
-    const { mutate: deleteMutation } = useMutation({
+    const {
+      mutate: deleteMutation,
+      variables: deleteVariables,
+      isPending: isDeleteLoading,
+    } = useMutation({
       mutationFn: deleteItem,
       onSuccess: () => {
         antdMessage?.success('Room class deleted successfully')
@@ -151,7 +155,12 @@ export const tableColumns = (props: Props) => {
               okText="Yes"
               cancelText="No"
             >
-              <Button type="text" danger icon={<FaTrashCan className="text-red-500" />} />
+              <Button
+                type="text"
+                danger
+                icon={<FaTrashCan className="text-red-500" />}
+                loading={isDeleteLoading && deleteVariables === record.id}
+              />
             </Popconfirm>
           </Flex>
         ),

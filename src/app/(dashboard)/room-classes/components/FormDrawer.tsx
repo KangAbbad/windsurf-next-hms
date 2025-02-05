@@ -1,13 +1,18 @@
 'use client'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Button, Drawer, Flex, Form, Input, Typography, Upload, UploadFile } from 'antd'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Button, Col, Drawer, Flex, Form, Input, Row, Select, Typography, Upload, UploadFile } from 'antd'
 import { useEffect } from 'react'
 import { FiPlus } from 'react-icons/fi'
+import { HiMinusCircle, HiPlus } from 'react-icons/hi'
 import { IoClose } from 'react-icons/io5'
 import { LuRefreshCcw } from 'react-icons/lu'
 import { TbArrowRight } from 'react-icons/tb'
 
+import { queryKey as queryKeyBedTypeList } from '../../bed-types/lib/constants'
+import { getAll as getBedTypes } from '../../bed-types/services/get'
+import { queryKey as queryKeyFeatureList } from '../../features/lib/constants'
+import { getAll as getFeatures } from '../../features/services/get'
 import { queryKey } from '../lib/constants'
 import { roomClassDetailStore } from '../lib/state'
 import { createItem } from '../services/post'
@@ -42,10 +47,25 @@ export default function FormDrawer(props: Props) {
   const { antdMessage } = useAntdContextHolder()
   const [form] = Form.useForm<FormType>()
   const watchUploadList = Form.useWatch('uploadList', form) ?? []
+  const watchBedTypes = Form.useWatch('bed_types', form) ?? []
+  console.log({ watchBedTypes })
   const { data: roomClassDetailState, resetData: resetRoomClassDetail } = roomClassDetailStore()
   const imagePreviewUrl = roomClassDetailState?.image_url?.includes('http')
     ? roomClassDetailState?.image_url
     : require('@/assets/images/empty-placeholder.png')
+
+  const { data: bedTypeListResponse, isPending: isBedTypeListLoading } = useQuery({
+    queryKey: [queryKeyBedTypeList.RES_BED_TYPE_LIST, { limit: 10 }],
+    queryFn: () => getBedTypes({ page: 1, limit: 10 }),
+    enabled: isVisible,
+  })
+  const bedTypeList = bedTypeListResponse?.data?.items ?? []
+
+  const { data: featureListResponse, isFetching: isFeatureListLoading } = useQuery({
+    queryKey: [queryKeyFeatureList.RES_FEATURE_LIST, { limit: 10 }],
+    queryFn: () => getFeatures({ page: 1, limit: 10 }),
+  })
+  const featureList = featureListResponse?.data?.items ?? []
 
   const hideDrawer = () => {
     form.resetFields()
@@ -250,13 +270,158 @@ export default function FormDrawer(props: Props) {
             },
           ]}
           getValueFromEvent={inputNumberValidation}
-          className="!mb-3"
         >
           <Input
             size="large"
             addonBefore={<Typography.Text className="!text-sm">Rp</Typography.Text>}
             placeholder="Enter price"
             classNames={{ input: '!text-sm' }}
+          />
+        </Form.Item>
+
+        <Form.List
+          name="bed_types"
+          rules={[
+            {
+              validator: async (_, value) => {
+                if (!value || value.length === 0) {
+                  return await Promise.reject(new Error('At least one bed type is required'))
+                }
+              },
+            },
+          ]}
+        >
+          {(fields, { add, remove }, { errors }) => (
+            <>
+              {fields.map(({ key, name, ...restField }) => (
+                <Row key={key} gutter={[8, 8]} className="!items-center mb-2">
+                  <Col span={fields.length > 1 ? 16 : 18}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'id']}
+                      rules={[{ required: true, message: 'Missing bed type' }]}
+                      className="!mb-0"
+                    >
+                      <Select
+                        allowClear
+                        showSearch
+                        loading={isBedTypeListLoading}
+                        placeholder="Select bed type"
+                        filterOption={(input, option) => {
+                          return (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                        }}
+                        options={bedTypeList.map((bt) => {
+                          const { id, name, ...restBt } = bt
+                          return { label: name, value: id, ...restBt }
+                        })}
+                        optionRender={(option) => {
+                          const { label, image_url, material, length, width, height } = option.data
+                          return (
+                            <Flex gap={8}>
+                              <div className="rounded-lg border border-[#D9D9D9] bg-[rgba(0,0,0,0.02)] h-[100px] w-[100px] overflow-hidden">
+                                <ImageFallback
+                                  src={image_url ?? require('@/assets/images/empty-placeholder.png')}
+                                  alt={label}
+                                  height={100}
+                                  width={100}
+                                  className="!h-full !w-full !object-contain"
+                                />
+                              </div>
+                              <div>
+                                <Typography.Paragraph className="!mb-0">{label}</Typography.Paragraph>
+                                <Typography.Paragraph className="!text-gray-400 !mb-0">{material}</Typography.Paragraph>
+                                <Typography.Paragraph className="!text-gray-400 !mb-0">
+                                  {length}x{width}x{height}
+                                </Typography.Paragraph>
+                              </div>
+                            </Flex>
+                          )
+                        }}
+                        className="!min-h-9"
+                      />
+                    </Form.Item>
+                  </Col>
+
+                  <Col span={6}>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'num_beds']}
+                      rules={[
+                        { required: true, message: 'Missing number' },
+                        {
+                          pattern: /^\d+$/,
+                          message: 'Invalid number!',
+                        },
+                      ]}
+                      getValueFromEvent={inputNumberValidation}
+                      className="!w-full !mb-0"
+                    >
+                      <Input size="large" suffix="bed(s)" className="!text-sm !w-full" />
+                    </Form.Item>
+                  </Col>
+
+                  {fields.length > 1 && (
+                    <Col span={2}>
+                      <HiMinusCircle
+                        className="text-red-500 text-lg"
+                        onClick={() => {
+                          remove(name)
+                        }}
+                      />
+                    </Col>
+                  )}
+                </Row>
+              ))}
+              <Form.Item className="!mb-3">
+                <Button
+                  type="dashed"
+                  onClick={() => {
+                    add()
+                  }}
+                  block
+                  icon={<HiPlus />}
+                >
+                  Add Bed Type
+                </Button>
+                <Form.ErrorList errors={errors} />
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
+
+        <Form.Item<FormType>
+          name="feature_ids"
+          label="Features"
+          rules={[{ required: true, message: 'Please select at least one feature' }]}
+        >
+          <Select
+            mode="multiple"
+            loading={isFeatureListLoading}
+            placeholder="Select features"
+            options={featureList.map((f) => {
+              const { id, name, ...restBt } = f
+              return { label: name, value: id, ...restBt }
+            })}
+            optionRender={(option) => {
+              const { label, image_url, price } = option.data
+              return (
+                <Flex gap={8}>
+                  <div className="rounded-lg border border-[#D9D9D9] bg-[rgba(0,0,0,0.02)] h-[100px] w-[100px] overflow-hidden">
+                    <ImageFallback
+                      src={image_url ?? require('@/assets/images/empty-placeholder.png')}
+                      alt={label}
+                      height={100}
+                      width={100}
+                      className="!h-full !w-full !object-contain"
+                    />
+                  </div>
+                  <div>
+                    <Typography.Paragraph className="!mb-0">{label}</Typography.Paragraph>
+                    <Typography.Paragraph className="!text-gray-400 !mb-0">{price}</Typography.Paragraph>
+                  </div>
+                </Flex>
+              )
+            }}
           />
         </Form.Item>
       </Form>

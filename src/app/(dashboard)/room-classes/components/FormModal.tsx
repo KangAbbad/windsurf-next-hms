@@ -166,6 +166,7 @@ export default function FormModal(props: Props) {
                       style={{ width: 200 }}
                     />
                   </Form.Item>
+
                   <Form.Item
                     {...restField}
                     name={[name, 'num_beds']}
@@ -173,6 +174,7 @@ export default function FormModal(props: Props) {
                   >
                     <InputNumber min={1} placeholder="Number of beds" />
                   </Form.Item>
+
                   {fields.length > 1 && (
                     <MinusCircleOutlined
                       onClick={() => {
