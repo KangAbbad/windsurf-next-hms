@@ -110,7 +110,7 @@ export default function FormModal(props: Props) {
     const roomsTotal = selectedRooms.reduce((total, roomId) => {
       const room = rooms.find((r) => r.id === roomId)
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      return total + (room?.room_class.base_price || 0)
+      return total + (room?.room_class.price || 0)
     }, 0)
 
     const addonsTotal = selectedAddons.reduce((total, addonId) => {
@@ -262,7 +262,7 @@ export default function FormModal(props: Props) {
             placeholder="Select rooms"
             options={rooms.map((room) => ({
               value: room.id,
-              label: `Room ${room.room_number} (${room.room_class.class_name})`,
+              label: `Room ${room.room_number} (${room.room_class.name})`,
             }))}
           />
         </Form.Item>

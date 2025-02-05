@@ -137,7 +137,7 @@ export default function FormModal(props: Props) {
           <Select loading={isLoadingRoomClasses}>
             {roomClasses.map((roomClass) => (
               <Select.Option key={roomClass.id} value={roomClass.id}>
-                {roomClass.class_name}
+                {roomClass.name}
               </Select.Option>
             ))}
           </Select>

@@ -55,7 +55,7 @@ export const tableColumns = (props: Props) => {
         dataIndex: ['room_class', 'class_name'],
         key: 'room_class',
         width: '20%',
-        sorter: (a, b) => a.room_class.class_name.localeCompare(b.room_class.class_name),
+        sorter: (a, b) => a.room_class.name.localeCompare(b.room_class.name),
       },
       {
         title: 'Status',

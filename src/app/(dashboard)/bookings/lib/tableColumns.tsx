@@ -93,7 +93,7 @@ export const tableColumns = (props: Props) => {
           <Space direction="vertical" size="small">
             {record.rooms.map((room) => (
               <Tag key={room.id}>
-                Room {room.room_number} ({room.room_class.class_name})
+                Room {room.room_number} ({room.room_class.name})
               </Tag>
             ))}
           </Space>

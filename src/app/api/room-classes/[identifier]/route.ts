@@ -60,8 +60,8 @@ export async function PUT(
 
     // Validate required fields
     const validationErrors: string[] = []
-    if (!updateData.class_name) validationErrors.push('class_name is required')
-    if (!updateData.base_price) validationErrors.push('base_price is required')
+    if (!updateData.name) validationErrors.push('name is required')
+    if (!updateData.price) validationErrors.push('price is required')
     if (!updateData.bed_types?.length) validationErrors.push('At least one bed type is required')
     if (!updateData.feature_ids?.length) validationErrors.push('At least one feature is required')
 
@@ -74,7 +74,7 @@ export async function PUT(
     }
 
     // Validate base_price is a positive number
-    if (typeof updateData.base_price !== 'number' || updateData.base_price <= 0) {
+    if (typeof updateData.price !== 'number' || updateData.price <= 0) {
       return createErrorResponse({
         code: 400,
         message: 'Invalid base price',
@@ -96,7 +96,7 @@ export async function PUT(
     const { data: existingRoomClass } = await supabase
       .from('room_class')
       .select('id')
-      .ilike('class_name', updateData.class_name ?? '')
+      .ilike('class_name', updateData.name ?? '')
       .neq('id', identifier)
       .single()
 
@@ -113,8 +113,8 @@ export async function PUT(
     const { error: updateError } = await supabase
       .from('room_class')
       .update({
-        class_name: updateData.class_name,
-        base_price: updateData.base_price,
+        class_name: updateData.name,
+        base_price: updateData.price,
       })
       .eq('id', identifier)
       .select()
@@ -159,7 +159,7 @@ export async function PUT(
     const { error: insertBedTypesError } = await supabase.from('room_class_bed_type').insert(
       (updateData.bed_types ?? []).map((bt) => ({
         room_class_id: identifier,
-        bed_type_id: bt.bed_type_id,
+        bed_type_id: bt.id,
         num_beds: bt.num_beds,
       }))
     )
