@@ -66,17 +66,26 @@ export async function POST(request: Request): Promise<Response> {
 
     // Validate required fields
     if (
-      !newBedType.name ||
-      !newBedType.image_url ||
-      !newBedType.length ||
-      !newBedType.width ||
-      !newBedType.height ||
+      !newBedType.name &&
+      !newBedType.image_url &&
+      !newBedType.length &&
+      !newBedType.width &&
+      !newBedType.height &&
       !newBedType.material
     ) {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
         errors: ['All fields are required'],
+      })
+    }
+
+    // Validate bed type name
+    if (!newBedType.name) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Bed type name is required'],
       })
     }
 
