@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button, Col, Drawer, Flex, Form, Input, Row, Select, Typography, Upload, UploadFile } from 'antd'
+import { AxiosError } from 'axios'
 import { useEffect } from 'react'
 import { FiPlus } from 'react-icons/fi'
 import { HiMinusCircle, HiPlus } from 'react-icons/hi'
@@ -22,6 +23,7 @@ import { CreateRoomClassBody, ROOM_CLASS_NAME_MAX_LENGTH, UpdateRoomClassBody } 
 import { ImageFallback } from '@/components/ImageFallback'
 import { useUploadImage } from '@/hooks/api/useUploadImage'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { ApiResponse } from '@/services/apiResponse'
 import { inputNumberValidation } from '@/utils/inputNumberValidation'
 import { normFile } from '@/utils/normFile'
 
@@ -80,8 +82,10 @@ export default function FormDrawer(props: Props) {
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_CLASS_LIST] })
       hideDrawer()
     },
-    onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to create room class')
+    onError: (res: AxiosError<ApiResponse>) => {
+      const errors = res.response?.data?.errors ?? []
+      const errorMessages = errors.length ? errors.join(', ') : 'Failed to create room class'
+      antdMessage?.error(errorMessages)
     },
   })
 
@@ -92,8 +96,10 @@ export default function FormDrawer(props: Props) {
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_CLASS_LIST] })
       hideDrawer()
     },
-    onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to update room class')
+    onError: (res: AxiosError<ApiResponse>) => {
+      const errors = res.response?.data?.errors ?? []
+      const errorMessages = errors.length ? errors.join(', ') : 'Failed to update room class'
+      antdMessage?.error(errorMessages)
     },
   })
 

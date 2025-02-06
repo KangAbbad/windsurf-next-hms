@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Drawer, Form, Input } from 'antd'
+import { AxiosError } from 'axios'
 import { useEffect } from 'react'
 import { IoClose } from 'react-icons/io5'
 
@@ -12,6 +13,7 @@ import { updateItem } from '../services/put'
 
 import { FLOOR_NAME_MAX_LENGTH } from '@/app/api/floors/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { ApiResponse } from '@/services/apiResponse'
 import { inputNumberValidation } from '@/utils/inputNumberValidation'
 
 type FormType = {
@@ -44,8 +46,10 @@ export default function FormDrawer(props: Props) {
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_FLOOR_LIST] })
       hideDrawer()
     },
-    onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to create floor')
+    onError: (res: AxiosError<ApiResponse>) => {
+      const errors = res.response?.data?.errors ?? []
+      const errorMessages = errors.length ? errors.join(', ') : 'Failed to create floor'
+      antdMessage?.error(errorMessages)
     },
   })
 
@@ -56,8 +60,10 @@ export default function FormDrawer(props: Props) {
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_FLOOR_LIST] })
       hideDrawer()
     },
-    onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to update floor')
+    onError: (res: AxiosError<ApiResponse>) => {
+      const errors = res.response?.data?.errors ?? []
+      const errorMessages = errors.length ? errors.join(', ') : 'Failed to update floor'
+      antdMessage?.error(errorMessages)
     },
   })
 

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Flex, Popconfirm, Space, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
+import { AxiosError } from 'axios'
 import dayjs from 'dayjs'
 import { CSSProperties } from 'react'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
@@ -12,6 +13,7 @@ import { deleteItem } from '../services/delete'
 import type { RoomClassListItem } from '@/app/api/room-classes/types'
 import { ImageFallback } from '@/components/ImageFallback'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { ApiResponse } from '@/services/apiResponse'
 import { formatCurrency } from '@/utils/formatCurrency'
 
 type Props = {
@@ -36,8 +38,10 @@ export const tableColumns = (props: Props) => {
         antdMessage?.success('Room class deleted successfully')
         queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_CLASS_LIST] })
       },
-      onError: () => {
-        antdMessage?.error('Failed to delete room class')
+      onError: (res: AxiosError<ApiResponse>) => {
+        const errors = res.response?.data?.errors ?? []
+        const errorMessages = errors.length ? errors.join(', ') : 'Failed to delete room class'
+        antdMessage?.error(errorMessages)
       },
     })
 

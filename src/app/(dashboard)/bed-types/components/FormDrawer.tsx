@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Drawer, Flex, Form, Input, Typography, Upload, UploadFile } from 'antd'
+import { AxiosError } from 'axios'
 import { useEffect } from 'react'
 import { FiPlus } from 'react-icons/fi'
 import { IoClose } from 'react-icons/io5'
@@ -17,6 +18,7 @@ import { BED_TYPE_NAME_MAX_LENGTH, CreateBedTypeBody, UpdateBedTypeBody } from '
 import { ImageFallback } from '@/components/ImageFallback'
 import { useUploadImage } from '@/hooks/api/useUploadImage'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { ApiResponse } from '@/services/apiResponse'
 import { inputNumberValidation } from '@/utils/inputNumberValidation'
 import { normFile } from '@/utils/normFile'
 
@@ -58,8 +60,10 @@ export default function FormDrawer(props: Props) {
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_BED_TYPE_LIST] })
       hideDrawer()
     },
-    onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to create bed type')
+    onError: (res: AxiosError<ApiResponse>) => {
+      const errors = res.response?.data?.errors ?? []
+      const errorMessages = errors.length ? errors.join(', ') : 'Failed to create bed type'
+      antdMessage?.error(errorMessages)
     },
   })
 
@@ -70,8 +74,10 @@ export default function FormDrawer(props: Props) {
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_BED_TYPE_LIST] })
       hideDrawer()
     },
-    onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to update bed type')
+    onError: (res: AxiosError<ApiResponse>) => {
+      const errors = res.response?.data?.errors ?? []
+      const errorMessages = errors.length ? errors.join(', ') : 'Failed to update bed type'
+      antdMessage?.error(errorMessages)
     },
   })
 

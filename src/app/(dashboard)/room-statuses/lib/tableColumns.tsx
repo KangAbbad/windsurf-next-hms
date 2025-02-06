@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Flex, Popconfirm, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
+import { AxiosError } from 'axios'
 import dayjs from 'dayjs'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
@@ -10,6 +11,7 @@ import { deleteItem } from '../services/delete'
 
 import type { RoomStatusListItem } from '@/app/api/room-statuses/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { ApiResponse } from '@/services/apiResponse'
 
 type Props = {
   onEdit: () => void
@@ -33,8 +35,10 @@ export const tableColumns = (props: Props) => {
         antdMessage?.success('Room status deleted successfully')
         queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_STATUS_LIST] })
       },
-      onError: () => {
-        antdMessage?.error('Failed to delete room status')
+      onError: (res: AxiosError<ApiResponse>) => {
+        const errors = res.response?.data?.errors ?? []
+        const errorMessages = errors.length ? errors.join(', ') : 'Failed to delete room status'
+        antdMessage?.error(errorMessages)
       },
     })
 

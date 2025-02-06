@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-export type ApiResponse<T> = {
+export type ApiResponse<T = unknown> = {
   code: number
   message: string
   success: boolean

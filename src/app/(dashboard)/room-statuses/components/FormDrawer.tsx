@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Drawer, Form, Input, Select } from 'antd'
+import { AxiosError } from 'axios'
 import { useEffect } from 'react'
 import { IoClose } from 'react-icons/io5'
 
@@ -12,6 +13,7 @@ import { updateItem } from '../services/put'
 
 import { tagColorOptions } from '@/lib/constants'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { ApiResponse } from '@/services/apiResponse'
 
 type FormType = {
   name: string
@@ -43,8 +45,10 @@ export default function FormDrawer(props: Props) {
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_STATUS_LIST] })
       hideDrawer()
     },
-    onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to create room status')
+    onError: (res: AxiosError<ApiResponse>) => {
+      const errors = res.response?.data?.errors ?? []
+      const errorMessages = errors.length ? errors.join(', ') : 'Failed to create room status'
+      antdMessage?.error(errorMessages)
     },
   })
 
@@ -55,8 +59,10 @@ export default function FormDrawer(props: Props) {
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_STATUS_LIST] })
       hideDrawer()
     },
-    onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to update room status')
+    onError: (res: AxiosError<ApiResponse>) => {
+      const errors = res.response?.data?.errors ?? []
+      const errorMessages = errors.length ? errors.join(', ') : 'Failed to update room status'
+      antdMessage?.error(errorMessages)
     },
   })
 

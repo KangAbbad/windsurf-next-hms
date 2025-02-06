@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Flex, Popconfirm, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
+import { AxiosError } from 'axios'
 import dayjs from 'dayjs'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
@@ -10,6 +11,7 @@ import { deleteItem } from '../services/delete'
 
 import { FloorListItem } from '@/app/api/floors/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { ApiResponse } from '@/services/apiResponse'
 
 type Props = {
   onEdit: () => void
@@ -33,8 +35,10 @@ export const tableColumns = (props: Props) => {
         antdMessage?.success('Floor deleted successfully')
         queryClient.invalidateQueries({ queryKey: [queryKey.RES_FLOOR_LIST] })
       },
-      onError: () => {
-        antdMessage?.error('Failed to delete floor')
+      onError: (res: AxiosError<ApiResponse>) => {
+        const errors = res.response?.data?.errors ?? []
+        const errorMessages = errors.length ? errors.join(', ') : 'Failed to delete floor'
+        antdMessage?.error(errorMessages)
       },
     })
 
