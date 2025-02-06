@@ -75,7 +75,7 @@ export async function PUT(
       return createErrorResponse({
         code: 400,
         message: 'Invalid base price',
-        errors: ['Price must be a number'],
+        errors: ['Room class price must be a number'],
       })
     }
 
@@ -84,7 +84,7 @@ export async function PUT(
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['Image URL is required'],
+        errors: ['Room class image url is required'],
       })
     }
 

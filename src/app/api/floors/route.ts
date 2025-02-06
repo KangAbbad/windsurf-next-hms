@@ -73,7 +73,7 @@ export async function POST(request: Request): Promise<Response> {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['number must be a number'],
+        errors: ['Floor number must be a number'],
       })
     }
 

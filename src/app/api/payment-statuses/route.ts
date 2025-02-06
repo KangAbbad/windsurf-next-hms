@@ -88,7 +88,7 @@ export async function POST(request: Request): Promise<Response> {
       return createErrorResponse({
         code: 400,
         message: 'Invalid payment status name',
-        errors: [`name must be less than ${PAYMENT_STATUS_NAME_LENGTH} characters`],
+        errors: [`Payment status name must be less than ${PAYMENT_STATUS_NAME_LENGTH} characters`],
       })
     }
 
@@ -97,7 +97,7 @@ export async function POST(request: Request): Promise<Response> {
       return createErrorResponse({
         code: 400,
         message: 'Invalid payment status number',
-        errors: ['Payment status number must be a positive number'],
+        errors: ['Payment status number must be a number'],
       })
     }
 

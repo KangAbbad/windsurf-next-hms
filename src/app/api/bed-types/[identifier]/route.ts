@@ -74,7 +74,7 @@ export async function PUT(
       return createErrorResponse({
         code: 400,
         message: 'Invalid bed type name',
-        errors: [`name must not exceed ${BED_TYPE_NAME_MAX_LENGTH} characters`],
+        errors: [`Bed type name must not exceed ${BED_TYPE_NAME_MAX_LENGTH} characters`],
       })
     }
 
@@ -83,7 +83,7 @@ export async function PUT(
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['Image URL is required'],
+        errors: ['Bed type image url is required'],
       })
     }
 
@@ -92,7 +92,7 @@ export async function PUT(
       return createErrorResponse({
         code: 400,
         message: 'Invalid bed type length',
-        errors: ['Length must be a number'],
+        errors: ['Bed type length must be a number'],
       })
     }
 
@@ -101,7 +101,7 @@ export async function PUT(
       return createErrorResponse({
         code: 400,
         message: 'Invalid bed type width',
-        errors: ['Width must be a number'],
+        errors: ['Bed type width must be a number'],
       })
     }
 
@@ -110,7 +110,7 @@ export async function PUT(
       return createErrorResponse({
         code: 400,
         message: 'Invalid bed type height',
-        errors: ['Height must be a number'],
+        errors: ['Bed type height must be a number'],
       })
     }
 
@@ -119,7 +119,7 @@ export async function PUT(
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['Material is required'],
+        errors: ['Bed type material is required'],
       })
     }
 

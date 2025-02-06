@@ -44,7 +44,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ iden
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['number must be a number'],
+        errors: ['Floor number must be a number'],
       })
     }
 

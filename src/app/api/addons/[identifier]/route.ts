@@ -68,7 +68,7 @@ export async function PUT(
       return createErrorResponse({
         code: 400,
         message: 'Invalid addon name',
-        errors: [`name must not exceed ${ADDON_NAME_MAX_LENGTH} characters`],
+        errors: [`Addon name must not exceed ${ADDON_NAME_MAX_LENGTH} characters`],
       })
     }
 
@@ -77,7 +77,7 @@ export async function PUT(
       return createErrorResponse({
         code: 400,
         message: 'Invalid addon price',
-        errors: ['Price must be a number'],
+        errors: ['Addon price must be a number'],
       })
     }
 
@@ -86,7 +86,7 @@ export async function PUT(
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['Image URL is required'],
+        errors: ['Addon image url is required'],
       })
     }
 

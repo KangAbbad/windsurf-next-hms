@@ -156,7 +156,7 @@ export async function POST(request: Request): Promise<Response> {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['Room class image is required'],
+        errors: ['Room class image url is required'],
       })
     }
 

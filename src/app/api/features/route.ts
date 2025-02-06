@@ -98,7 +98,7 @@ export async function POST(request: Request): Promise<Response> {
       return createErrorResponse({
         code: 400,
         message: 'Invalid feature name',
-        errors: [`name must not exceed ${FEATURE_NAME_MAX_LENGTH} characters`],
+        errors: [`Feature name must not exceed ${FEATURE_NAME_MAX_LENGTH} characters`],
       })
     }
 
@@ -107,7 +107,7 @@ export async function POST(request: Request): Promise<Response> {
       return createErrorResponse({
         code: 400,
         message: 'Invalid feature price',
-        errors: ['Price must be a number'],
+        errors: ['Feature price must be a number'],
       })
     }
 
@@ -116,7 +116,7 @@ export async function POST(request: Request): Promise<Response> {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
-        errors: ['Image URL is required'],
+        errors: ['Feature image url is required'],
       })
     }
 
