@@ -9,6 +9,15 @@ export async function POST(request: Request): Promise<Response> {
     const supabase = await createClient()
     const formData = await request.formData()
     const file = formData.get('file') as File
+    const folder = formData.get('folder')
+
+    if (!folder) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid folder upload',
+        errors: ['Please upload a valid folder'],
+      })
+    }
 
     if (!file || !(file instanceof File)) {
       return createErrorResponse({
@@ -28,7 +37,9 @@ export async function POST(request: Request): Promise<Response> {
       const buffer = Buffer.from(arrayBuffer)
       const compressedBuffer = await sharp(buffer).webp({ quality: 75 }).toBuffer()
 
-      const { data: uploadedImage, error } = await supabase.storage.from('images').upload(path, compressedBuffer)
+      const { data: uploadedImage, error } = await supabase.storage
+        .from(`images/${folder}`)
+        .upload(path, compressedBuffer)
 
       if (error) {
         return createErrorResponse({
@@ -38,7 +49,7 @@ export async function POST(request: Request): Promise<Response> {
         })
       }
 
-      const { publicUrl: image_url } = supabase.storage.from('images').getPublicUrl(uploadedImage.path).data
+      const { publicUrl: image_url } = supabase.storage.from(`images/${folder}`).getPublicUrl(uploadedImage.path).data
 
       return createApiResponse({
         code: 201,

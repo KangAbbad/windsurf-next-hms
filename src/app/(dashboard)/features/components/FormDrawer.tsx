@@ -115,7 +115,10 @@ export default function FormDrawer(props: Props) {
     if (isFormLoading) return
     const values = form.getFieldsValue()
     if (values.uploadList?.length) {
-      uploadImage({ file: values.uploadList[0].originFileObj as File })
+      uploadImage({
+        folder: 'feature',
+        file: values.uploadList[0].originFileObj as File,
+      })
       return
     }
     handleUpdate(featureDetailState?.image_url ?? '')
@@ -124,7 +127,10 @@ export default function FormDrawer(props: Props) {
   const onCreate = () => {
     const values = form.getFieldsValue()
     if (!values.uploadList?.length) return
-    uploadImage({ file: values.uploadList[0].originFileObj as File })
+    uploadImage({
+      folder: 'feature',
+      file: values.uploadList[0].originFileObj as File,
+    })
   }
 
   const onSubmit = () => {

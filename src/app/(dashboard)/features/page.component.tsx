@@ -87,6 +87,9 @@ export function PageComponent() {
             current: pageParams.page,
             pageSize: pageParams.limit,
             total,
+            showSizeChanger: true,
+            showTotal: (total) => `Total ${total} items`,
+            className: '!px-4',
             onChange: (page, pageSize) => {
               setPageParams((prev) => ({ ...prev, page, limit: pageSize }))
             },

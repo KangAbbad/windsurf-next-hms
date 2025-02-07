@@ -11,8 +11,9 @@ export type UploadImageResponse = {
 }
 
 export const uploadImage = async (body: UploadImageBody) => {
-  const { file } = body
+  const { folder, file } = body
   const formData = new FormData()
+  formData.append('folder', folder)
   formData.append('file', file)
 
   const { data } = await axiosInstance.post<ApiResponse<UploadImageResponse>>('/upload-image', formData, {

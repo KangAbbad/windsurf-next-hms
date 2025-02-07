@@ -89,6 +89,7 @@ export default function AddonsPage() {
             total,
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} items`,
+            className: '!px-4',
             onChange: (page, pageSize) => {
               setPageParams((prev) => ({ ...prev, page, limit: pageSize }))
             },
