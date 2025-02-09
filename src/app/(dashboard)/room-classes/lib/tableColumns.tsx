@@ -51,6 +51,7 @@ export const tableColumns = (props: Props) => {
         dataIndex: 'image_url',
         key: 'image_url',
         width: 200,
+        fixed: 'left',
         render: (_, record) => {
           const image = record?.image_url
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
@@ -140,6 +141,7 @@ export const tableColumns = (props: Props) => {
         key: 'actions',
         align: 'center',
         width: '15%',
+        fixed: 'right',
         render: (_, record) => (
           <Flex gap={4} align="center" justify="center">
             <Button

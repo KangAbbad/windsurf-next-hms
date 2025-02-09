@@ -82,6 +82,8 @@ export function RoomClassesPage() {
           dataSource={dataSource}
           loading={isDataSourceFetching}
           rowKey="id"
+          size="middle"
+          scroll={{ x: 1300 }}
           pagination={{
             current: pageParams.page,
             pageSize: pageParams.limit,

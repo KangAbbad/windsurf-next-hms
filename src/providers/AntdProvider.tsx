@@ -3,7 +3,9 @@ import { ConfigProvider } from 'antd'
 import { Manrope } from 'next/font/google'
 import { ReactNode } from 'react'
 
-const prompt = Manrope({
+const manrope = Manrope({
+  display: 'swap',
+  adjustFontFallback: false,
   subsets: ['latin'],
   weight: ['500'],
 })
@@ -19,7 +21,7 @@ export const AntdProvider = ({ children }: Props) => {
         theme={{
           cssVar: true,
           token: {
-            fontFamily: `${prompt.style.fontFamily}, sans-serif`,
+            fontFamily: `${manrope.style.fontFamily}, sans-serif`,
           },
           components: {
             Table: {
