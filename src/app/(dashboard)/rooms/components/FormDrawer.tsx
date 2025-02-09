@@ -1,8 +1,10 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Modal, Form, Input, Select } from 'antd'
+import { Button, Drawer, Form, Input, Select } from 'antd'
+import { AxiosError } from 'axios'
 import { useEffect } from 'react'
+import { IoClose } from 'react-icons/io5'
 
 import { queryKey as queryKeyFloorList } from '../../floors/lib/constants'
 import { queryKey as queryKeyRoomClassList } from '../../room-classes/lib/constants'
@@ -16,6 +18,8 @@ import { getAll as getFloors } from '@/app/(dashboard)/floors/services/get'
 import { getAll as getRoomClasses } from '@/app/(dashboard)/room-classes/services/get'
 import { getAll as getRoomStatuses } from '@/app/(dashboard)/room-statuses/services/get'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { ApiResponse } from '@/services/apiResponse'
+import { inputNumberValidation } from '@/utils/inputNumberValidation'
 
 type FormType = {
   room_number: string
@@ -29,7 +33,7 @@ type Props = {
   onCancel: () => void
 }
 
-export default function FormModal(props: Props) {
+export default function FormDrawer(props: Props) {
   const { isVisible, onCancel } = props
   const queryClient = useQueryClient()
   const { antdMessage } = useAntdContextHolder()
@@ -54,7 +58,7 @@ export default function FormModal(props: Props) {
   })
   const floors = floorsResponse?.data?.items ?? []
 
-  const hideModal = () => {
+  const hideDrawer = () => {
     form.resetFields()
     onCancel()
   }
@@ -63,11 +67,13 @@ export default function FormModal(props: Props) {
     mutationFn: createItem,
     onSuccess: (res) => {
       antdMessage?.success(res?.message ?? 'Room created successfully')
-      hideModal()
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_LIST] })
+      hideDrawer()
     },
-    onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to create room')
+    onError: (res: AxiosError<ApiResponse>) => {
+      const errors = res.response?.data?.errors ?? []
+      const errorMessages = errors.length ? errors.join(', ') : 'Failed to create room'
+      antdMessage?.error(errorMessages)
     },
   })
 
@@ -75,11 +81,13 @@ export default function FormModal(props: Props) {
     mutationFn: updateItem,
     onSuccess: (res) => {
       antdMessage?.success(res?.message ?? 'Room updated successfully')
-      hideModal()
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_ROOM_LIST] })
+      hideDrawer()
     },
-    onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to update room')
+    onError: (res: AxiosError<ApiResponse>) => {
+      const errors = res.response?.data?.errors ?? []
+      const errorMessages = errors.length ? errors.join(', ') : 'Failed to update room'
+      antdMessage?.error(errorMessages)
     },
   })
 
@@ -109,68 +117,100 @@ export default function FormModal(props: Props) {
   }, [isVisible])
 
   return (
-    <Modal
+    <Drawer
+      title={roomDetailState ? 'Edit Room' : 'Add Room'}
       open={isVisible}
-      title={roomDetailState ? 'Edit Room' : 'Create New Room'}
-      confirmLoading={isFormLoading}
-      maskClosable={false}
+      placement="right"
       width={520}
-      okText={roomDetailState ? 'Update' : 'Create'}
-      onCancel={onCancel}
-      onOk={form.submit}
+      maskClosable={false}
+      closeIcon={<IoClose className="text-black text-2xl" />}
+      extra={
+        <Button type="primary" loading={isFormLoading} onClick={form.submit}>
+          {roomDetailState ? 'Update' : 'Create'}
+        </Button>
+      }
+      onClose={hideDrawer}
     >
-      <Form form={form} layout="vertical" onFinish={onSubmit} className="!mt-4">
-        <Form.Item
-          name="room_number"
-          label="Room Number"
-          rules={[{ required: true, message: 'Please enter room number' }]}
-          className="!mb-3"
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          name="room_class_id"
-          label="Room Class"
-          rules={[{ required: true, message: 'Please select room class' }]}
-          className="!mb-3"
-        >
-          <Select loading={isLoadingRoomClasses}>
-            {roomClasses.map((roomClass) => (
-              <Select.Option key={roomClass.id} value={roomClass.id}>
-                {roomClass.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-        <Form.Item
-          name="status_id"
-          label="Status"
-          rules={[{ required: true, message: 'Please select status' }]}
-          className="!mb-3"
-        >
-          <Select loading={isLoadingRoomStatuses}>
-            {roomStatuses.map((status) => (
-              <Select.Option key={status.id} value={status.id}>
-                {status.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-        <Form.Item
+      <Form form={form} layout="vertical" onFinish={onSubmit}>
+        <Form.Item<FormType>
           name="floor_id"
           label="Floor"
           rules={[{ required: true, message: 'Please select floor' }]}
           className="!mb-3"
         >
-          <Select loading={isLoadingFloors}>
-            {floors.map((floor) => (
-              <Select.Option key={floor.id} value={floor.id}>
-                Floor {floor.number}
-              </Select.Option>
-            ))}
-          </Select>
+          <Select
+            allowClear
+            showSearch
+            loading={isLoadingFloors}
+            placeholder="Select floor"
+            filterOption={(input, option) => {
+              return (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }}
+            options={floors.map((floor) => ({
+              value: floor.id,
+              label: floor.name,
+            }))}
+            className="!h-9"
+          />
+        </Form.Item>
+        <Form.Item<FormType>
+          name="room_number"
+          label="Number"
+          rules={[
+            { required: true, message: 'Please enter number' },
+            {
+              pattern: /^\d+$/,
+              message: 'Invalid number!',
+            },
+          ]}
+          getValueFromEvent={inputNumberValidation}
+          className="!mb-3"
+        >
+          <Input size="large" placeholder="Enter number" className="!text-sm" />
+        </Form.Item>
+        <Form.Item<FormType>
+          name="room_class_id"
+          label="Class"
+          rules={[{ required: true, message: 'Please select class' }]}
+          className="!mb-3"
+        >
+          <Select
+            allowClear
+            showSearch
+            loading={isLoadingRoomClasses}
+            placeholder="Select class"
+            filterOption={(input, option) => {
+              return (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }}
+            options={roomClasses.map((roomClass) => ({
+              value: roomClass.id,
+              label: roomClass.name,
+            }))}
+            className="!h-9"
+          />
+        </Form.Item>
+        <Form.Item<FormType>
+          name="status_id"
+          label="Status"
+          rules={[{ required: true, message: 'Please select status' }]}
+          className="!mb-3"
+        >
+          <Select
+            allowClear
+            showSearch
+            loading={isLoadingRoomStatuses}
+            placeholder="Select status"
+            filterOption={(input, option) => {
+              return (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+            }}
+            options={roomStatuses.map((roomStatus) => ({
+              value: roomStatus.id,
+              label: roomStatus.name,
+            }))}
+            className="!h-9"
+          />
         </Form.Item>
       </Form>
-    </Modal>
+    </Drawer>
   )
 }
