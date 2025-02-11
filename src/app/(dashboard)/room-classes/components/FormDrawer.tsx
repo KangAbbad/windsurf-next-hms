@@ -322,8 +322,8 @@ export default function FormDrawer(props: Props) {
                         filterOption={(input, option) => {
                           return (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
                         }}
-                        options={bedTypeList.map((bt) => {
-                          const { id, name, ...restBt } = bt
+                        options={bedTypeList.map((bedType) => {
+                          const { id, name, ...restBt } = bedType
                           return { label: name, value: id, ...restBt }
                         })}
                         optionRender={(option) => {

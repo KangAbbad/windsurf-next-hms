@@ -42,7 +42,7 @@ export const tableColumns = (props: Props) => {
       },
     })
 
-    const onDelete = (id: number) => {
+    const onDelete = (id: string) => {
       if (isDeleteLoading) return
       deleteMutation(id)
     }

@@ -14,14 +14,7 @@ export async function GET(
     // Get room with basic relations
     const { data: room, error: roomError } = await supabase
       .from('room')
-      .select(
-        `
-          *,
-          floor:floor_id(*),
-          room_class:room_class_id(*),
-          room_status:status_id(*)
-        `
-      )
+      .select('*, floor(*), room_class(*), room_status(*)')
       .eq('id', identifier)
       .single()
 
@@ -36,16 +29,7 @@ export async function GET(
     // Get bed types for the room class
     const { data: bedTypes, error: bedTypesError } = await supabase
       .from('room_class_bed_types')
-      .select(
-        `
-        room_class_id,
-        num_beds,
-        bed_type:bed_type_id(
-          id,
-          name
-        )
-      `
-      )
+      .select('room_class_id, num_beds, bed_type(*)')
       .eq('room_class_id', room.room_class.id)
 
     if (bedTypesError) {
@@ -59,15 +43,7 @@ export async function GET(
     // Get features for the room class
     const { data: features, error: featuresError } = await supabase
       .from('room_class_features')
-      .select(
-        `
-        room_class_id,
-        feature:feature_id(
-          id,
-          name
-        )
-      `
-      )
+      .select('room_class_id, feature(*)')
       .eq('room_class_id', room.room_class.id)
 
     if (featuresError) {
@@ -110,78 +86,80 @@ export async function PUT(
   try {
     const supabase = await createClient()
     const { identifier } = await params
-    const updates: UpdateRoomBody = await request.json()
+    const updateData: UpdateRoomBody = await request.json()
 
-    // Validate required fields if provided
-    if (updates.room_number || updates.room_class_id || updates.status_id || updates.floor_id) {
-      if (!updates.room_number) {
-        return createErrorResponse({
-          code: 400,
-          message: 'Missing required fields',
-          errors: ['room_number is required when updating room details'],
-        })
-      }
-      if (!updates.room_class_id) {
-        return createErrorResponse({
-          code: 400,
-          message: 'Missing required fields',
-          errors: ['room_class_id is required when updating room details'],
-        })
-      }
-      if (!updates.status_id) {
-        return createErrorResponse({
-          code: 400,
-          message: 'Missing required fields',
-          errors: ['status_id is required when updating room details'],
-        })
-      }
-      if (!updates.floor_id) {
-        return createErrorResponse({
-          code: 400,
-          message: 'Missing required fields',
-          errors: ['floor_id is required when updating room details'],
-        })
-      }
+    // Validate required fields
+    if (
+      typeof updateData.number !== 'number' &&
+      !updateData.floor_id &&
+      !updateData.room_class_id &&
+      !updateData.room_status_id
+    ) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['All fields are required'],
+      })
     }
 
-    // Check if room number already exists (excluding current room)
-    if (updates.room_number) {
-      const { data: existingRoom } = await supabase
-        .from('room')
-        .select('id')
-        .ilike('room_number', updates.room_number)
-        .neq('id', identifier)
-        .single()
-
-      if (existingRoom) {
-        return createErrorResponse({
-          code: 400,
-          message: 'Room number already exists',
-          errors: ['Room number must be unique'],
-        })
-      }
+    // Validate room number
+    if (typeof updateData.number !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room number is required'],
+      })
     }
 
-    // Check if room exists
-    const { data: existingRoom, error: checkError } = await supabase
+    // Validate floor_id
+    if (!updateData.floor_id) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Floor is required'],
+      })
+    }
+
+    // Validate room_class_id
+    if (!updateData.room_class_id) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room class is required'],
+      })
+    }
+
+    // Validate room_status_id
+    if (!updateData.room_status_id) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room status is required'],
+      })
+    }
+
+    // Check if room number already exists on the same floor (excluding current room)
+    const { data: existingRoom } = await supabase
       .from('room')
       .select('id')
-      .eq('id', identifier)
+      .eq('number', updateData.number)
+      .eq('floor_id', updateData.floor_id)
+      .neq('id', identifier)
       .single()
 
-    if (checkError || !existingRoom) {
+    if (existingRoom) {
       return createErrorResponse({
-        code: 404,
-        message: 'Room not found',
-        errors: ['Room with the specified ID does not exist'],
+        code: 409,
+        message: 'Room number already exists on this floor',
+        errors: ['Room number must be unique per floor'],
       })
     }
 
     const { data, error } = await supabase
       .from('room')
-      .update(updates)
+      .update(updateData)
       .eq('id', identifier)
-      .select('*, room_class(*), room_status:status_id(*), floor(*)')
+      .select('*, floor(*), room_class(*), room_status(*)')
       .single()
 
     if (error) {
@@ -216,13 +194,9 @@ export async function DELETE(
     const { identifier } = await params
 
     // Check if room exists
-    const { data: existingRoom, error: checkError } = await supabase
-      .from('room')
-      .select('id')
-      .eq('id', identifier)
-      .single()
+    const { data: existingRoom } = await supabase.from('room').select('id').eq('id', identifier).single()
 
-    if (checkError || !existingRoom) {
+    if (!existingRoom) {
       return createErrorResponse({
         code: 404,
         message: 'Room not found',

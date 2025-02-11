@@ -262,7 +262,7 @@ export default function FormModal(props: Props) {
             placeholder="Select rooms"
             options={rooms.map((room) => ({
               value: room.id,
-              label: `Room ${room.room_number} (${room.room_class.name})`,
+              label: `Room ${room.number} (${room.room_class.name})`,
             }))}
           />
         </Form.Item>

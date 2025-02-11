@@ -4,22 +4,22 @@ import type { RoomStatusListItem } from '@/app/api/room-statuses/types'
 
 export type RoomListItem = {
   id: string
-  room_number: string
-  room_class_id: string
-  status_id: string
+  number: number
   floor_id: string
+  floor: FloorListItem
+  room_class_id: string
+  room_class: RoomClassListItem
+  room_status_id: string
+  room_status: RoomStatusListItem
   created_at: string
   updated_at: string
-  room_class: RoomClassListItem
-  room_status: RoomStatusListItem
-  floor: FloorListItem
 }
 
 export type CreateRoomBody = {
-  room_number: string
-  room_class_id: string
-  status_id: string
+  number: number
   floor_id: string
+  room_class_id: string
+  room_status_id: string
 }
 
 export type UpdateRoomBody = Partial<CreateRoomBody> & {

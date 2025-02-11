@@ -18,23 +18,23 @@ export async function GET(request: Request): Promise<Response> {
     let roomsQuery = supabase.from('room').select(
       `
         *,
-        floor:floor_id(*),
-        room_class:room_class_id(*),
-        room_status:status_id(*)
+        floor(*),
+        room_class(*),
+        room_status(*)
       `,
       { count: 'exact' }
     )
 
     // Apply search filter if provided
     if (search) {
-      roomsQuery = roomsQuery.ilike('room_number', `%${search}%`)
+      roomsQuery = roomsQuery.ilike('number', `%${search}%`)
     }
 
     const {
       data: rooms,
       error: roomsError,
       count,
-    } = await roomsQuery.range(offset, offset + limit - 1).order('room_number', { ascending: true })
+    } = await roomsQuery.range(offset, offset + limit - 1).order('number', { ascending: true })
 
     if (roomsError) {
       return createErrorResponse({
@@ -50,12 +50,7 @@ export async function GET(request: Request): Promise<Response> {
     // Get bed types for all room classes
     const { data: bedTypes, error: bedTypesError } = await supabase
       .from('room_class_bed_type')
-      .select(
-        `
-          *,
-          bed_type:bed_type_id(*)
-        `
-      )
+      .select('*, bed_type(*)')
       .in('room_class_id', roomClassIds)
 
     if (bedTypesError) {
@@ -69,12 +64,7 @@ export async function GET(request: Request): Promise<Response> {
     // Get features for all room classes
     const { data: features, error: featuresError } = await supabase
       .from('room_class_feature')
-      .select(
-        `
-          *,
-          feature:feature_id(*)
-        `
-      )
+      .select('*, feature(*)')
       .in('room_class_id', roomClassIds)
 
     if (featuresError) {
@@ -122,42 +112,75 @@ export async function GET(request: Request): Promise<Response> {
 
 export async function POST(request: Request): Promise<Response> {
   try {
-    const body = (await request.json()) as CreateRoomBody
+    const supabase = await createClient()
+    const newRoom: CreateRoomBody = await request.json()
 
     // Validate required fields
-    const requiredFields = ['room_number', 'room_class_id', 'status_id', 'floor_id']
-    const missingFields = requiredFields.filter((field) => !body[field as keyof CreateRoomBody])
-    if (missingFields.length > 0) {
+    if (typeof newRoom.number !== 'number' && !newRoom.floor_id && !newRoom.room_class_id && !newRoom.room_status_id) {
       return createErrorResponse({
         code: 400,
-        message: 'Missing required fields',
-        errors: missingFields.map((field) => `${field} is required`),
+        message: 'Missing or invalid required fields',
+        errors: ['All fields are required'],
       })
     }
 
-    const supabase = await createClient()
+    // Validate room number
+    if (typeof newRoom.number !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room number is required'],
+      })
+    }
 
-    // Check if room number already exists
-    const { data: existingRoom } = await supabase.from('room').select('id').eq('room_number', body.room_number).single()
+    // Validate floor_id
+    if (!newRoom.floor_id) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Floor is required'],
+      })
+    }
+
+    // Validate room_class_id
+    if (!newRoom.room_class_id) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room class is required'],
+      })
+    }
+
+    // Validate room_status_id
+    if (!newRoom.room_status_id) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Room status is required'],
+      })
+    }
+
+    // Check if room number already exists on the same floor
+    const { data: existingRoom } = await supabase
+      .from('room')
+      .select('id')
+      .eq('number', newRoom.number)
+      .eq('floor_id', newRoom.floor_id)
+      .single()
 
     if (existingRoom) {
       return createErrorResponse({
-        code: 400,
+        code: 409,
         message: 'Room number already exists',
-        errors: ['Room number must be unique'],
+        errors: ['Room number must be unique per floor'],
       })
     }
 
-    // Create new room
+    // Create new room with relations
     const { data: room, error } = await supabase
       .from('room')
-      .insert({
-        room_number: body.room_number,
-        room_class_id: body.room_class_id,
-        status_id: body.status_id,
-        floor_id: body.floor_id,
-      })
-      .select('*, room_class(*), room_status(*), floor(*)')
+      .insert([newRoom])
+      .select('*, floor(*), room_class(*), room_status(*)')
       .single()
 
     if (error) {

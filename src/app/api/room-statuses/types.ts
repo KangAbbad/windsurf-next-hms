@@ -1,5 +1,5 @@
 export type RoomStatusListItem = {
-  id: number
+  id: string
   name: string
   number: number
   color: string
@@ -14,5 +14,5 @@ export type CreateRoomStatusBody = {
 }
 
 export type UpdateRoomStatusBody = Partial<CreateRoomStatusBody> & {
-  id: number
+  id: string
 }
