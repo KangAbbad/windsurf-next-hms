@@ -5,56 +5,26 @@ import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@
 
 export async function GET(request: Request): Promise<Response> {
   try {
-    const supabase = await createClient()
     const { searchParams } = new URL(request.url)
-
-    // Pagination params
     const page = Number(searchParams.get('page')) || 1
     const limit = Number(searchParams.get('limit')) || 10
+    const search = searchParams.get('search')?.toLowerCase() ?? ''
     const offset = (page - 1) * limit
 
-    // Search params
-    const search = searchParams.get('search')?.toLowerCase() ?? ''
-    const searchBy = searchParams.get('searchBy') ?? 'name' // name, email, phone
+    const supabase = await createClient()
 
-    // Build query
     let query = supabase.from('guest').select('*', { count: 'exact' })
 
-    // Apply search filters
+    // Apply search filter if search param is provided
     if (search) {
-      switch (searchBy) {
-        case 'name':
-          query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%`)
-          break
-        case 'email':
-          query = query.ilike('email_address', `%${search}%`)
-          break
-        case 'phone':
-          query = query.ilike('phone_number', `%${search}%`)
-          break
-        default:
-          // Default to searching all fields
-          query = query.or(
-            `first_name.ilike.%${search}%,last_name.ilike.%${search}%,email_address.ilike.%${search}%,phone_number.ilike.%${search}%`
-          )
-      }
+      query = query.ilike('name', `%${search}%`)
     }
 
-    // Get total count for pagination
-    const { count, error: countError } = await query
-
-    if (countError || count === null) {
-      return createErrorResponse({
-        code: 500,
-        message: 'Failed to get total count',
-        errors: [countError?.message ?? 'Database error while counting guests'],
-      })
-    }
-
-    // Get guests with pagination
-    const { data: guests, error } = await query
-      .range(offset, offset + limit - 1)
-      .order('created_at', { ascending: false })
+    const {
+      data: items,
+      error,
+      count,
+    } = await query.range(offset, offset + limit - 1).order('created_at', { ascending: false })
 
     if (error) {
       return createErrorResponse({
@@ -65,12 +35,12 @@ export async function GET(request: Request): Promise<Response> {
     }
 
     const response: PaginatedDataResponse<GuestListItem> = {
-      items: guests,
+      items,
       meta: {
         page,
         limit,
-        total: count,
-        total_pages: Math.ceil(count / limit),
+        total: count ?? 0,
+        total_pages: Math.ceil((count ?? 0) / limit),
       },
     }
 
@@ -92,49 +62,97 @@ export async function GET(request: Request): Promise<Response> {
 export async function POST(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
-    const body: CreateGuestBody = await request.json()
+    const newGuest: CreateGuestBody = await request.json()
 
     // Validate required fields
-    const validationErrors: string[] = []
-    if (!body.first_name) validationErrors.push('First name is required')
-    if (!body.last_name) validationErrors.push('Last name is required')
-    if (!body.email_address) validationErrors.push('Email address is required')
-    if (!body.phone_number) validationErrors.push('Phone number is required')
-
-    if (validationErrors.length > 0) {
+    if (
+      !newGuest.nationality &&
+      !newGuest.id_card_type &&
+      !newGuest.id_card_number &&
+      !newGuest.name &&
+      !newGuest.phone
+    ) {
       return createErrorResponse({
         code: 400,
-        message: 'Missing required fields',
-        errors: validationErrors,
+        message: 'Missing or invalid required fields',
+        errors: ['All fields are required'],
+      })
+    }
+
+    // Validate guest nationality
+    if (!newGuest.nationality) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Guest nationality is required'],
+      })
+    }
+
+    // Validate ID card type
+    if (!newGuest.id_card_type) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['ID card type is required'],
+      })
+    }
+
+    // Validate ID card number
+    if (!newGuest.id_card_number) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['ID card number is required'],
+      })
+    }
+
+    // Validate guest name
+    if (!newGuest.name) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Guest name is required'],
+      })
+    }
+
+    // Validate phone number
+    if (!newGuest.phone) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Phone number is required'],
+      })
+    }
+
+    // Check if ID card number already exists
+    const { data: existingIdCardNumber } = await supabase
+      .from('guest')
+      .select('id')
+      .eq('id_card_number', newGuest.id_card_number)
+      .single()
+
+    if (existingIdCardNumber) {
+      return createErrorResponse({
+        code: 400,
+        message: 'ID card number already exists',
+        errors: ['ID card number must be unique'],
       })
     }
 
     // Check if email already exists
-    const { data: existingGuest } = await supabase
-      .from('guest')
-      .select('id')
-      .eq('email_address', body.email_address)
-      .single()
+    if (newGuest.email) {
+      const { data: existingEmail } = await supabase.from('guest').select('id').ilike('email', newGuest.email).single()
 
-    if (existingGuest) {
-      return createErrorResponse({
-        code: 400,
-        message: 'Email address already exists',
-        errors: ['Email address must be unique'],
-      })
+      if (existingEmail) {
+        return createErrorResponse({
+          code: 400,
+          message: 'Guest email already exists',
+          errors: ['Guest email must be unique'],
+        })
+      }
     }
 
-    // Create guest
-    const { data: newGuest, error } = await supabase
-      .from('guest')
-      .insert({
-        first_name: body.first_name,
-        last_name: body.last_name,
-        email_address: body.email_address,
-        phone_number: body.phone_number,
-      })
-      .select()
-      .single()
+    const { data, error } = await supabase.from('guest').insert([newGuest]).select().single()
 
     if (error) {
       return createErrorResponse({
@@ -147,7 +165,7 @@ export async function POST(request: Request): Promise<Response> {
     return createApiResponse<GuestListItem>({
       code: 201,
       message: 'Guest created successfully',
-      data: newGuest,
+      data,
     })
   } catch (error) {
     console.error('Create guest error:', error)

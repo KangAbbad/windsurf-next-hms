@@ -49,13 +49,12 @@ export const tableColumns = (props: Props) => {
         width: '20%',
         render: (_, record) => (
           <span>
-            {record.guest.first_name} {record.guest.last_name}
+            {record.guest.name}
             <br />
-            <small className="text-gray-500">{record.guest.email_address}</small>
+            <small className="text-gray-500">{record.guest.email ?? record.guest.phone}</small>
           </span>
         ),
-        sorter: (a, b) =>
-          `${a.guest.first_name} ${a.guest.last_name}`.localeCompare(`${b.guest.first_name} ${b.guest.last_name}`),
+        sorter: (a, b) => a.guest.name.localeCompare(a.guest.name),
       },
       {
         title: 'Stay Period',

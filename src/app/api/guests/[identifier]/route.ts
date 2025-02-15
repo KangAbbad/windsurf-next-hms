@@ -43,7 +43,67 @@ export async function PUT(
   try {
     const supabase = await createClient()
     const { identifier } = await params
-    const body: UpdateGuestBody = await request.json()
+    const updateData: UpdateGuestBody = await request.json()
+
+    // Validate required fields
+    if (
+      !updateData.nationality &&
+      !updateData.id_card_type &&
+      !updateData.id_card_number &&
+      !updateData.name &&
+      !updateData.phone
+    ) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['All fields are required'],
+      })
+    }
+
+    // Validate guest nationality
+    if (!updateData.nationality) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Guest nationality is required'],
+      })
+    }
+
+    // Validate ID card type
+    if (!updateData.id_card_type) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['ID card type is required'],
+      })
+    }
+
+    // Validate ID card number
+    if (!updateData.id_card_number) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['ID card number is required'],
+      })
+    }
+
+    // Validate guest name
+    if (!updateData.name) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Guest name is required'],
+      })
+    }
+
+    // Validate phone number
+    if (!updateData.phone) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Phone number is required'],
+      })
+    }
 
     // Check if guest exists
     const { data: existingGuest } = await supabase.from('guest').select('id').eq('id', identifier).single()
@@ -56,16 +116,31 @@ export async function PUT(
       })
     }
 
+    const { data: existingIdCardNumber } = await supabase
+      .from('guest')
+      .select('id')
+      .eq('id_card_number', updateData.id_card_number)
+      .neq('id', identifier)
+      .single()
+
+    if (existingIdCardNumber) {
+      return createErrorResponse({
+        code: 400,
+        message: 'ID Card number already exists',
+        errors: ['ID Card number must be unique'],
+      })
+    }
+
     // Check email uniqueness if email is being updated
-    if (body.email_address) {
-      const { data: emailExists } = await supabase
+    if (updateData.email) {
+      const { data: existingEmail } = await supabase
         .from('guest')
         .select('id')
-        .eq('email_address', body.email_address)
+        .eq('email', updateData.email)
         .neq('id', identifier)
         .single()
 
-      if (emailExists) {
+      if (existingEmail) {
         return createErrorResponse({
           code: 400,
           message: 'Email address already exists',
@@ -75,17 +150,7 @@ export async function PUT(
     }
 
     // Update guest
-    const { data: updatedGuest, error } = await supabase
-      .from('guest')
-      .update({
-        first_name: body.first_name,
-        last_name: body.last_name,
-        email_address: body.email_address,
-        phone_number: body.phone_number,
-      })
-      .eq('id', identifier)
-      .select()
-      .single()
+    const { data, error } = await supabase.from('guest').update(updateData).eq('id', identifier).select().single()
 
     if (error) {
       return createErrorResponse({
@@ -98,7 +163,7 @@ export async function PUT(
     return createApiResponse<GuestListItem>({
       code: 200,
       message: 'Guest updated successfully',
-      data: updatedGuest,
+      data,
     })
   } catch (error) {
     console.error('Update guest error:', error)
@@ -111,7 +176,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ identifier: string }> }
 ): Promise<Response> {
   try {

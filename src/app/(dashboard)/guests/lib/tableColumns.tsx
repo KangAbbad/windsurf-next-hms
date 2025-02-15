@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Button, Popconfirm, Space } from 'antd'
+import { Button, Flex, Popconfirm, Tag } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
@@ -44,40 +44,84 @@ export const tableColumns = (props: Props) => {
 
     return [
       {
-        title: 'First Name',
-        dataIndex: 'first_name',
-        key: 'first_name',
-        width: '20%',
-        sorter: (a, b) => a.first_name.localeCompare(b.first_name),
+        title: 'Name',
+        dataIndex: 'name',
+        key: 'name',
+        width: 225,
+        fixed: 'left',
+        sorter: (a, b) => a.name.localeCompare(b.name),
       },
       {
-        title: 'Last Name',
-        dataIndex: 'last_name',
-        key: 'last_name',
-        width: '20%',
-        sorter: (a, b) => a.last_name.localeCompare(b.last_name),
+        title: 'ID Card Number',
+        dataIndex: 'id_card_number',
+        key: 'id_card_number',
+        width: 225,
+        sorter: (a, b) => a.id_card_number.localeCompare(b.id_card_number),
+      },
+      {
+        title: 'ID Card Type',
+        dataIndex: 'id_card_type',
+        key: 'id_card_type',
+        width: 260,
+        sorter: (a, b) => a.id_card_type.localeCompare(b.id_card_type),
+        render: (_, record) => {
+          const idCardType = record.id_card_type.replace(/_/g, ' ')
+          const tagsColor = {
+            NATIONAL_IDENTITY_CARD: 'blue',
+            PASSPORT: 'green',
+            PERMANENT_RESIDENCE_PERMIT: 'purple',
+            TEMPORARY_STAY_PERMIT: 'purple',
+            DRIVING_LICENSE: 'orange',
+          }
+          return <Tag color={tagsColor[record.id_card_type]}>{idCardType}</Tag>
+        },
+      },
+      {
+        title: 'Nationality',
+        dataIndex: 'nationality',
+        key: 'nationality',
+        width: 225,
+        sorter: (a, b) => a.nationality.localeCompare(b.nationality),
+        render: (_, record) => {
+          const nationality = record.nationality.replace(/_/g, ' ')
+          const tagsColor = {
+            INDONESIAN_CITIZEN: 'blue',
+            FOREIGNER: 'green',
+          }
+          return <Tag color={tagsColor[record.nationality]}>{nationality}</Tag>
+        },
       },
       {
         title: 'Email',
-        dataIndex: 'email_address',
-        key: 'email_address',
-        width: '25%',
-        sorter: (a, b) => a.email_address.localeCompare(b.email_address),
+        dataIndex: 'email',
+        key: 'email',
+        width: 225,
+        sorter: (a, b) => a.email.localeCompare(b.email),
+        render: (_, record) => record.email || '-',
       },
       {
         title: 'Phone',
-        dataIndex: 'phone_number',
-        key: 'phone_number',
-        width: '20%',
-        sorter: (a, b) => a.phone_number.localeCompare(b.phone_number),
+        dataIndex: 'phone',
+        key: 'phone',
+        width: 175,
+        sorter: (a, b) => a.phone.localeCompare(b.phone),
+      },
+      {
+        title: 'Address',
+        dataIndex: 'address',
+        key: 'address',
+        width: 250,
+        sorter: (a, b) => a.address.localeCompare(b.address),
+        render: (_, record) => record.address || '-',
       },
       {
         title: 'Actions',
         key: 'actions',
-        width: '15%',
+        width: 125,
         align: 'center',
+        fixed: 'right',
         render: (_, record) => (
-          <Space>
+          <Flex gap={4} align="center" justify="center">
             <Button
               type="text"
               icon={<FaPenToSquare />}
@@ -104,7 +148,7 @@ export const tableColumns = (props: Props) => {
                 loading={isDeleteLoading && deleteVariables === record.id}
               />
             </Popconfirm>
-          </Space>
+          </Flex>
         ),
       },
     ]

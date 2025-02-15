@@ -196,7 +196,7 @@ export default function FormModal(props: Props) {
             optionFilterProp="children"
             options={guests.map((guest) => ({
               value: guest.id,
-              label: `${guest.first_name} ${guest.last_name} (${guest.email_address})`,
+              label: `${guest.name} (${guest.phone} - ${guest.email})`,
             }))}
           />
         </Form.Item>
