@@ -1,9 +1,10 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Modal, Form, InputNumber, DatePicker, Select, Typography } from 'antd'
+import { Form, DatePicker, Select, Typography, Drawer, Button, Input } from 'antd'
 import dayjs from 'dayjs'
 import { useEffect } from 'react'
+import { IoClose } from 'react-icons/io5'
 
 import { queryKey as queryKeyAddonList } from '../../addons/lib/constants'
 import { getAll as getAddons } from '../../addons/services/get'
@@ -18,7 +19,10 @@ import { bookingDetailStore } from '../lib/state'
 import { createItem } from '../services/post'
 import { updateItem } from '../services/put'
 
+import { CreateBookingBody, UpdateBookingBody } from '@/app/api/bookings/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { formatCurrency } from '@/utils/formatCurrency'
+import { inputNumberValidation } from '@/utils/inputNumberValidation'
 
 const { RangePicker } = DatePicker
 const { Title } = Typography
@@ -39,13 +43,13 @@ type Props = {
   onCancel: () => void
 }
 
-export default function FormModal(props: Props) {
+export default function FormDrawer(props: Props) {
   const { isVisible, onCancel } = props
   const queryClient = useQueryClient()
   const { antdMessage } = useAntdContextHolder()
   const [form] = Form.useForm<FormType>()
   const { data: bookingDetailState } = bookingDetailStore()
-  const bookingAmount = Form.useWatch('booking_amount', form)
+  const bookingAmount = Form.useWatch('booking_amount', form) ?? 0
 
   const { data: guestsResponse, isFetching: isLoadingGuests } = useQuery({
     queryKey: [queryKeyGuestList.RES_GUEST_LIST],
@@ -75,7 +79,7 @@ export default function FormModal(props: Props) {
   })
   const addons = addonsResponse?.data?.items ?? []
 
-  const hideModal = () => {
+  const hideDrawer = () => {
     form.resetFields()
     onCancel()
   }
@@ -84,8 +88,8 @@ export default function FormModal(props: Props) {
     mutationFn: createItem,
     onSuccess: (res) => {
       antdMessage?.success(res?.message ?? 'Booking created successfully')
-      hideModal()
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_BOOKING_LIST] })
+      hideDrawer()
     },
     onError: (res) => {
       antdMessage?.error(res?.message ?? 'Failed to create booking')
@@ -96,8 +100,8 @@ export default function FormModal(props: Props) {
     mutationFn: updateItem,
     onSuccess: (res) => {
       antdMessage?.success(res?.message ?? 'Booking updated successfully')
-      hideModal()
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_BOOKING_LIST] })
+      hideDrawer()
     },
     onError: (res) => {
       antdMessage?.error(res?.message ?? 'Failed to update booking')
@@ -135,16 +139,16 @@ export default function FormModal(props: Props) {
 
   const onSubmit = (values: FormType) => {
     if (isFormLoading) return
+    const { dates, ...restValues } = values
+    const [checkin_date, checkout_date] = dates
 
-    const [checkin_date, checkout_date] = values.dates
-
-    const submitData = {
-      ...values,
+    const submitData: CreateBookingBody | UpdateBookingBody = {
+      ...restValues,
+      num_adults: Number(values.num_adults),
+      num_children: Number(values.num_children),
       checkin_date: checkin_date.format('YYYY-MM-DD'),
       checkout_date: checkout_date.format('YYYY-MM-DD'),
     }
-
-    delete (submitData as any).dates
 
     if (bookingDetailState) {
       updateMutation({ id: bookingDetailState.id, ...submitData })
@@ -172,18 +176,22 @@ export default function FormModal(props: Props) {
   }, [isVisible])
 
   return (
-    <Modal
+    <Drawer
+      title={bookingDetailState ? 'Edit Booking' : 'Add Booking'}
       open={isVisible}
-      title={bookingDetailState ? 'Edit Booking' : 'Create New Booking'}
-      confirmLoading={isFormLoading}
+      placement="right"
+      width={520}
       maskClosable={false}
-      width={720}
-      okText={bookingDetailState ? 'Update' : 'Create'}
-      onCancel={onCancel}
-      onOk={form.submit}
+      closeIcon={<IoClose className="text-black text-2xl" />}
+      extra={
+        <Button type="primary" loading={isFormLoading} onClick={form.submit}>
+          {bookingDetailState ? 'Update' : 'Create'}
+        </Button>
+      }
+      onClose={hideDrawer}
     >
-      <Form form={form} layout="vertical" onFinish={onSubmit} className="!mt-4" onFieldsChange={onFieldsChange}>
-        <Form.Item
+      <Form form={form} layout="vertical" onFinish={onSubmit} onFieldsChange={onFieldsChange}>
+        <Form.Item<FormType>
           name="guest_id"
           label="Guest"
           rules={[{ required: true, message: 'Please select a guest' }]}
@@ -201,7 +209,7 @@ export default function FormModal(props: Props) {
           />
         </Form.Item>
 
-        <Form.Item
+        <Form.Item<FormType>
           name="payment_status_id"
           label="Payment Status"
           rules={[{ required: true, message: 'Please select a payment status' }]}
@@ -217,7 +225,7 @@ export default function FormModal(props: Props) {
           />
         </Form.Item>
 
-        <Form.Item
+        <Form.Item<FormType>
           name="dates"
           label="Check-in / Check-out Dates"
           rules={[{ required: true, message: 'Please select dates' }]}
@@ -231,26 +239,39 @@ export default function FormModal(props: Props) {
         </Form.Item>
 
         <div className="flex gap-3">
-          <Form.Item
+          <Form.Item<FormType>
             name="num_adults"
             label="Number of Adults"
-            rules={[{ required: true, message: 'Please enter number of adults' }]}
+            rules={[
+              { required: true, message: 'Please enter number of adults' },
+              {
+                pattern: /^\d+$/,
+                message: 'Invalid number!',
+              },
+            ]}
+            getValueFromEvent={inputNumberValidation}
             className="flex-1 !mb-3"
           >
-            <InputNumber min={1} className="w-full" />
+            <Input placeholder="min: 1" className="max-w-20" />
           </Form.Item>
 
-          <Form.Item
+          <Form.Item<FormType>
             name="num_children"
             label="Number of Children"
-            rules={[{ required: true, message: 'Please enter number of children' }]}
+            rules={[
+              {
+                pattern: /^\d+$/,
+                message: 'Invalid number!',
+              },
+            ]}
+            getValueFromEvent={inputNumberValidation}
             className="flex-1 !mb-3"
           >
-            <InputNumber min={0} className="w-full" />
+            <Input className="max-w-20" />
           </Form.Item>
         </div>
 
-        <Form.Item
+        <Form.Item<FormType>
           name="room_ids"
           label="Rooms"
           rules={[{ required: true, message: 'Please select at least one room' }]}
@@ -267,24 +288,24 @@ export default function FormModal(props: Props) {
           />
         </Form.Item>
 
-        <Form.Item name="addon_ids" label="Addons" className="!mb-3">
+        <Form.Item<FormType> name="addon_ids" label="Addons" className="!mb-3">
           <Select
             mode="multiple"
             loading={isLoadingAddons}
             placeholder="Select addons"
             options={addons.map((addon) => ({
               value: addon.id,
-              label: `${addon.name} ($${addon.price})`,
+              label: `${addon.name} (${formatCurrency(addon.price)})`,
             }))}
           />
         </Form.Item>
 
-        <Form.Item name="booking_amount" label="Total Amount" className="!mb-3">
+        <Form.Item<FormType> name="booking_amount" label="Total Amount" className="!mb-3">
           <Title level={4} className="!mb-0">
-            Rp {bookingAmount?.toLocaleString('id-ID') ?? '0'}
+            {formatCurrency(bookingAmount)}
           </Title>
         </Form.Item>
       </Form>
-    </Modal>
+    </Drawer>
   )
 }

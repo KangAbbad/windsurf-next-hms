@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Button, Table, Input, DatePicker } from 'antd'
+import { Button, Table, Input, DatePicker, Flex } from 'antd'
 import type { RangePickerProps } from 'antd/es/date-picker'
 import dayjs from 'dayjs'
 import dynamic from 'next/dynamic'
@@ -14,7 +14,7 @@ import { bookingDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
 import { type BookingListPageParams, getAll } from './services/get'
 
-const FormModal = dynamic(() => import('./components/FormModal'), {
+const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
 })
 
@@ -74,14 +74,14 @@ export default function BookingsPage() {
 
   return (
     <main className="p-4">
-      <div className="bg-white p-4 pb-0 rounded-lg">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white pb-0 rounded-lg">
+        <div className="flex justify-between items-center p-4 pb-0 mb-4">
           <h1 className="text-2xl font-semibold m-0">Bookings Management</h1>
           <Button type="primary" icon={<FaPlus />} onClick={showAddModal}>
             Add New
           </Button>
         </div>
-        <div className="mb-4 flex gap-2">
+        <Flex gap={8} className="px-4 mb-4">
           <Input
             allowClear
             placeholder="Search by guest name or email..."
@@ -101,24 +101,26 @@ export default function BookingsPage() {
               setDates(dateStrings)
             }}
           />
-        </div>
+        </Flex>
         <Table
           columns={columns}
           dataSource={dataSource}
           loading={isDataSourceFetching}
           rowKey="id"
+          scroll={{ x: 1300 }}
           pagination={{
             current: pageParams.page,
             pageSize: pageParams.limit,
             total,
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} items`,
+            className: '!px-4',
             onChange: (page, pageSize) => {
               setPageParams((prev) => ({ ...prev, page, limit: pageSize }))
             },
           }}
         />
-        <FormModal
+        <FormDrawer
           isVisible={isFormVisible}
           onCancel={() => {
             setFormVisible(false)

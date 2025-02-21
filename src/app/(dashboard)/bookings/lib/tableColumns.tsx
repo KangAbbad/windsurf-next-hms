@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Button, Popconfirm, Space, Tag } from 'antd'
+import { Button, Flex, Popconfirm, Tag } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
@@ -9,6 +9,7 @@ import { deleteItem } from '../services/delete'
 
 import { BookingListItem } from '@/app/api/bookings/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { formatCurrency } from '@/utils/formatCurrency'
 
 type Props = {
   onEdit: () => void
@@ -47,6 +48,7 @@ export const tableColumns = (props: Props) => {
         title: 'Guest',
         key: 'guest',
         width: '20%',
+        fixed: 'left',
         render: (_, record) => (
           <span>
             {record.guest.name}
@@ -54,7 +56,7 @@ export const tableColumns = (props: Props) => {
             <small className="text-gray-500">{record.guest.email ?? record.guest.phone}</small>
           </span>
         ),
-        sorter: (a, b) => a.guest.name.localeCompare(a.guest.name),
+        sorter: (a, b) => a.guest.name.localeCompare(b.guest.name),
       },
       {
         title: 'Stay Period',
@@ -89,13 +91,15 @@ export const tableColumns = (props: Props) => {
         key: 'rooms',
         width: '15%',
         render: (_, record) => (
-          <Space direction="vertical" size="small">
+          <Flex gap={4} vertical>
             {record.rooms.map((room) => (
-              <Tag key={room.id}>
-                Room {room.number} ({room.room_class.name})
-              </Tag>
+              <div key={room.id}>
+                <Tag>
+                  Room {room.number} ({room.room_class.name})
+                </Tag>
+              </div>
             ))}
-          </Space>
+          </Flex>
         ),
       },
       {
@@ -121,11 +125,7 @@ export const tableColumns = (props: Props) => {
         key: 'booking_amount',
         width: '15%',
         sorter: (a, b) => a.booking_amount - b.booking_amount,
-        render: (amount) => (
-          <span className="font-medium">
-            ${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </span>
-        ),
+        render: (amount) => <span className="font-medium">{formatCurrency(amount)}</span>,
       },
       {
         title: 'Payment Status',
@@ -151,8 +151,9 @@ export const tableColumns = (props: Props) => {
         key: 'actions',
         width: '10%',
         align: 'center',
+        fixed: 'right',
         render: (_, record) => (
-          <Space>
+          <Flex gap={4} align="center" justify="center">
             <Button
               type="text"
               icon={<FaPenToSquare />}
@@ -180,7 +181,7 @@ export const tableColumns = (props: Props) => {
                 loading={isDeleteLoading && deleteVariables === record.id}
               />
             </Popconfirm>
-          </Space>
+          </Flex>
         ),
       },
     ]

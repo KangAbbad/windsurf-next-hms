@@ -1,4 +1,7 @@
 import type { BookingListItem, CreateBookingBody } from './types'
+import { AddonListItem } from '../addons/types'
+import { GuestListItem } from '../guests/types'
+import { RoomStatusListItem } from '../room-statuses/types'
 
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
@@ -13,58 +16,37 @@ export async function GET(request: Request): Promise<Response> {
     const limit = Number(searchParams.get('limit')) || 10
     const offset = (page - 1) * limit
 
-    // Search params
-    const search = searchParams.get('search')?.toLowerCase() ?? ''
-    const startDate = searchParams.get('startDate') ?? ''
-    const endDate = searchParams.get('endDate') ?? ''
-
     // Build base query with relations
     let query = supabase.from('booking').select(
       `
         *,
-        guest:guest_id(*),
-        payment_status:payment_status_id(*),
+        guests:booking_guest(guest(*)),
+        payment_status(*),
         rooms:booking_room(
-          room:room_id(
-            *,
-            floor:floor_id(*),
-            room_class:room_class_id(*)
-          )
+          room(*, floor(*), room_class(*))
         ),
-        addons:booking_addon(
-          addon:addon_id(*)
-        )
+        addons:booking_addon(addon(*))
       `,
       { count: 'exact' }
     )
 
-    // Apply search filters
-    const searchConditions = []
-
-    // Guest search condition
-    if (search) {
-      searchConditions.push(
-        `guest.first_name.ilike.%${search}%`,
-        `guest.last_name.ilike.%${search}%`,
-        `guest.email_address.ilike.%${search}%`,
-        `guest.phone_number.ilike.%${search}%`
-      )
-    }
-
-    // Date range condition
-    if (startDate && endDate) {
-      searchConditions.push(`and(checkin_date.gte.${startDate},checkout_date.lte.${endDate})`)
-    }
-
-    // Combine all conditions with OR
-    if (searchConditions.length > 0) {
-      query = query.or(searchConditions.join(','))
-    }
-
-    // Apply pagination
     query = query.range(offset, offset + limit - 1).order('checkin_date', { ascending: false })
 
-    const { data: bookings, error, count } = await query
+    const { data, error, count } = await query
+
+    const items: BookingListItem[] = (data ?? []).map((item) => {
+      const { guests, rooms, addons } = item
+      const reformatGuests = (guests as { guest: GuestListItem }[]).map((guest) => guest.guest)
+      const reformatRooms = (rooms as { room: RoomStatusListItem }[]).map((room) => room.room)
+      const reformatAddons = (addons as { addon: AddonListItem }[]).map((addon) => addon.addon)
+
+      return {
+        ...item,
+        guest: reformatGuests?.[0] ?? null,
+        rooms: reformatRooms,
+        addons: reformatAddons,
+      }
+    })
 
     if (error) {
       return createErrorResponse({
@@ -74,28 +56,8 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    // Transform the nested data structure
-    const transformedBookings = bookings.map((booking: any) => ({
-      id: booking.id,
-      guest: booking.guest,
-      payment_status: booking.payment_status,
-      rooms: booking.rooms.map((br: any) => ({
-        ...br.room,
-        floor: br.room.floor,
-        room_class: br.room.room_class,
-      })),
-      addons: booking.addons.map((ba: any) => ba.addon),
-      checkin_date: booking.checkin_date,
-      checkout_date: booking.checkout_date,
-      num_adults: booking.num_adults,
-      num_children: booking.num_children,
-      booking_amount: booking.booking_amount,
-      created_at: booking.created_at,
-      updated_at: booking.updated_at,
-    }))
-
     const response: PaginatedDataResponse<BookingListItem> = {
-      items: transformedBookings,
+      items,
       meta: {
         page,
         limit,
@@ -125,22 +87,56 @@ export async function POST(request: Request): Promise<Response> {
     const newBooking: CreateBookingBody = await request.json()
 
     // Validate required fields
-    const requiredFields: (keyof CreateBookingBody)[] = [
-      'guest_id',
-      'payment_status_id',
-      'checkin_date',
-      'checkout_date',
-      'num_adults',
-      'booking_amount',
-      'room_ids',
-    ]
-
-    const missingFields = requiredFields.filter((field) => !newBooking[field])
-    if (missingFields.length > 0) {
+    if (
+      !newBooking.guest_id &&
+      !newBooking.payment_status_id &&
+      !newBooking.checkin_date &&
+      !newBooking.checkout_date &&
+      typeof newBooking.num_adults !== 'number' &&
+      !newBooking.booking_amount &&
+      !newBooking.room_ids.length &&
+      !newBooking.addon_ids?.length
+    ) {
       return createErrorResponse({
         code: 400,
-        message: 'Missing required fields',
-        errors: missingFields.map((field) => `${field} is required`),
+        message: 'Missing or invalid required fields',
+        errors: ['All fields are required'],
+      })
+    }
+
+    // Validate booking guest_id
+    if (!newBooking.guest_id) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Booking guest is required'],
+      })
+    }
+
+    // Validate booking payment_status_id
+    if (!newBooking.payment_status_id) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Booking payment status is required'],
+      })
+    }
+
+    // Validate booking checkin_date
+    if (!newBooking.checkin_date) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Booking checkin date is required'],
+      })
+    }
+
+    // Validate booking checkout_date
+    if (!newBooking.checkout_date) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Booking checkout date is required'],
       })
     }
 
@@ -157,8 +153,8 @@ export async function POST(request: Request): Promise<Response> {
     if (isNaN(checkinDate.getTime()) || isNaN(checkoutDate.getTime())) {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid dates',
-        errors: ['checkin_date and checkout_date must be valid dates'],
+        message: 'Invalid check in/out dates',
+        errors: ['Booking checkin and checkout date must be valid dates'],
       })
     }
 
@@ -166,7 +162,7 @@ export async function POST(request: Request): Promise<Response> {
       return createErrorResponse({
         code: 400,
         message: 'Invalid checkin date',
-        errors: ['checkin_date cannot be in the past'],
+        errors: ['Booking checkin date cannot be in the past'],
       })
     }
 
@@ -174,53 +170,81 @@ export async function POST(request: Request): Promise<Response> {
       return createErrorResponse({
         code: 400,
         message: 'Invalid checkout date',
-        errors: ['checkout_date must be after checkin_date'],
+        errors: ['Booking checkout date must be after checkin date'],
       })
     }
 
-    // Validate numeric fields
-    if (newBooking.num_adults <= 0) {
+    // Validate booking num_adults
+    if (typeof newBooking.num_adults !== 'number') {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid number of adults',
-        errors: ['num_adults must be greater than 0'],
+        message: 'Invalid booking number of adults',
+        errors: ['Booking number of adults must be a number'],
       })
     }
 
-    if (newBooking.booking_amount <= 0) {
+    // Validate booking booking_amount
+    if (typeof newBooking.booking_amount !== 'number') {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid booking amount',
-        errors: ['booking_amount must be greater than 0'],
+        message: 'Missing or invalid required fields',
+        errors: ['Booking booking amount must be a number'],
       })
     }
 
-    if (newBooking.num_children < 0) {
+    // Validate booking room_ids
+    if (!newBooking.room_ids.length) {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid number of children',
-        errors: ['num_children cannot be negative'],
+        message: 'Missing or invalid required fields',
+        errors: ['Booking rooms are required'],
       })
     }
 
-    // Check if rooms exist and are available for the given dates
+    // Check if rooms exist and their status
     const { data: rooms, error: roomsError } = await supabase
       .from('room')
-      .select('id, status_id')
+      .select('id, number, room_status(*)')
       .in('id', newBooking.room_ids)
 
-    if (roomsError || !rooms || rooms.length !== newBooking.room_ids.length) {
+    if (roomsError) {
+      return createErrorResponse({
+        code: 500,
+        message: 'Error fetching rooms',
+        errors: [roomsError.message],
+      })
+    }
+
+    if (!rooms.length) {
       return createErrorResponse({
         code: 400,
-        message: 'Invalid rooms',
+        message: 'Invalid booking rooms',
         errors: ['One or more rooms do not exist'],
+      })
+    }
+
+    // Check if rooms are available (status check)
+    const unavailableRooms = rooms.filter((room) => (room.room_status as unknown as RoomStatusListItem).number > 1)
+    if (unavailableRooms.length > 0) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Rooms not available',
+        errors: [`Rooms ${unavailableRooms.map((r) => r.number).join(', ')} are not available for booking`],
       })
     }
 
     // Check if rooms are already booked for the given dates
     const { data: existingBookings, error: bookingsError } = await supabase
       .from('booking_room')
-      .select('room_id, booking:booking_id(checkin_date, checkout_date)')
+      .select(
+        `
+          room_id,
+          booking:booking_id(
+            checkin_date,
+            checkout_date
+          )
+        `
+      )
       .in('room_id', newBooking.room_ids)
 
     if (bookingsError) {
@@ -231,17 +255,12 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    const unavailableRooms = (
-      existingBookings as unknown as {
-        room_id: any
-        booking: {
-          checkin_date: any
-          checkout_date: any
-        }
-      }[]
-    ).filter((booking) => {
-      const existingCheckin = new Date(booking.booking.checkin_date)
-      const existingCheckout = new Date(booking.booking.checkout_date)
+    // Check for booking date conflicts
+    const conflictingRooms = existingBookings?.filter((item) => {
+      const existingCheckin = new Date((item.booking as unknown as BookingListItem).checkin_date)
+      const existingCheckout = new Date((item.booking as unknown as BookingListItem).checkout_date)
+
+      // Check for date overlap
       return (
         (checkinDate >= existingCheckin && checkinDate < existingCheckout) ||
         (checkoutDate > existingCheckin && checkoutDate <= existingCheckout) ||
@@ -249,11 +268,16 @@ export async function POST(request: Request): Promise<Response> {
       )
     })
 
-    if (unavailableRooms && unavailableRooms.length > 0) {
+    if (conflictingRooms && conflictingRooms.length > 0) {
+      const conflictingRoomNumbers = rooms
+        .filter((room) => conflictingRooms.some((cr) => cr.room_id === room.id))
+        .map((room) => room.number)
+        .join(', ')
+
       return createErrorResponse({
         code: 400,
-        message: 'Rooms not available',
-        errors: ['One or more rooms are not available for the selected dates'],
+        message: 'Rooms not available for selected dates',
+        errors: [`Rooms ${conflictingRoomNumbers} are already booked for the selected dates`],
       })
     }
 
@@ -261,7 +285,6 @@ export async function POST(request: Request): Promise<Response> {
     const { data: booking, error: bookingError } = await supabase
       .from('booking')
       .insert({
-        guest_id: newBooking.guest_id,
         payment_status_id: newBooking.payment_status_id,
         checkin_date: newBooking.checkin_date,
         checkout_date: newBooking.checkout_date,
@@ -314,23 +337,37 @@ export async function POST(request: Request): Promise<Response> {
       }
     }
 
+    // Insert booking guest
+    const { error: bookingGuestError } = await supabase.from('booking_guest').insert({
+      booking_id: booking.id,
+      guest_id: newBooking.guest_id,
+    })
+
+    if (bookingGuestError) {
+      return createErrorResponse({
+        code: 500,
+        message: 'Failed to assign guest to booking',
+        errors: [bookingGuestError.message],
+      })
+    }
+
     // Return the created booking with all relations
     const { data: createdBooking, error: fetchError } = await supabase
       .from('booking')
       .select(
         `
           *,
-          guest:guest_id(*),
-          payment_status:payment_status_id(*),
+          guest(*),
+          payment_status(*),
           rooms:booking_room(
             room:room_id(
               *,
-              floor:floor_id(*),
-              room_class:room_class_id(*)
+              floor(*),
+              room_class(*)
             )
           ),
           addons:booking_addon(
-            addon:addon_id(*)
+            addon(*)
           )
         `
       )
@@ -348,7 +385,9 @@ export async function POST(request: Request): Promise<Response> {
     // Transform the response to match BookingListItem type
     const transformedBooking: BookingListItem = {
       id: createdBooking.id,
+      guest_id: createdBooking.guest_id,
       guest: createdBooking.guest,
+      payment_status_id: createdBooking.payment_status_id,
       payment_status: createdBooking.payment_status,
       rooms: createdBooking.rooms.map((br: any) => ({
         ...br.room,
