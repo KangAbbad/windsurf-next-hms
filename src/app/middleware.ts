@@ -1,10 +1,12 @@
-import { type NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
-import { updateSession } from '@/providers/supabase/middleware'
+// import { updateSession } from '@/providers/supabase/middleware'
 
-export async function middleware(request: NextRequest) {
+export async function middleware(_request: NextRequest) {
+  const response = NextResponse.next()
   // update user's auth session
-  return await updateSession(request)
+  // return await updateSession(request)
+  return response
 }
 
 export const config = {

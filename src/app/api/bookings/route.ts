@@ -7,6 +7,8 @@ import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
 
 export async function GET(request: Request): Promise<Response> {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
@@ -35,13 +37,13 @@ export async function GET(request: Request): Promise<Response> {
     const { data, error, count } = await query
 
     const items: BookingListItem[] = (data ?? []).map((item) => {
-      const { guests, rooms, addons } = item
+      const { guests, rooms, addons, ...restItem } = item
       const reformatGuests = (guests as { guest: GuestListItem }[]).map((guest) => guest.guest)
       const reformatRooms = (rooms as { room: RoomStatusListItem }[]).map((room) => room.room)
       const reformatAddons = (addons as { addon: AddonListItem }[]).map((addon) => addon.addon)
 
       return {
-        ...item,
+        ...restItem,
         guest: reformatGuests?.[0] ?? null,
         rooms: reformatRooms,
         addons: reformatAddons,
@@ -69,6 +71,7 @@ export async function GET(request: Request): Promise<Response> {
     return createApiResponse<PaginatedDataResponse<BookingListItem>>({
       code: 200,
       message: 'Bookings retrieved successfully',
+      start_hrtime: startHrtime,
       data: response,
     })
   } catch (error) {
@@ -82,6 +85,8 @@ export async function GET(request: Request): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const newBooking: CreateBookingBody = await request.json()
@@ -295,7 +300,7 @@ export async function POST(request: Request): Promise<Response> {
       .select()
       .single()
 
-    if (bookingError || !booking) {
+    if (bookingError) {
       return createErrorResponse({
         code: 500,
         message: 'Failed to create booking',
@@ -360,15 +365,9 @@ export async function POST(request: Request): Promise<Response> {
           guest(*),
           payment_status(*),
           rooms:booking_room(
-            room:room_id(
-              *,
-              floor(*),
-              room_class(*)
-            )
+            room(*, floor(*), room_class(*))
           ),
-          addons:booking_addon(
-            addon(*)
-          )
+          addons:booking_addon(addon(*))
         `
       )
       .eq('id', booking.id)
@@ -407,6 +406,7 @@ export async function POST(request: Request): Promise<Response> {
     return createApiResponse<BookingListItem>({
       code: 201,
       message: 'Booking created successfully',
+      start_hrtime: startHrtime,
       data: transformedBooking,
     })
   } catch (error) {

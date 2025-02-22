@@ -1,373 +1,462 @@
-// import { BookingListItem, UpdateBookingBody } from '../types'
+import { AddonListItem } from '../../addons/types'
+import { GuestListItem } from '../../guests/types'
+import { RoomStatusListItem } from '../../room-statuses/types'
+import { BookingListItem, UpdateBookingBody } from '../types'
 
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
 
-// export async function GET(
-//   _request: Request,
-//   { params }: { params: Promise<{ identifier: string }> }
-// ): Promise<Response> {
-//   try {
-//     const supabase = await createClient()
-//     const { identifier } = await params
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ identifier: string }> }
+): Promise<Response> {
+  const startHrtime = process.hrtime()
 
-//     const { data: booking, error } = await supabase
-//       .from('booking')
-//       .select(
-//         `
-//           *,
-//           guest:guest_id(*),
-//           payment_status:payment_status_id(*),
-//           rooms:booking_room(
-//             room:room_id(
-//               *,
-//               floor:floor_id(*),
-//               room_class:room_class_id(*)
-//             )
-//           ),
-//           addons:booking_addon(
-//             addon:addon_id(*)
-//           )
-//         `
-//       )
-//       .eq('id', identifier)
-//       .single()
+  try {
+    const supabase = await createClient()
+    const { identifier } = await params
 
-//     if (error) {
-//       return createErrorResponse({
-//         code: 404,
-//         message: 'Booking not found',
-//         errors: [error.message],
-//       })
-//     }
+    const { data, error } = await supabase
+      .from('booking')
+      .select(
+        `
+          *,
+          guests:booking_guest(guest(*)),
+          payment_status(*),
+          rooms:booking_room(
+            room(*, floor(*), room_class(*))
+          ),
+          addons:booking_addon(addon(*))
+        `
+      )
+      .eq('id', identifier)
+      .single()
 
-//     // Transform the response to match BookingListItem type
-//     const transformedBooking: BookingListItem = {
-//       id: booking.id,
-//       guest: booking.guest,
-//       payment_status: booking.payment_status,
-//       rooms: booking.rooms.map((br: any) => ({
-//         ...br.room,
-//         floor: br.room.floor,
-//         room_class: br.room.room_class,
-//       })),
-//       addons: booking.addons.map((ba: any) => ba.addon),
-//       checkin_date: booking.checkin_date,
-//       checkout_date: booking.checkout_date,
-//       num_adults: booking.num_adults,
-//       num_children: booking.num_children,
-//       booking_amount: booking.booking_amount,
-//       created_at: booking.created_at,
-//       updated_at: booking.updated_at,
-//     }
+    if (error) {
+      return createErrorResponse({
+        code: 404,
+        message: 'Booking not found',
+        errors: [error.message],
+      })
+    }
 
-//     return createApiResponse<BookingListItem>({
-//       code: 200,
-//       message: 'Booking details retrieved successfully',
-//       data: transformedBooking,
-//     })
-//   } catch (error) {
-//     console.error('Get booking details error:', error)
-//     return createErrorResponse({
-//       code: 500,
-//       message: 'Internal server error',
-//       errors: [(error as Error).message],
-//     })
-//   }
-// }
+    // Transform the response to match BookingListItem type
+    const { guests, rooms, addons, ...restData } = data
+    const reformatGuests = (guests as { guest: GuestListItem }[]).map((guest) => guest.guest)
+    const reformatRooms = (rooms as { room: RoomStatusListItem }[]).map((room) => room.room)
+    const reformatAddons = (addons as { addon: AddonListItem }[]).map((addon) => addon.addon)
 
-// export async function PUT(
-//   request: Request,
-//   { params }: { params: Promise<{ identifier: string }> }
-// ): Promise<Response> {
-//   try {
-//     const supabase = await createClient()
-//     const { identifier } = await params
-//     const updates: UpdateBookingBody = await request.json()
+    const transformedBooking: BookingListItem = {
+      ...restData,
+      guest: reformatGuests?.[0] ?? null,
+      rooms: reformatRooms,
+      addons: reformatAddons,
+    }
 
-//     // Check if booking exists
-//     const { data: existingBooking, error: checkError } = await supabase
-//       .from('booking')
-//       .select('*')
-//       .eq('id', identifier)
-//       .single()
+    return createApiResponse<BookingListItem>({
+      code: 200,
+      message: 'Booking details retrieved successfully',
+      start_hrtime: startHrtime,
+      data: transformedBooking,
+    })
+  } catch (error) {
+    console.error('Get booking details error:', error)
+    return createErrorResponse({
+      code: 500,
+      message: 'Internal server error',
+      errors: [(error as Error).message],
+    })
+  }
+}
 
-//     if (checkError || !existingBooking) {
-//       return createErrorResponse({
-//         code: 404,
-//         message: 'Booking not found',
-//         errors: ['Booking with the specified ID does not exist'],
-//       })
-//     }
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ identifier: string }> }
+): Promise<Response> {
+  const startHrtime = process.hrtime()
 
-//     // Validate dates if provided
-//     if (updates.checkin_date || updates.checkout_date) {
-//       const checkinDate = new Date(updates.checkin_date ?? existingBooking.checkin_date)
-//       const checkoutDate = new Date(updates.checkout_date ?? existingBooking.checkout_date)
-//       const today = new Date()
+  try {
+    const supabase = await createClient()
+    const { identifier } = await params
+    const updateData: UpdateBookingBody = await request.json()
 
-//       if (isNaN(checkinDate.getTime()) || isNaN(checkoutDate.getTime())) {
-//         return createErrorResponse({
-//           code: 400,
-//           message: 'Invalid dates',
-//           errors: ['checkin_date and checkout_date must be valid dates'],
-//         })
-//       }
+    // Validate required fields
+    if (
+      !updateData.guest_id &&
+      !updateData.payment_status_id &&
+      !updateData.checkin_date &&
+      !updateData.checkout_date &&
+      typeof updateData.num_adults !== 'number' &&
+      !updateData.booking_amount &&
+      !updateData.room_ids?.length &&
+      !updateData.addon_ids?.length
+    ) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['All fields are required'],
+      })
+    }
 
-//       if (checkinDate < today) {
-//         return createErrorResponse({
-//           code: 400,
-//           message: 'Invalid checkin date',
-//           errors: ['checkin_date cannot be in the past'],
-//         })
-//       }
+    // Validate booking guest_id
+    if (!updateData.guest_id) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Booking guest is required'],
+      })
+    }
 
-//       if (checkoutDate <= checkinDate) {
-//         return createErrorResponse({
-//           code: 400,
-//           message: 'Invalid checkout date',
-//           errors: ['checkout_date must be after checkin_date'],
-//         })
-//       }
-//     }
+    // Validate booking payment_status_id
+    if (!updateData.payment_status_id) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Booking payment status is required'],
+      })
+    }
 
-//     // Validate numeric fields if provided
-//     if (updates.num_adults !== undefined && updates.num_adults <= 0) {
-//       return createErrorResponse({
-//         code: 400,
-//         message: 'Invalid number of adults',
-//         errors: ['num_adults must be greater than 0'],
-//       })
-//     }
+    // Validate booking checkin_date
+    if (!updateData.checkin_date) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Booking checkin date is required'],
+      })
+    }
 
-//     if (updates.booking_amount !== undefined && updates.booking_amount <= 0) {
-//       return createErrorResponse({
-//         code: 400,
-//         message: 'Invalid booking amount',
-//         errors: ['booking_amount must be greater than 0'],
-//       })
-//     }
+    // Validate booking checkout_date
+    if (!updateData.checkout_date) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Booking checkout date is required'],
+      })
+    }
 
-//     if (updates.num_children !== undefined && updates.num_children < 0) {
-//       return createErrorResponse({
-//         code: 400,
-//         message: 'Invalid number of children',
-//         errors: ['num_children cannot be negative'],
-//       })
-//     }
+    // Validate dates
+    const checkinDate = new Date(updateData.checkin_date)
+    const checkoutDate = new Date(updateData.checkout_date)
+    const today = new Date()
 
-//     // Check room availability if rooms are being updated
-//     if (updates.room_ids) {
-//       // Check if rooms exist
-//       const { data: rooms, error: roomsError } = await supabase.from('room').select('id').in('id', updates.room_ids)
+    // Normalize dates to start of day for comparison
+    checkinDate.setHours(0, 0, 0, 0)
+    checkoutDate.setHours(0, 0, 0, 0)
+    today.setHours(0, 0, 0, 0)
 
-//       if (roomsError || !rooms || rooms.length !== updates.room_ids.length) {
-//         return createErrorResponse({
-//           code: 400,
-//           message: 'Invalid rooms',
-//           errors: ['One or more rooms do not exist'],
-//         })
-//       }
+    if (isNaN(checkinDate.getTime()) || isNaN(checkoutDate.getTime())) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid check in/out dates',
+        errors: ['Booking checkin and checkout date must be valid dates'],
+      })
+    }
 
-//       // Check if new rooms are available
-//       const { data: existingBookings, error: bookingsError } = await supabase
-//         .from('booking_room')
-//         .select('room_id, booking:booking_id(checkin_date, checkout_date)')
-//         .in('room_id', updates.room_ids)
-//         .neq('booking_id', identifier)
+    // if (checkinDate < today) {
+    //   return createErrorResponse({
+    //     code: 400,
+    //     message: 'Invalid checkin date',
+    //     errors: ['Booking checkin date cannot be in the past'],
+    //   })
+    // }
 
-//       if (bookingsError) {
-//         return createErrorResponse({
-//           code: 500,
-//           message: 'Error checking room availability',
-//           errors: [bookingsError.message],
-//         })
-//       }
+    if (checkoutDate <= checkinDate) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid checkout date',
+        errors: ['Booking checkout date must be after checkin date'],
+      })
+    }
 
-//       const checkinDate = new Date(updates.checkin_date ?? existingBooking.checkin_date)
-//       const checkoutDate = new Date(updates.checkout_date ?? existingBooking.checkout_date)
+    // Validate booking num_adults
+    if (typeof updateData.num_adults !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid booking number of adults',
+        errors: ['Booking number of adults must be a number'],
+      })
+    }
 
-//       const unavailableRooms = (
-//         existingBookings as unknown as {
-//           room_id: any
-//           booking: {
-//             checkin_date: any
-//             checkout_date: any
-//           }
-//         }[]
-//       ).filter((booking) => {
-//         const existingCheckin = new Date(booking.booking.checkin_date)
-//         const existingCheckout = new Date(booking.booking.checkout_date)
-//         return (
-//           (checkinDate >= existingCheckin && checkinDate < existingCheckout) ||
-//           (checkoutDate > existingCheckin && checkoutDate <= existingCheckout) ||
-//           (checkinDate <= existingCheckin && checkoutDate >= existingCheckout)
-//         )
-//       })
+    // Validate booking booking_amount
+    if (typeof updateData.booking_amount !== 'number') {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Booking booking amount must be a number'],
+      })
+    }
 
-//       if (unavailableRooms.length > 0) {
-//         return createErrorResponse({
-//           code: 400,
-//           message: 'Rooms not available',
-//           errors: ['One or more rooms are not available for the selected dates'],
-//         })
-//       }
-//     }
+    // Validate booking room_ids
+    if (!updateData.room_ids?.length) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Missing or invalid required fields',
+        errors: ['Booking rooms are required'],
+      })
+    }
 
-//     // Update booking
-//     const { error: updateError } = await supabase
-//       .from('booking')
-//       .update({
-//         guest_id: updates.guest_id,
-//         payment_status_id: updates.payment_status_id,
-//         checkin_date: updates.checkin_date,
-//         checkout_date: updates.checkout_date,
-//         num_adults: updates.num_adults,
-//         num_children: updates.num_children,
-//         booking_amount: updates.booking_amount,
-//       })
-//       .eq('id', identifier)
+    // Check if rooms exist and their status
+    const { data: rooms, error: roomsError } = await supabase
+      .from('room')
+      .select('id, number, room_status(*)')
+      .in('id', updateData.room_ids)
 
-//     if (updateError) {
-//       return createErrorResponse({
-//         code: 500,
-//         message: 'Failed to update booking',
-//         errors: [updateError.message],
-//       })
-//     }
+    if (roomsError) {
+      return createErrorResponse({
+        code: 500,
+        message: 'Error fetching rooms',
+        errors: [roomsError.message],
+      })
+    }
 
-//     // Update rooms if provided
-//     if (updates.room_ids) {
-//       // Delete existing room assignments
-//       const { error: deleteRoomsError } = await supabase.from('booking_room').delete().eq('booking_id', identifier)
+    if (!rooms.length) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Invalid booking rooms',
+        errors: ['One or more rooms do not exist'],
+      })
+    }
 
-//       if (deleteRoomsError) {
-//         return createErrorResponse({
-//           code: 500,
-//           message: 'Failed to update room assignments',
-//           errors: [deleteRoomsError.message],
-//         })
-//       }
+    // Check if rooms are available (status check)
+    const unavailableRooms = rooms.filter((room) => (room.room_status as unknown as RoomStatusListItem).number > 1)
+    if (unavailableRooms.length > 0) {
+      return createErrorResponse({
+        code: 400,
+        message: 'Rooms not available',
+        errors: [`Rooms ${unavailableRooms.map((r) => r.number).join(', ')} are not available for booking`],
+      })
+    }
 
-//       // Insert new room assignments
-//       const bookingRooms = updates.room_ids.map((room_id) => ({
-//         booking_id: identifier,
-//         room_id,
-//       }))
+    // Check if rooms are already booked for the given dates
+    const { data: existingBookings, error: bookingsError } = await supabase
+      .from('booking_room')
+      .select(
+        `
+          room_id,
+          booking:booking_id(
+            checkin_date,
+            checkout_date
+          )
+        `
+      )
+      .in('room_id', updateData.room_ids)
+      .neq('booking_id', identifier)
 
-//       const { error: insertRoomsError } = await supabase.from('booking_room').insert(bookingRooms)
+    if (bookingsError) {
+      return createErrorResponse({
+        code: 500,
+        message: 'Error checking room availability',
+        errors: [bookingsError.message],
+      })
+    }
 
-//       if (insertRoomsError) {
-//         return createErrorResponse({
-//           code: 500,
-//           message: 'Failed to update room assignments',
-//           errors: [insertRoomsError.message],
-//         })
-//       }
-//     }
+    // Check for booking date conflicts
+    const conflictingRooms = existingBookings?.filter((item) => {
+      const existingCheckin = new Date((item.booking as unknown as BookingListItem).checkin_date)
+      const existingCheckout = new Date((item.booking as unknown as BookingListItem).checkout_date)
 
-//     // Update addons if provided
-//     if (updates.addon_ids !== undefined) {
-//       // Delete existing addon assignments
-//       const { error: deleteAddonsError } = await supabase.from('booking_addon').delete().eq('booking_id', identifier)
+      // Check for date overlap
+      return (
+        (checkinDate >= existingCheckin && checkinDate < existingCheckout) ||
+        (checkoutDate > existingCheckin && checkoutDate <= existingCheckout) ||
+        (checkinDate <= existingCheckin && checkoutDate >= existingCheckout)
+      )
+    })
 
-//       if (deleteAddonsError) {
-//         return createErrorResponse({
-//           code: 500,
-//           message: 'Failed to update addon assignments',
-//           errors: [deleteAddonsError.message],
-//         })
-//       }
+    if (conflictingRooms && conflictingRooms.length > 0) {
+      const conflictingRoomNumbers = rooms
+        .filter((room) => conflictingRooms.some((cr) => cr.room_id === room.id))
+        .map((room) => room.number)
+        .join(', ')
 
-//       // Insert new addon assignments if any
-//       if (updates.addon_ids.length > 0) {
-//         const bookingAddons = updates.addon_ids.map((addon_id) => ({
-//           booking_id: identifier,
-//           addon_id,
-//         }))
+      return createErrorResponse({
+        code: 400,
+        message: 'Rooms not available for selected dates',
+        errors: [`Rooms ${conflictingRoomNumbers} are already booked for the selected dates`],
+      })
+    }
 
-//         const { error: insertAddonsError } = await supabase.from('booking_addon').insert(bookingAddons)
+    // Update booking
+    const { error: bookingError } = await supabase
+      .from('booking')
+      .update({
+        payment_status_id: updateData.payment_status_id,
+        checkin_date: updateData.checkin_date,
+        checkout_date: updateData.checkout_date,
+        num_adults: updateData.num_adults,
+        num_children: updateData.num_children,
+        booking_amount: updateData.booking_amount,
+      })
+      .eq('id', identifier)
 
-//         if (insertAddonsError) {
-//           return createErrorResponse({
-//             code: 500,
-//             message: 'Failed to update addon assignments',
-//             errors: [insertAddonsError.message],
-//           })
-//         }
-//       }
-//     }
+    if (bookingError) {
+      return createErrorResponse({
+        code: 500,
+        message: 'Failed to update booking',
+        errors: [bookingError.message],
+      })
+    }
 
-//     // Fetch updated booking with all relations
-//     const { data: updatedBooking, error: fetchError } = await supabase
-//       .from('booking')
-//       .select(
-//         `
-//           *,
-//           guest:guest_id(*),
-//           payment_status:payment_status_id(*),
-//           rooms:booking_room(
-//             room:room_id(
-//               *,
-//               floor:floor_id(*),
-//               room_class:room_class_id(*)
-//             )
-//           ),
-//           addons:booking_addon(
-//             addon:addon_id(*)
-//           )
-//         `
-//       )
-//       .eq('id', identifier)
-//       .single()
+    // Update rooms if provided
+    if (updateData.room_ids) {
+      // Delete existing room assignments
+      const { error: deleteRoomsError } = await supabase.from('booking_room').delete().eq('booking_id', identifier)
 
-//     if (fetchError || !updatedBooking) {
-//       return createErrorResponse({
-//         code: 500,
-//         message: 'Failed to fetch updated booking',
-//         errors: [fetchError?.message ?? 'Unknown error'],
-//       })
-//     }
+      if (deleteRoomsError) {
+        return createErrorResponse({
+          code: 500,
+          message: 'Failed to update room assignments',
+          errors: [deleteRoomsError.message],
+        })
+      }
 
-//     // Transform the response to match BookingListItem type
-//     const transformedBooking: BookingListItem = {
-//       id: updatedBooking.id,
-//       guest: updatedBooking.guest,
-//       payment_status: updatedBooking.payment_status,
-//       rooms: updatedBooking.rooms.map((br: any) => ({
-//         ...br.room,
-//         floor: br.room.floor,
-//         room_class: br.room.room_class,
-//       })),
-//       addons: updatedBooking.addons.map((ba: any) => ba.addon),
-//       checkin_date: updatedBooking.checkin_date,
-//       checkout_date: updatedBooking.checkout_date,
-//       num_adults: updatedBooking.num_adults,
-//       num_children: updatedBooking.num_children,
-//       booking_amount: updatedBooking.booking_amount,
-//       created_at: updatedBooking.created_at,
-//       updated_at: updatedBooking.updated_at,
-//     }
+      // Insert new room assignments
+      const bookingRooms = updateData.room_ids.map((room_id) => ({
+        booking_id: identifier,
+        room_id,
+      }))
 
-//     return createApiResponse<BookingListItem>({
-//       code: 200,
-//       message: 'Booking updated successfully',
-//       data: transformedBooking,
-//     })
-//   } catch (error) {
-//     console.error('Update booking error:', error)
-//     return createErrorResponse({
-//       code: 500,
-//       message: 'Internal server error',
-//       errors: [(error as Error).message],
-//     })
-//   }
-// }
+      const { error: bookingRoomsError } = await supabase.from('booking_room').insert(bookingRooms)
+
+      if (bookingRoomsError) {
+        return createErrorResponse({
+          code: 500,
+          message: 'Failed to update room assignments',
+          errors: [bookingRoomsError.message],
+        })
+      }
+    }
+
+    // Update addons if provided
+    if (updateData.addon_ids && updateData.addon_ids.length > 0) {
+      // Delete existing addon assignments
+      const { error: deleteAddonsError } = await supabase.from('booking_addon').delete().eq('booking_id', identifier)
+
+      if (deleteAddonsError) {
+        return createErrorResponse({
+          code: 500,
+          message: 'Failed to update addon assignments',
+          errors: [deleteAddonsError.message],
+        })
+      }
+
+      // Insert new addon assignments if any
+      if (updateData.addon_ids.length > 0) {
+        const bookingAddons = updateData.addon_ids.map((addon_id) => ({
+          booking_id: identifier,
+          addon_id,
+        }))
+
+        const { error: bookingAddonsError } = await supabase.from('booking_addon').insert(bookingAddons)
+
+        if (bookingAddonsError) {
+          return createErrorResponse({
+            code: 500,
+            message: 'Failed to update addon assignments',
+            errors: [bookingAddonsError.message],
+          })
+        }
+      }
+    }
+
+    // Update guest if provided
+    if (updateData.guest_id) {
+      // Delete existing guest assignments
+      const { error: deleteGuestError } = await supabase.from('booking_guest').delete().eq('booking_id', identifier)
+
+      if (deleteGuestError) {
+        return createErrorResponse({
+          code: 500,
+          message: 'Failed to update guest assignments',
+          errors: [deleteGuestError.message],
+        })
+      }
+
+      if (updateData.guest_id) {
+        const { error: bookingGuestError } = await supabase.from('booking_guest').insert({
+          booking_id: identifier,
+          guest_id: updateData.guest_id,
+        })
+
+        if (bookingGuestError) {
+          return createErrorResponse({
+            code: 500,
+            message: 'Failed to update guest assignments',
+            errors: [bookingGuestError.message],
+          })
+        }
+      }
+    }
+
+    // Fetch updated booking with all relations
+    const { data: updatedBooking, error: fetchError } = await supabase
+      .from('booking')
+      .select(
+        `
+          *,
+          guest(*),
+          payment_status(*),
+          rooms:booking_room(
+            room(*, floor(*), room_class(*))
+          ),
+          addons:booking_addon(addon(*))
+        `
+      )
+      .eq('id', identifier)
+      .single()
+
+    if (fetchError || !updatedBooking) {
+      return createErrorResponse({
+        code: 500,
+        message: 'Failed to fetch updated booking',
+        errors: [fetchError?.message ?? 'Unknown error'],
+      })
+    }
+
+    // Transform the response to match BookingListItem type
+    const transformedBooking: BookingListItem = {
+      id: updatedBooking.id,
+      guest_id: updateData.guest_id,
+      guest: updatedBooking.guest?.[0],
+      payment_status_id: updatedBooking.payment_status_id,
+      payment_status: updatedBooking.payment_status,
+      rooms: updatedBooking.rooms.map((br: any) => ({
+        ...br.room,
+        floor: br.room.floor,
+        room_class: br.room.room_class,
+      })),
+      addons: updatedBooking.addons.map((ba: any) => ba.addon),
+      checkin_date: updatedBooking.checkin_date,
+      checkout_date: updatedBooking.checkout_date,
+      num_adults: updatedBooking.num_adults,
+      num_children: updatedBooking.num_children,
+      booking_amount: updatedBooking.booking_amount,
+      created_at: updatedBooking.created_at,
+      updated_at: updatedBooking.updated_at,
+    }
+
+    return createApiResponse<BookingListItem>({
+      code: 200,
+      message: 'Booking updated successfully',
+      start_hrtime: startHrtime,
+      data: transformedBooking,
+    })
+  } catch (error) {
+    console.error('Update booking error:', error)
+    return createErrorResponse({
+      code: 500,
+      message: 'Internal server error',
+      errors: [(error as Error).message],
+    })
+  }
+}
 
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ identifier: string }> }
 ): Promise<Response> {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const { identifier } = await params
@@ -401,6 +490,7 @@ export async function DELETE(
     return createApiResponse({
       code: 200,
       message: 'Booking deleted successfully',
+      start_hrtime: startHrtime,
     })
   } catch (error) {
     console.error('Delete booking error:', error)

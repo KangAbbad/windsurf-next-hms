@@ -48,8 +48,10 @@ export default function FormDrawer(props: Props) {
   const queryClient = useQueryClient()
   const { antdMessage } = useAntdContextHolder()
   const [form] = Form.useForm<FormType>()
+  const watchDates = Form.useWatch('dates', form) ?? []
+  const watchRoomIds = Form.useWatch('room_ids', form) ?? []
+  const watchAddonIds = Form.useWatch('addon_ids', form) ?? []
   const { data: bookingDetailState } = bookingDetailStore()
-  const bookingAmount = Form.useWatch('booking_amount', form) ?? 0
 
   const { data: guestsResponse, isFetching: isLoadingGuests } = useQuery({
     queryKey: [queryKeyGuestList.RES_GUEST_LIST],
@@ -78,6 +80,19 @@ export default function FormDrawer(props: Props) {
     enabled: isVisible,
   })
   const addons = addonsResponse?.data?.items ?? []
+
+  const roomsTotal = watchRoomIds.reduce((total, roomId) => {
+    const room = rooms.find((r) => r.id === roomId)
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    return total + (room?.room_class.price || 0)
+  }, 0)
+  const addonsTotal = watchAddonIds.reduce((total, addonId) => {
+    const addon = addons.find((a) => a.id === addonId)
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    return total + (addon?.price || 0)
+  }, 0)
+  const nights = watchDates.length ? watchDates[1].diff(watchDates[0], 'days') : 0
+  const bookingAmount = roomsTotal * nights + addonsTotal
 
   const hideDrawer = () => {
     form.resetFields()
@@ -110,33 +125,6 @@ export default function FormDrawer(props: Props) {
 
   const isFormLoading = isCreateLoading || isUpdateLoading
 
-  const calculateTotalAmount = (selectedRooms: string[], selectedAddons: string[], nights: number) => {
-    const roomsTotal = selectedRooms.reduce((total, roomId) => {
-      const room = rooms.find((r) => r.id === roomId)
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      return total + (room?.room_class.price || 0)
-    }, 0)
-
-    const addonsTotal = selectedAddons.reduce((total, addonId) => {
-      const addon = addons.find((a) => a.id === addonId)
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      return total + (addon?.price || 0)
-    }, 0)
-
-    return roomsTotal * nights + addonsTotal
-  }
-
-  const onFieldsChange = () => {
-    const values = form.getFieldsValue()
-    const { dates, room_ids = [], addon_ids = [] } = values
-
-    if (dates?.[0] && dates?.[1] && room_ids.length > 0) {
-      const nights = dates[1].diff(dates[0], 'days')
-      const totalAmount = calculateTotalAmount(room_ids, addon_ids || [], nights)
-      form.setFieldValue('booking_amount', totalAmount)
-    }
-  }
-
   const onSubmit = (values: FormType) => {
     if (isFormLoading) return
     const { dates, ...restValues } = values
@@ -148,6 +136,7 @@ export default function FormDrawer(props: Props) {
       num_children: Number(values.num_children),
       checkin_date: checkin_date.format('YYYY-MM-DD'),
       checkout_date: checkout_date.format('YYYY-MM-DD'),
+      booking_amount: bookingAmount,
     }
 
     if (bookingDetailState) {
@@ -190,7 +179,7 @@ export default function FormDrawer(props: Props) {
       }
       onClose={hideDrawer}
     >
-      <Form form={form} layout="vertical" onFinish={onSubmit} onFieldsChange={onFieldsChange}>
+      <Form form={form} layout="vertical" onFinish={onSubmit}>
         <Form.Item<FormType>
           name="guest_id"
           label="Guest"
@@ -200,6 +189,7 @@ export default function FormDrawer(props: Props) {
           <Select
             showSearch
             loading={isLoadingGuests}
+            disabled={!!bookingDetailState?.guest}
             placeholder="Select a guest"
             optionFilterProp="children"
             options={guests.map((guest) => ({
@@ -233,7 +223,9 @@ export default function FormDrawer(props: Props) {
         >
           <RangePicker
             className="w-full"
-            format="YYYY-MM-DD"
+            format="YYYY-MM-DD, HH:mm"
+            showTime
+            disabled={[!!bookingDetailState?.checkin_date, false]}
             disabledDate={(current) => current && current < dayjs().startOf('day')}
           />
         </Form.Item>
@@ -300,11 +292,10 @@ export default function FormDrawer(props: Props) {
           />
         </Form.Item>
 
-        <Form.Item<FormType> name="booking_amount" label="Total Amount" className="!mb-3">
-          <Title level={4} className="!mb-0">
-            {formatCurrency(bookingAmount)}
-          </Title>
-        </Form.Item>
+        <Typography.Paragraph className="!mb-1">Total Amount:</Typography.Paragraph>
+        <Title level={4} className="!m-0">
+          {formatCurrency(bookingAmount)}
+        </Title>
       </Form>
     </Drawer>
   )
