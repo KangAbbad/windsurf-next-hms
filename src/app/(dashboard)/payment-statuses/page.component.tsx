@@ -83,6 +83,7 @@ export default function PaymentStatusesPage() {
           loading={isDataSourceFetching}
           rowKey="id"
           size="middle"
+          rowClassName="align-top"
           pagination={{
             current: pageParams.page,
             pageSize: pageParams.limit,

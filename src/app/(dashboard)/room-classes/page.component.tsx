@@ -84,6 +84,7 @@ export function RoomClassesPage() {
           rowKey="id"
           size="middle"
           scroll={{ x: 1300 }}
+          rowClassName="align-top"
           pagination={{
             current: pageParams.page,
             pageSize: pageParams.limit,

@@ -134,8 +134,8 @@ export default function FormDrawer(props: Props) {
       ...restValues,
       num_adults: Number(values.num_adults),
       num_children: Number(values.num_children),
-      checkin_date: checkin_date.format('YYYY-MM-DD'),
-      checkout_date: checkout_date.format('YYYY-MM-DD'),
+      checkin_date: checkin_date.toISOString(),
+      checkout_date: checkout_date.toISOString(),
       booking_amount: bookingAmount,
     }
 
@@ -242,6 +242,7 @@ export default function FormDrawer(props: Props) {
               },
             ]}
             getValueFromEvent={inputNumberValidation}
+            initialValue={1}
             className="flex-1 !mb-3"
           >
             <Input placeholder="min: 1" className="max-w-20" />
@@ -257,6 +258,7 @@ export default function FormDrawer(props: Props) {
               },
             ]}
             getValueFromEvent={inputNumberValidation}
+            initialValue={0}
             className="flex-1 !mb-3"
           >
             <Input className="max-w-20" />

@@ -66,7 +66,7 @@ export default function DashboardLayout({ children }: Props) {
           className={styles.sidebarMenu}
           onCollapse={toggleSidebar}
         >
-          <Link href="/">
+          <Link href="/" className="block max-h-[73px]">
             <Flex align="center" justify="center" className="overflow-hidden">
               {isSidebarCollapsed ? (
                 <div className="px-4 py-2">
@@ -84,8 +84,8 @@ export default function DashboardLayout({ children }: Props) {
                   src="/v3-hotel-management-landscape-logo.png"
                   alt="Hotel Logo"
                   priority
-                  height={190}
-                  width={190}
+                  height={192}
+                  width={192}
                   className="object-contain"
                 />
               )}

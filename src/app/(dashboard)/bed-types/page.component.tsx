@@ -84,6 +84,7 @@ export default function BedTypesPage() {
           rowKey="id"
           size="middle"
           sticky
+          rowClassName="align-top"
           pagination={{
             current: pageParams.page,
             pageSize: pageParams.limit,

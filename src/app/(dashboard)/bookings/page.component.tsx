@@ -108,6 +108,7 @@ export default function BookingsPage() {
           loading={isDataSourceFetching}
           rowKey="id"
           scroll={{ x: 1300 }}
+          rowClassName="align-top"
           pagination={{
             current: pageParams.page,
             pageSize: pageParams.limit,
