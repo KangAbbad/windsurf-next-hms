@@ -1,6 +1,6 @@
 'use client'
 
-import { Breadcrumb, Button, Col, Flex, Layout, Menu, MenuProps, message, Modal, notification, Row } from 'antd'
+import { Breadcrumb, Button, Col, Flex, Layout, Menu, MenuProps, message, Modal, notification, Row, theme } from 'antd'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -10,6 +10,7 @@ import { AiOutlineMenuFold, AiOutlineMenuUnfold } from 'react-icons/ai'
 import { dashboardMenuList } from './DashboardLayout.menu'
 import styles from './DashboardLayout.module.css'
 
+import DarkModeButton from '@/components/DarkModeButton'
 import { useBreadcrumbs } from '@/hooks/utils/useBreadcrumb'
 import { AntdContextHolder } from '@/lib/context/AntdContextHolder'
 import { createGlobalState } from '@/utils/createGlobalState'
@@ -19,6 +20,8 @@ type Props = {
 }
 
 export default function DashboardLayout({ children }: Props) {
+  const { token } = theme.useToken()
+  const { colorBgContainer } = token
   const pathname = usePathname()
   const defaultParentKey = [`/${pathname.split('/')[1]}`]
   const defaultSelectedKeys = pathname.split('/').length > 2 ? [pathname] : defaultParentKey
@@ -43,7 +46,6 @@ export default function DashboardLayout({ children }: Props) {
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!isSidebarCollapsed)
-    // setCookie('IS_SIDEBAR_COLLAPSED', JSON.stringify(!isSidebarCollapsed))
   }
 
   const changeMenu: MenuProps['onClick'] = (e) => {
@@ -102,7 +104,7 @@ export default function DashboardLayout({ children }: Props) {
           />
         </Layout.Sider>
         <Layout>
-          <Layout.Header className={styles.headerContainer}>
+          <Layout.Header className={styles.headerContainer} style={{ backgroundColor: colorBgContainer }}>
             <Row gutter={16} className={styles.headerWrapper}>
               <Col>
                 <Button
@@ -117,6 +119,9 @@ export default function DashboardLayout({ children }: Props) {
               </Col>
               <Col flex="auto">
                 <Breadcrumb items={breadcrumbs} />
+              </Col>
+              <Col>
+                <DarkModeButton />
               </Col>
             </Row>
           </Layout.Header>

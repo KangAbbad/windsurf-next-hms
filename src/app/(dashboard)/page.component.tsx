@@ -1,12 +1,15 @@
 'use client'
 
-import { Card, Col, Flex, Row, Typography } from 'antd'
+import { Card, Col, Flex, Row, theme, Typography } from 'antd'
 import { FaArrowTrendUp } from 'react-icons/fa6'
 
 export default function HomePage() {
+  const { token } = theme.useToken()
+  const { colorBgContainer, colorBorderSecondary, colorTextSecondary } = token
+
   return (
     <main className="p-4">
-      <div className="bg-white p-4 rounded-lg">
+      <div className="p-4 rounded-lg" style={{ backgroundColor: colorBgContainer }}>
         <Typography.Title level={2} className="font-semibold">
           Welcome back, Admin!
         </Typography.Title>
@@ -25,8 +28,8 @@ export default function HomePage() {
                   <Typography.Paragraph className="!text-green-500 font-semibold !mb-0">20%</Typography.Paragraph>
                 </Flex>
               </Flex>
-              <div className="bg-gray-100 py-2 px-4 mt-1">
-                <Typography.Paragraph className="!text-gray-500 !m-0">
+              <div className="py-2 px-4 mt-1" style={{ backgroundColor: colorBorderSecondary }}>
+                <Typography.Paragraph className="!m-0" style={{ color: colorTextSecondary }}>
                   From Jan 01, 2025 - Dec 01, 2025
                 </Typography.Paragraph>
               </div>
@@ -46,8 +49,8 @@ export default function HomePage() {
                   <Typography.Paragraph className="!text-green-500 font-semibold !mb-0">10%</Typography.Paragraph>
                 </Flex>
               </Flex>
-              <div className="bg-gray-100 py-2 px-4 mt-1">
-                <Typography.Paragraph className="!text-gray-500 !m-0">
+              <div className="py-2 px-4 mt-1" style={{ backgroundColor: colorBorderSecondary }}>
+                <Typography.Paragraph className="!m-0" style={{ color: colorTextSecondary }}>
                   From Jan 01, 2025 - Dec 01, 2025
                 </Typography.Paragraph>
               </div>

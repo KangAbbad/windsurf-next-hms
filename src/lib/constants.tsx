@@ -33,3 +33,6 @@ export const tagColorOptions: { label: ReactNode; value: ReactNode }[] = PresetC
   ),
   value: color,
 }))
+
+export const queryKeyDarkMode: string = 'IS_DARK_MODE'
+export const themeCookiesName: string = 'theme'

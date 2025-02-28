@@ -1,13 +1,10 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Button, Table, Input, DatePicker, Flex } from 'antd'
-import type { RangePickerProps } from 'antd/es/date-picker'
-import dayjs from 'dayjs'
+import { Button, Table, theme } from 'antd'
 import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { FaPlus } from 'react-icons/fa6'
-import { IoSearch } from 'react-icons/io5'
 
 import { defaultPageSize, queryKey } from './lib/constants'
 import { bookingDetailStore } from './lib/state'
@@ -18,12 +15,10 @@ const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
 })
 
-const { RangePicker } = DatePicker
-
 export default function BookingsPage() {
+  const { token } = theme.useToken()
+  const { colorBgContainer } = token
   const [isFormVisible, setFormVisible] = useState<boolean>(false)
-  const [keyword, setKeyword] = useState<string>('')
-  const [dates, setDates] = useState<[string?, string?]>([undefined, undefined])
   const [pageParams, setPageParams] = useState<BookingListPageParams>({
     page: 1,
     limit: defaultPageSize,
@@ -53,55 +48,15 @@ export default function BookingsPage() {
     },
   })()
 
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      setPageParams((prev) => ({
-        ...prev,
-        search: keyword,
-        startDate: dates[0],
-        endDate: dates[1],
-      }))
-    }, 500)
-
-    return () => {
-      clearTimeout(delayDebounceFn)
-    }
-  }, [keyword, dates])
-
-  const disabledDate: RangePickerProps['disabledDate'] = (current) => {
-    return current && current < dayjs().startOf('day')
-  }
-
   return (
     <main className="p-4">
-      <div className="bg-white pb-0 rounded-lg">
+      <div className="pb-0 rounded-lg" style={{ backgroundColor: colorBgContainer }}>
         <div className="flex justify-between items-center p-4 pb-0 mb-4">
           <h1 className="text-2xl font-semibold m-0">Bookings Management</h1>
           <Button type="primary" icon={<FaPlus />} onClick={showAddModal}>
             Add New
           </Button>
         </div>
-        <Flex gap={8} className="px-4 mb-4">
-          <Input
-            allowClear
-            placeholder="Search by guest name or email..."
-            size="middle"
-            prefix={<IoSearch />}
-            className="max-w-md"
-            value={keyword}
-            onChange={(e) => {
-              setKeyword(e.target.value)
-            }}
-          />
-          <RangePicker
-            allowClear
-            format="YYYY-MM-DD"
-            disabledDate={disabledDate}
-            onChange={(_, dateStrings) => {
-              setDates(dateStrings)
-            }}
-          />
-        </Flex>
         <Table
           columns={columns}
           dataSource={dataSource}

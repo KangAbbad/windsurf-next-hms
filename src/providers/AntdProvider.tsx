@@ -1,7 +1,11 @@
+'use client'
+
 import { AntdRegistry } from '@ant-design/nextjs-registry'
-import { ConfigProvider } from 'antd'
+import { ConfigProvider, theme } from 'antd'
 import { Manrope } from 'next/font/google'
 import { ReactNode } from 'react'
+
+import { darkModeState } from '@/lib/state/darkMode'
 
 const manrope = Manrope({
   display: 'swap',
@@ -15,11 +19,14 @@ type Props = {
 }
 
 export const AntdProvider = ({ children }: Props) => {
+  const { data: isDarkMode } = darkModeState()
+
   return (
     <AntdRegistry>
       <ConfigProvider
         theme={{
           cssVar: true,
+          algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
           token: {
             fontFamily: `${manrope.style.fontFamily}, sans-serif`,
           },

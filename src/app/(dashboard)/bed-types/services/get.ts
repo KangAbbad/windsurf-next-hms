@@ -5,7 +5,10 @@ import { axiosInstance } from '@/services/axiosInstance'
 export type BedTypeListPageParams = {
   page?: number
   limit?: number
-  search?: string
+  search?: {
+    name?: string
+    material?: string
+  }
 }
 
 export const getAll = async (params: BedTypeListPageParams) => {

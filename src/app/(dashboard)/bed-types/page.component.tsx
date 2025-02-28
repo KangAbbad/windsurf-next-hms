@@ -1,29 +1,31 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Button, Table, Input } from 'antd'
+import { Button, Table, theme } from 'antd'
 import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { FaPlus } from 'react-icons/fa6'
-import { IoSearch } from 'react-icons/io5'
 
 import { queryKey } from './lib/constants'
+import { getPageParams } from './lib/getPageParams'
 import { bedTypeDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
-import { type BedTypeListPageParams, getAll } from './services/get'
+import { getAll } from './services/get'
+
+import { createUrlSearchParams } from '@/utils/createUrlSearchParams'
 
 const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
 })
 
 export default function BedTypesPage() {
+  const router = useRouter()
+  const { token } = theme.useToken()
+  const { colorBgContainer } = token
+  const pageParams = getPageParams()()
+
   const [isFormVisible, setFormVisible] = useState<boolean>(false)
-  const [keyword, setKeyword] = useState<string>('')
-  const [pageParams, setPageParams] = useState<BedTypeListPageParams>({
-    page: 1,
-    limit: 10,
-    search: undefined,
-  })
 
   const { resetData: resetBedTypeDetail } = bedTypeDetailStore()
 
@@ -40,42 +42,25 @@ export default function BedTypesPage() {
     setFormVisible(true)
   }
 
+  const changePagination = ({ page, limit }: { page: number; limit: number }) => {
+    const newPageParams = { ...pageParams, page, limit }
+    router.replace(`/bed-types?${createUrlSearchParams(newPageParams)}`)
+  }
+
   const columns = tableColumns({
     onEdit: () => {
       setFormVisible(true)
     },
   })()
 
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      setPageParams((prev) => ({ ...prev, search: keyword }))
-    }, 500)
-
-    return () => {
-      clearTimeout(delayDebounceFn)
-    }
-  }, [keyword])
-
   return (
     <main className="p-4">
-      <div className="bg-white pb-0 rounded-lg">
+      <div className="pb-0 rounded-lg" style={{ backgroundColor: colorBgContainer }}>
         <div className="flex justify-between items-center p-4 pb-0 mb-4">
           <h1 className="text-2xl font-semibold m-0">Bed Types Management</h1>
           <Button type="primary" icon={<FaPlus />} onClick={showAddModal}>
             Add Bed Type
           </Button>
-        </div>
-        <div className="px-4 mb-4">
-          <Input
-            allowClear
-            placeholder="Search bed types..."
-            size="large"
-            prefix={<IoSearch />}
-            className="max-w-md !text-sm"
-            onChange={(e) => {
-              setKeyword(e.target.value)
-            }}
-          />
         </div>
         <Table
           columns={columns}
@@ -93,7 +78,7 @@ export default function BedTypesPage() {
             showTotal: (total) => `Total ${total} items`,
             className: '!px-4',
             onChange: (page, pageSize) => {
-              setPageParams((prev) => ({ ...prev, page, limit: pageSize }))
+              changePagination({ page, limit: pageSize })
             },
           }}
         />
