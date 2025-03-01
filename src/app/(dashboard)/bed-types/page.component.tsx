@@ -13,7 +13,7 @@ import { bedTypeDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
 import { getAll } from './services/get'
 
-import { createUrlSearchParams } from '@/utils/createUrlSearchParams'
+import { changeTableFilterHoc } from '@/utils/changeTableFilter'
 
 const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
@@ -23,7 +23,7 @@ export default function BedTypesPage() {
   const router = useRouter()
   const { token } = theme.useToken()
   const { colorBgContainer } = token
-  const pageParams = getPageParams()()
+  const pageParams = getPageParams()
 
   const [isFormVisible, setFormVisible] = useState<boolean>(false)
 
@@ -42,9 +42,10 @@ export default function BedTypesPage() {
     setFormVisible(true)
   }
 
-  const changePagination = ({ page, limit }: { page: number; limit: number }) => {
+  const changeTableFilter = changeTableFilterHoc()
+  const changePagination = (page: number, limit: number) => {
     const newPageParams = { ...pageParams, page, limit }
-    router.replace(`/bed-types?${createUrlSearchParams(newPageParams)}`)
+    changeTableFilter({ router, url: '/bed-types', pageParams: newPageParams })
   }
 
   const columns = tableColumns({
@@ -70,6 +71,7 @@ export default function BedTypesPage() {
           size="middle"
           sticky
           rowClassName="align-top"
+          scroll={{ x: 998 }}
           pagination={{
             current: pageParams.page,
             pageSize: pageParams.limit,
@@ -77,9 +79,7 @@ export default function BedTypesPage() {
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} items`,
             className: '!px-4',
-            onChange: (page, pageSize) => {
-              changePagination({ page, limit: pageSize })
-            },
+            onChange: changePagination,
           }}
         />
       </div>

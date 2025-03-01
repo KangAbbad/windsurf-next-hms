@@ -3,17 +3,22 @@ import { Button, Flex, Popconfirm, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { AxiosError } from 'axios'
 import dayjs from 'dayjs'
+import { useRouter } from 'next/navigation'
 import { CSSProperties } from 'react'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
 import { queryKey } from './constants'
+import { getPageParams } from './getPageParams'
 import { bedTypeDetailStore } from './state'
 import { deleteItem } from '../services/delete'
+import { BedTypeListPageParams } from '../services/get'
 
 import { BedTypeListItem } from '@/app/api/bed-types/types'
 import { ImageFallback } from '@/components/ImageFallback'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 import { ApiResponse } from '@/services/apiResponse'
+import { changeTableFilter } from '@/utils/changeTableFilter'
+import { getColumnSearchProps } from '@/utils/getColumnSearchProps'
 
 type Props = {
   onEdit: () => void
@@ -23,9 +28,19 @@ export const tableColumns = (props: Props) => {
   const { onEdit } = props
 
   return (): ColumnsType<BedTypeListItem> => {
+    const router = useRouter()
     const queryClient = useQueryClient()
     const { antdMessage } = useAntdContextHolder()
+    const pageParams = getPageParams()
     const { setData: setBedTypeDetail } = bedTypeDetailStore()
+
+    const onSearch = (dataIndex: string, value?: string) => {
+      const newPageParams: BedTypeListPageParams = {
+        ...pageParams,
+        [dataIndex]: value,
+      }
+      changeTableFilter({ router, url: '/bed-types', pageParams: newPageParams })
+    }
 
     const {
       mutate: deleteMutation,
@@ -55,6 +70,7 @@ export const tableColumns = (props: Props) => {
         dataIndex: 'image_url',
         key: 'image_url',
         width: 125,
+        fixed: 'left',
         render: (_, record) => {
           const image = record?.image_url
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
@@ -85,6 +101,13 @@ export const tableColumns = (props: Props) => {
         key: 'name',
         width: '20%',
         sorter: (a, b) => a.name.localeCompare(b.name),
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.name,
+          placeholder: 'Search by name',
+          onSearch: (value) => {
+            onSearch('search[name]', value)
+          },
+        }),
       },
       {
         title: 'Length (cm) x Width (cm) x Height (cm)',
@@ -112,6 +135,13 @@ export const tableColumns = (props: Props) => {
         key: 'material',
         width: '15%',
         sorter: (a, b) => a.material.localeCompare(b.material),
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.material,
+          placeholder: 'Search by material',
+          onSearch: (value) => {
+            onSearch('search[material]', value)
+          },
+        }),
         render: (_, record) => {
           const material = record.material || '-'
           return <Typography.Paragraph className="!mb-0">{material}</Typography.Paragraph>
@@ -141,6 +171,7 @@ export const tableColumns = (props: Props) => {
         key: 'actions',
         align: 'center',
         width: '10%',
+        fixed: 'right',
         render: (_, record) => {
           return (
             <Flex gap={4} align="center" justify="center">

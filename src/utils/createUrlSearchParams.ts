@@ -1,9 +1,9 @@
-type Params = {
-  [key: string]: string | number | NestedParams
-}
-
 type NestedParams = {
   [key: string]: string | number
+}
+
+export type Params = {
+  [key: string]: string | number | NestedParams
 }
 
 export const createUrlSearchParams = (obj: Params, prefix: string = ''): string => {
