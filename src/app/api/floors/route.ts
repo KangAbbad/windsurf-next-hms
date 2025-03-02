@@ -6,12 +6,10 @@ import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@
 export async function GET(request: Request): Promise<Response> {
   try {
     const { searchParams } = new URL(request.url)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const page = parseInt(searchParams.get('page') || '1', 10)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const limit = parseInt(searchParams.get('limit') || '10', 10)
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const search = searchParams.get('search') || ''
+    const page = parseInt(searchParams.get('page') ?? '1', 10)
+    const limit = parseInt(searchParams.get('limit') ?? '10', 10)
+    const searchName = searchParams.get('search[name]')
+    const searchNumber = searchParams.get('search[number]')
 
     const offset = (page - 1) * limit
 
@@ -19,9 +17,11 @@ export async function GET(request: Request): Promise<Response> {
 
     let query = supabase.from('floor').select('*', { count: 'exact' })
 
-    // Apply search filter if provided
-    if (search) {
-      query = query.ilike('number', `%${search}%`)
+    if (searchName) {
+      query = query.ilike('name', `%${searchName}%`)
+    }
+    if (searchNumber) {
+      query = query.eq('number', searchNumber)
     }
 
     const {

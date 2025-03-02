@@ -8,7 +8,7 @@ type Props = {
   pageParams: Params
 }
 
-export const changeTableFilterHoc = () => {
+const changeTableFilterHoc = () => {
   return (props: Props) => {
     const { router, url, pageParams } = props
 

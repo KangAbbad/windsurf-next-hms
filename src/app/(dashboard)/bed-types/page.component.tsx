@@ -13,7 +13,7 @@ import { bedTypeDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
 import { getAll } from './services/get'
 
-import { changeTableFilterHoc } from '@/utils/changeTableFilter'
+import { changeTableFilter } from '@/utils/changeTableFilter'
 
 const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
@@ -42,7 +42,6 @@ export default function BedTypesPage() {
     setFormVisible(true)
   }
 
-  const changeTableFilter = changeTableFilterHoc()
   const changePagination = (page: number, limit: number) => {
     const newPageParams = { ...pageParams, page, limit }
     changeTableFilter({ router, url: '/bed-types', pageParams: newPageParams })

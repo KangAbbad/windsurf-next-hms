@@ -3,15 +3,20 @@ import { Button, Flex, Popconfirm, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { AxiosError } from 'axios'
 import dayjs from 'dayjs'
+import { useRouter } from 'next/navigation'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
 import { queryKey } from './constants'
+import { getPageParams } from './getPageParams'
 import { floorDetailStore } from './state'
 import { deleteItem } from '../services/delete'
+import { FloorListPageParams } from '../services/get'
 
 import { FloorListItem } from '@/app/api/floors/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 import { ApiResponse } from '@/services/apiResponse'
+import { changeTableFilter } from '@/utils/changeTableFilter'
+import { getColumnSearchProps } from '@/utils/getColumnSearchProps'
 
 type Props = {
   onEdit: () => void
@@ -21,9 +26,19 @@ export const tableColumns = (props: Props) => {
   const { onEdit } = props
 
   return (): ColumnsType<FloorListItem> => {
+    const router = useRouter()
     const queryClient = useQueryClient()
     const { antdMessage } = useAntdContextHolder()
+    const pageParams = getPageParams()
     const { setData: setFloorDetail } = floorDetailStore()
+
+    const onSearch = (dataIndex: string, value?: string) => {
+      const newPageParams: FloorListPageParams = {
+        ...pageParams,
+        [dataIndex]: value,
+      }
+      changeTableFilter({ router, url: '/floors', pageParams: newPageParams })
+    }
 
     const {
       mutate: deleteMutation,
@@ -53,6 +68,13 @@ export const tableColumns = (props: Props) => {
         dataIndex: 'name',
         key: 'name',
         width: '30%',
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.name,
+          placeholder: 'Search by name',
+          onSearch: (value) => {
+            onSearch('search[name]', value)
+          },
+        }),
         sorter: (a, b) => a?.name?.localeCompare(b?.name ?? '') ?? 0,
         render: (_, record) => {
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
@@ -64,6 +86,13 @@ export const tableColumns = (props: Props) => {
         dataIndex: 'number',
         key: 'number',
         width: '30%',
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.number?.toString(),
+          placeholder: 'Search by number',
+          onSearch: (value) => {
+            onSearch('search[number]', value)
+          },
+        }),
         sorter: (a, b) => a.number - b.number,
       },
       {
