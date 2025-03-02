@@ -114,6 +114,13 @@ export const tableColumns = (props: Props) => {
         dataIndex: 'length',
         key: 'length',
         width: '30%',
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.dimension,
+          placeholder: 'exp: length x width x height',
+          onSearch: (value) => {
+            onSearch('search[dimension]', value)
+          },
+        }),
         sorter: (a, b) => {
           // Calculate total volume for comparison
           const volumeA = (a.length || 0) * (a.width || 0) * (a.height || 0)

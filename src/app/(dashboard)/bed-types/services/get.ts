@@ -8,6 +8,7 @@ export type BedTypeListPageParams = {
   search?: {
     name?: string
     material?: string
+    dimension?: string
   }
 }
 
