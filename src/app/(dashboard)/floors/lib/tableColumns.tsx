@@ -26,7 +26,7 @@ export const tableColumns = (props: Props) => {
 
   return (): ColumnsType<FloorListItem> => {
     const router = useRouter()
-    const url = usePathname()
+    const pathname = usePathname()
     const queryClient = useQueryClient()
     const { antdMessage } = useAntdContextHolder()
     const pageParams = getPageParams()
@@ -64,7 +64,7 @@ export const tableColumns = (props: Props) => {
           initialValue: pageParams.search?.name,
           placeholder: 'Search by name',
           onSearch: (value) => {
-            searchByTableColumn({ router, url, pageParams, dataIndex: 'search[name]', value })
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[name]', value })
           },
         }),
         sorter: (a, b) => a?.name?.localeCompare(b?.name ?? '') ?? 0,
@@ -82,7 +82,7 @@ export const tableColumns = (props: Props) => {
           initialValue: pageParams.search?.number?.toString(),
           placeholder: 'Search by number',
           onSearch: (value) => {
-            searchByTableColumn({ router, url, pageParams, dataIndex: 'search[number]', value })
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[number]', value })
           },
         }),
         sorter: (a, b) => a.number - b.number,

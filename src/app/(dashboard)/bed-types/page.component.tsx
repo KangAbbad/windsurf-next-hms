@@ -44,7 +44,7 @@ export default function BedTypesPage() {
 
   const changePagination = (page: number, limit: number) => {
     const newPageParams = { ...pageParams, page, limit }
-    changeTableFilter({ router, url: '/bed-types', pageParams: newPageParams })
+    changeTableFilter({ router, pathname: '/bed-types', pageParams: newPageParams })
   }
 
   const columns = tableColumns({

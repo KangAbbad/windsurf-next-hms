@@ -28,7 +28,7 @@ export const tableColumns = (props: Props) => {
 
   return (): ColumnsType<BedTypeListItem> => {
     const router = useRouter()
-    const url = usePathname()
+    const pathname = usePathname()
     const queryClient = useQueryClient()
     const { antdMessage } = useAntdContextHolder()
     const pageParams = getPageParams()
@@ -99,7 +99,7 @@ export const tableColumns = (props: Props) => {
           initialValue: pageParams.search?.name,
           placeholder: 'Search by name',
           onSearch: (value) => {
-            searchByTableColumn({ router, url, pageParams, dataIndex: 'search[name]', value })
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[name]', value })
           },
         }),
       },
@@ -112,7 +112,7 @@ export const tableColumns = (props: Props) => {
           initialValue: pageParams.search?.dimension,
           placeholder: 'exp: length x width x height',
           onSearch: (value) => {
-            searchByTableColumn({ router, url, pageParams, dataIndex: 'search[dimension]', value })
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[dimension]', value })
           },
         }),
         sorter: (a, b) => {
@@ -140,7 +140,7 @@ export const tableColumns = (props: Props) => {
           initialValue: pageParams.search?.material,
           placeholder: 'Search by material',
           onSearch: (value) => {
-            searchByTableColumn({ router, url, pageParams, dataIndex: 'search[material]', value })
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[material]', value })
           },
         }),
         render: (_, record) => {

@@ -4,13 +4,13 @@ import { createUrlSearchParams, Params } from './createUrlSearchParams'
 
 type Props = {
   router: AppRouterInstance
-  url: string
+  pathname: string
   pageParams: Params
 }
 
 const changeTableFilterHoc = () => {
   return (props: Props) => {
-    const { router, url, pageParams } = props
+    const { router, pathname, pageParams } = props
 
     const newPageParams: Record<string, any> = {}
 
@@ -48,7 +48,7 @@ const changeTableFilterHoc = () => {
       }
     })
 
-    router.replace(`${url}?${createUrlSearchParams(newPageParams)}`)
+    router.replace(`${pathname}?${createUrlSearchParams(newPageParams)}`)
   }
 }
 
@@ -56,17 +56,31 @@ export const changeTableFilter = changeTableFilterHoc()
 
 type SearchByTableColumnProps<T> = {
   router: AppRouterInstance
-  url: string
+  pathname: string
   pageParams: T
   dataIndex: string
   value?: string
 }
 
 export const searchByTableColumn = <T extends Params>(props: SearchByTableColumnProps<T>) => {
-  const { router, url, pageParams, dataIndex, value } = props
+  const { router, pathname, pageParams, dataIndex, value } = props
   const newPageParams: T = {
     ...pageParams,
     [dataIndex]: value,
   }
-  changeTableFilter({ router, url, pageParams: newPageParams })
+  changeTableFilter({ router, pathname, pageParams: newPageParams })
+}
+
+type ChangePaginationProps<T> = {
+  router: AppRouterInstance
+  pageParams: T
+  pathname: string
+  page: number
+  limit: number
+}
+
+export const changePagination = <T extends Params>(props: ChangePaginationProps<T>) => {
+  const { router, pageParams, pathname, page, limit } = props
+  const newPageParams = { ...pageParams, page, limit }
+  changeTableFilter({ router, pathname, pageParams: newPageParams })
 }
