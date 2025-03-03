@@ -53,3 +53,20 @@ const changeTableFilterHoc = () => {
 }
 
 export const changeTableFilter = changeTableFilterHoc()
+
+type SearchByTableColumnProps<T> = {
+  router: AppRouterInstance
+  url: string
+  pageParams: T
+  dataIndex: string
+  value?: string
+}
+
+export const searchByTableColumn = <T extends Params>(props: SearchByTableColumnProps<T>) => {
+  const { router, url, pageParams, dataIndex, value } = props
+  const newPageParams: T = {
+    ...pageParams,
+    [dataIndex]: value,
+  }
+  changeTableFilter({ router, url, pageParams: newPageParams })
+}

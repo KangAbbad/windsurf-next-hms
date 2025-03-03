@@ -3,7 +3,7 @@ import { Button, Flex, Popconfirm, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { AxiosError } from 'axios'
 import dayjs from 'dayjs'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { CSSProperties } from 'react'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
@@ -11,13 +11,12 @@ import { queryKey } from './constants'
 import { getPageParams } from './getPageParams'
 import { bedTypeDetailStore } from './state'
 import { deleteItem } from '../services/delete'
-import { BedTypeListPageParams } from '../services/get'
 
 import { BedTypeListItem } from '@/app/api/bed-types/types'
 import { ImageFallback } from '@/components/ImageFallback'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 import { ApiResponse } from '@/services/apiResponse'
-import { changeTableFilter } from '@/utils/changeTableFilter'
+import { searchByTableColumn } from '@/utils/changeTableFilter'
 import { getColumnSearchProps } from '@/utils/getColumnSearchProps'
 
 type Props = {
@@ -29,18 +28,13 @@ export const tableColumns = (props: Props) => {
 
   return (): ColumnsType<BedTypeListItem> => {
     const router = useRouter()
+    const url = usePathname()
     const queryClient = useQueryClient()
     const { antdMessage } = useAntdContextHolder()
     const pageParams = getPageParams()
     const { setData: setBedTypeDetail } = bedTypeDetailStore()
 
-    const onSearch = (dataIndex: string, value?: string) => {
-      const newPageParams: BedTypeListPageParams = {
-        ...pageParams,
-        [dataIndex]: value,
-      }
-      changeTableFilter({ router, url: '/bed-types', pageParams: newPageParams })
-    }
+    // Remove the local onSearch function and use the utility directly
 
     const {
       mutate: deleteMutation,
@@ -105,7 +99,7 @@ export const tableColumns = (props: Props) => {
           initialValue: pageParams.search?.name,
           placeholder: 'Search by name',
           onSearch: (value) => {
-            onSearch('search[name]', value)
+            searchByTableColumn({ router, url, pageParams, dataIndex: 'search[name]', value })
           },
         }),
       },
@@ -118,7 +112,7 @@ export const tableColumns = (props: Props) => {
           initialValue: pageParams.search?.dimension,
           placeholder: 'exp: length x width x height',
           onSearch: (value) => {
-            onSearch('search[dimension]', value)
+            searchByTableColumn({ router, url, pageParams, dataIndex: 'search[dimension]', value })
           },
         }),
         sorter: (a, b) => {
@@ -146,7 +140,7 @@ export const tableColumns = (props: Props) => {
           initialValue: pageParams.search?.material,
           placeholder: 'Search by material',
           onSearch: (value) => {
-            onSearch('search[material]', value)
+            searchByTableColumn({ router, url, pageParams, dataIndex: 'search[material]', value })
           },
         }),
         render: (_, record) => {
