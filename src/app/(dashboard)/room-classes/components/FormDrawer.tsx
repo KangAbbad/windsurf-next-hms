@@ -49,8 +49,7 @@ export default function FormDrawer(props: Props) {
   const { antdMessage } = useAntdContextHolder()
   const [form] = Form.useForm<FormType>()
   const watchUploadList = Form.useWatch('uploadList', form) ?? []
-  const watchBedTypes = Form.useWatch('bed_types', form) ?? []
-  console.log({ watchBedTypes })
+
   const { data: roomClassDetailState, resetData: resetRoomClassDetail } = roomClassDetailStore()
   const imagePreviewUrl = roomClassDetailState?.image_url?.includes('http')
     ? roomClassDetailState?.image_url

@@ -20,7 +20,7 @@ export async function GET(request: Request): Promise<Response> {
     }
     if (searchPrice) {
       let minPrice: number = 0
-      let maxPrice: number = 0
+      let maxPrice: number | null = null
 
       const cleanPriceFormat = searchPrice.trim()
 
@@ -28,18 +28,18 @@ export async function GET(request: Request): Promise<Response> {
         const parts = cleanPriceFormat.split('-').map((part) => part.trim())
         if (parts.length === 2) {
           minPrice = parseFloat(parts[0]) || 0
-          maxPrice = parseFloat(parts[1]) || Infinity
+          maxPrice = parseFloat(parts[1]) || null
         }
       } else {
         minPrice = parseFloat(cleanPriceFormat) || 0
-        maxPrice = minPrice
       }
 
-      if (minPrice > maxPrice) {
+      if (maxPrice !== null && minPrice > maxPrice) {
         ;[minPrice, maxPrice] = [maxPrice, minPrice]
       }
 
-      query = query.gte('price', minPrice).lte('price', maxPrice)
+      query = query.gte('price', minPrice)
+      if (maxPrice !== null) query = query.lte('price', maxPrice)
     }
 
     const {

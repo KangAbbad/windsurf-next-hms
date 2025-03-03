@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Button, Table, theme } from 'antd'
 import dynamic from 'next/dynamic'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { FaPlus } from 'react-icons/fa6'
 
@@ -21,6 +21,7 @@ const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
 
 export default function BedTypesPage() {
   const router = useRouter()
+  const pathname = usePathname()
   const { token } = theme.useToken()
   const { colorBgContainer } = token
   const pageParams = getPageParams()
@@ -44,7 +45,7 @@ export default function BedTypesPage() {
 
   const changePagination = (page: number, limit: number) => {
     const newPageParams = { ...pageParams, page, limit }
-    changeTableFilter({ router, pathname: '/bed-types', pageParams: newPageParams })
+    changeTableFilter({ router, pathname, pageParams: newPageParams })
   }
 
   const columns = tableColumns({

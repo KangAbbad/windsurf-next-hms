@@ -3,27 +3,30 @@
 import { useQuery } from '@tanstack/react-query'
 import { Button, Table, theme } from 'antd'
 import dynamic from 'next/dynamic'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { FaPlus } from 'react-icons/fa6'
 
 import { queryKey } from './lib/constants'
+import { getPageParams } from './lib/getPageParams'
 import { addonDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
-import { type AddonListPageParams, getAll } from './services/get'
+import { getAll } from './services/get'
+
+import { changeTableFilter } from '@/utils/changeTableFilter'
 
 const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
 })
 
 export default function AddonsPage() {
+  const router = useRouter()
+  const pathname = usePathname()
   const { token } = theme.useToken()
   const { colorBgContainer } = token
+  const pageParams = getPageParams()
+
   const [isFormVisible, setFormVisible] = useState<boolean>(false)
-  const [pageParams, setPageParams] = useState<AddonListPageParams>({
-    page: 1,
-    limit: 10,
-    search: undefined,
-  })
 
   const { resetData: resetAddonDetail } = addonDetailStore()
 
@@ -38,6 +41,11 @@ export default function AddonsPage() {
   const showAddModal = () => {
     resetAddonDetail()
     setFormVisible(true)
+  }
+
+  const changePagination = (page: number, limit: number) => {
+    const newPageParams = { ...pageParams, page, limit }
+    changeTableFilter({ router, pathname, pageParams: newPageParams })
   }
 
   const columns = tableColumns({
@@ -69,9 +77,7 @@ export default function AddonsPage() {
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} items`,
             className: '!px-4',
-            onChange: (page, pageSize) => {
-              setPageParams((prev) => ({ ...prev, page, limit: pageSize }))
-            },
+            onChange: changePagination,
           }}
         />
       </div>

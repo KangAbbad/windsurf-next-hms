@@ -3,10 +3,12 @@ import { Button, Flex, Popconfirm, Space, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { AxiosError } from 'axios'
 import dayjs from 'dayjs'
+import { usePathname, useRouter } from 'next/navigation'
 import { CSSProperties } from 'react'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
 import { queryKey } from './constants'
+import { getPageParams } from './getPageParams'
 import { roomClassDetailStore } from './state'
 import { deleteItem } from '../services/delete'
 
@@ -14,7 +16,9 @@ import type { RoomClassListItem } from '@/app/api/room-classes/types'
 import { ImageFallback } from '@/components/ImageFallback'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 import { ApiResponse } from '@/services/apiResponse'
+import { searchByTableColumn } from '@/utils/changeTableFilter'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getColumnSearchProps } from '@/utils/getColumnSearchProps'
 
 type Props = {
   onEdit: () => void
@@ -24,8 +28,11 @@ export const tableColumns = (props: Props) => {
   const { onEdit } = props
 
   return (): ColumnsType<RoomClassListItem> => {
+    const router = useRouter()
     const queryClient = useQueryClient()
+    const pathname = usePathname()
     const { antdMessage } = useAntdContextHolder()
+    const pageParams = getPageParams()
     const { setData: setRoomClassDetail } = roomClassDetailStore()
 
     const {
@@ -81,6 +88,13 @@ export const tableColumns = (props: Props) => {
         dataIndex: 'name',
         key: 'name',
         width: '20%',
+        ...getColumnSearchProps({
+          initialValue: pageParams?.search?.name,
+          placeholder: 'Search by name',
+          onSearch: (value) => {
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[name]', value })
+          },
+        }),
         sorter: (a, b) => a.name.localeCompare(b.name),
       },
       {
@@ -88,6 +102,13 @@ export const tableColumns = (props: Props) => {
         dataIndex: 'price',
         key: 'price',
         width: '15%',
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.price?.toString(),
+          placeholder: 'exp: 25000 or 10000-25000',
+          onSearch: (value) => {
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[price]', value })
+          },
+        }),
         sorter: (a, b) => a.price - b.price,
         render: (price) => <Typography.Text className="font-medium">{formatCurrency(price)}</Typography.Text>,
       },
@@ -95,6 +116,13 @@ export const tableColumns = (props: Props) => {
         title: 'Bed Types',
         key: 'bed_types',
         width: '20%',
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.bed_type,
+          placeholder: 'Search by bed type',
+          onSearch: (value) => {
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[bed_type]', value })
+          },
+        }),
         render: (_, record) => (
           <Space direction="vertical">
             {record.bed_types.map((bt) => (
@@ -109,12 +137,21 @@ export const tableColumns = (props: Props) => {
         title: 'Features',
         key: 'features',
         width: '20%',
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.feature,
+          placeholder: 'Search by feature',
+          onSearch: (value) => {
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[feature]', value })
+          },
+        }),
         render: (_, record) => (
-          <Space size={8} wrap>
+          <Flex gap={8} wrap>
             {record.features.map((feature) => (
-              <Tag key={feature.id}>{feature.name}</Tag>
+              <Tag key={feature.id} className="!m-0">
+                {feature.name}
+              </Tag>
             ))}
-          </Space>
+          </Flex>
         ),
       },
       {

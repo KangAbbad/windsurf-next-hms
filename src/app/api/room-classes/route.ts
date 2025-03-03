@@ -6,26 +6,48 @@ import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@
 
 export async function GET(request: Request): Promise<Response> {
   try {
+    const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') ?? '1', 10)
     const limit = parseInt(searchParams.get('limit') ?? '10', 10)
-    const search = searchParams.get('search') ?? ''
-
     const offset = (page - 1) * limit
+    const searchName = searchParams.get('search[name]')
+    const searchPrice = searchParams.get('search[price]')
 
-    const supabase = await createClient()
+    let query = supabase.from('room_class').select('*', { count: 'exact' })
 
-    // First get the room classes
+    if (searchName) {
+      query = query.ilike('name', `%${searchName}%`)
+    }
+    if (searchPrice) {
+      let minPrice: number = 0
+      let maxPrice: number | null = null
+
+      const cleanPriceFormat = searchPrice.trim()
+
+      if (cleanPriceFormat.includes('-')) {
+        const parts = cleanPriceFormat.split('-').map((part) => part.trim())
+        if (parts.length === 2) {
+          minPrice = parseFloat(parts[0]) || 0
+          maxPrice = parseFloat(parts[1]) || null
+        }
+      } else {
+        minPrice = parseFloat(cleanPriceFormat) || 0
+      }
+
+      if (maxPrice !== null && minPrice > maxPrice) {
+        ;[minPrice, maxPrice] = [maxPrice, minPrice]
+      }
+
+      query = query.gte('price', minPrice)
+      if (maxPrice !== null) query = query.lte('price', maxPrice)
+    }
+
     const {
       data: roomClasses,
       error: roomClassError,
       count,
-    } = await supabase
-      .from('room_class')
-      .select('*', { count: 'exact' })
-      .ilike('name', `%${search}%`)
-      .range(offset, offset + limit - 1)
-      .order('name', { ascending: true })
+    } = await query.range(offset, offset + limit - 1).order('name', { ascending: true })
 
     if (roomClassError) {
       return createErrorResponse({
@@ -43,10 +65,8 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    // Fetch details for each room class in parallel
     const items = await Promise.all(
       roomClasses.map(async (roomClass) => {
-        // Fetch bed types
         const { data: bedTypes, error: bedTypesError } = await supabase
           .from('room_class_bed_type')
           .select('num_beds, bed_type_id, bed_type:bed_type_id(*)')
@@ -61,7 +81,6 @@ export async function GET(request: Request): Promise<Response> {
           }
         }
 
-        // Fetch features
         const { data: featuresData, error: featuresError } = await supabase
           .from('room_class_feature')
           .select('feature(*)')
@@ -76,10 +95,8 @@ export async function GET(request: Request): Promise<Response> {
           }
         }
 
-        // Transform features data
         const features = (featuresData ?? []).map((item) => item.feature) ?? []
 
-        // Combine the results
         return {
           ...roomClass,
           bed_types: bedTypes,
