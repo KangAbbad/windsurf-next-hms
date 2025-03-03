@@ -5,30 +5,41 @@ import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@
 
 export async function GET(request: Request): Promise<Response> {
   try {
+    const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') ?? '1', 10)
     const limit = parseInt(searchParams.get('limit') ?? '10', 10)
-    const search = searchParams.get('search') ?? ''
-    const minPrice = parseFloat(searchParams.get('min_price') ?? '0')
-    const maxPrice = parseFloat(searchParams.get('max_price') ?? '0')
-
+    const searchName = searchParams.get('search[name]')
+    const searchPrice = searchParams.get('search[price]')
     const offset = (page - 1) * limit
-
-    const supabase = await createClient()
 
     let query = supabase.from('feature').select('*', { count: 'exact' })
 
-    // Apply search filter if provided
-    if (search) {
-      query = query.ilike('name', `%${search}%`)
+    if (searchName) {
+      query = query.ilike('name', `%${searchName}%`)
     }
+    if (searchPrice) {
+      let minPrice: number = 0
+      let maxPrice: number = 0
 
-    // Apply price range filter if provided
-    if (maxPrice > 0) {
-      query = query.lte('price', maxPrice)
-    }
-    if (minPrice > 0) {
-      query = query.gte('price', minPrice)
+      const cleanPriceFormat = searchPrice.trim()
+
+      if (cleanPriceFormat.includes('-')) {
+        const parts = cleanPriceFormat.split('-').map((part) => part.trim())
+        if (parts.length === 2) {
+          minPrice = parseFloat(parts[0]) || 0
+          maxPrice = parseFloat(parts[1]) || Infinity
+        }
+      } else {
+        minPrice = parseFloat(cleanPriceFormat) || 0
+        maxPrice = minPrice
+      }
+
+      if (minPrice > maxPrice) {
+        ;[minPrice, maxPrice] = [maxPrice, minPrice]
+      }
+
+      query = query.gte('price', minPrice).lte('price', maxPrice)
     }
 
     const {

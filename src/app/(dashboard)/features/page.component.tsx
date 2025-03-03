@@ -3,28 +3,29 @@
 import { useQuery } from '@tanstack/react-query'
 import { Button, Table, theme } from 'antd'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { FaPlus } from 'react-icons/fa6'
 
 import { queryKey } from './lib/constants'
+import { getPageParams } from './lib/getPageParams'
 import { featureDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
-import { type FeatureListPageParams, getAll } from './services/get'
+import { getAll } from './services/get'
+
+import { changeTableFilter } from '@/utils/changeTableFilter'
 
 const FormModal = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
 })
 
 export function PageComponent() {
+  const router = useRouter()
   const { token } = theme.useToken()
   const { colorBgContainer } = token
-  const [isFormVisible, setFormVisible] = useState<boolean>(false)
-  const [pageParams, setPageParams] = useState<FeatureListPageParams>({
-    page: 1,
-    limit: 10,
-    search: undefined,
-  })
+  const pageParams = getPageParams()
 
+  const [isFormVisible, setFormVisible] = useState<boolean>(false)
   const { resetData: resetFeatureDetail } = featureDetailStore()
 
   const { data: dataSourceResponse, isFetching: isDataSourceFetching } = useQuery({
@@ -38,6 +39,11 @@ export function PageComponent() {
   const showAddModal = () => {
     resetFeatureDetail()
     setFormVisible(true)
+  }
+
+  const changePagination = (page: number, limit: number) => {
+    const newPageParams = { ...pageParams, page, limit }
+    changeTableFilter({ router, pathname: '/bed-types', pageParams: newPageParams })
   }
 
   const columns = tableColumns({
@@ -69,9 +75,7 @@ export function PageComponent() {
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} items`,
             className: '!px-4',
-            onChange: (page, pageSize) => {
-              setPageParams((prev) => ({ ...prev, page, limit: pageSize }))
-            },
+            onChange: changePagination,
           }}
         />
       </div>

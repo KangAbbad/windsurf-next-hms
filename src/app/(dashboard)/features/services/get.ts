@@ -5,7 +5,10 @@ import { axiosInstance } from '@/services/axiosInstance'
 export type FeatureListPageParams = {
   page?: number
   limit?: number
-  search?: string
+  search?: {
+    name?: string
+    price?: string
+  }
 }
 
 export const getAll = async (params: FeatureListPageParams) => {
