@@ -3,10 +3,12 @@ import { Button, Flex, Popconfirm, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { AxiosError } from 'axios'
 import dayjs from 'dayjs'
+import { usePathname, useRouter } from 'next/navigation'
 import { CSSProperties } from 'react'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
 import { queryKey } from './constants'
+import { getPageParams } from './getPageParams'
 import { addonDetailStore } from './state'
 import { deleteItem } from '../services/delete'
 
@@ -14,7 +16,9 @@ import { AddonListItem } from '@/app/api/addons/types'
 import { ImageFallback } from '@/components/ImageFallback'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 import { ApiResponse } from '@/services/apiResponse'
+import { searchByTableColumn } from '@/utils/changeTableFilter'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getColumnSearchProps } from '@/utils/getColumnSearchProps'
 
 type Props = {
   onEdit: () => void
@@ -24,8 +28,11 @@ export const tableColumns = (props: Props) => {
   const { onEdit } = props
 
   return (): ColumnsType<AddonListItem> => {
+    const router = useRouter()
     const queryClient = useQueryClient()
+    const pathname = usePathname()
     const { antdMessage } = useAntdContextHolder()
+    const pageParams = getPageParams()
     const { setData: setAddonDetail } = addonDetailStore()
 
     const {
@@ -84,22 +91,36 @@ export const tableColumns = (props: Props) => {
         title: 'Name',
         dataIndex: 'name',
         key: 'name',
-        width: '30%',
+        width: '25%',
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.name,
+          placeholder: 'Search by name',
+          onSearch: (value) => {
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[name]', value })
+          },
+        }),
         sorter: (a, b) => a.name.localeCompare(b.name),
       },
       {
         title: 'Price',
         dataIndex: 'price',
         key: 'price',
-        width: '30%',
+        width: '25%',
         sorter: (a, b) => a.price - b.price,
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.price?.toString(),
+          placeholder: 'exp: 25000 or 10000-25000',
+          onSearch: (value) => {
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[price]', value })
+          },
+        }),
         render: (price) => <Typography.Text className="font-medium">{formatCurrency(price)}</Typography.Text>,
       },
       {
         title: 'Time',
         dataIndex: 'created_at',
         key: 'created_at',
-        width: '20%',
+        width: '15%',
         sorter: (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
         render: (_, record) => {
           const createdAt = record.created_at ? dayjs(record.created_at).format('DD MMM YYYY, HH:mm') : '-'
@@ -118,7 +139,7 @@ export const tableColumns = (props: Props) => {
         title: 'Actions',
         key: 'actions',
         align: 'center',
-        width: '10%',
+        width: '15%',
         render: (_, record) => (
           <Flex gap={4} align="center" justify="center">
             <Button

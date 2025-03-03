@@ -5,15 +5,13 @@ import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@
 
 export async function GET(request: Request): Promise<Response> {
   try {
+    const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') ?? '1', 10)
     const limit = parseInt(searchParams.get('limit') ?? '10', 10)
+    const offset = (page - 1) * limit
     const searchName = searchParams.get('search[name]')
     const searchNumber = searchParams.get('search[number]')
-
-    const offset = (page - 1) * limit
-
-    const supabase = await createClient()
 
     let query = supabase.from('floor').select('*', { count: 'exact' })
 

@@ -4,16 +4,14 @@ import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@
 
 export async function GET(request: Request): Promise<Response> {
   try {
+    const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') ?? '1', 10)
     const limit = parseInt(searchParams.get('limit') ?? '10', 10)
+    const offset = (page - 1) * limit
     const searchName = searchParams.get('search[name]')
     const searchMaterial = searchParams.get('search[material]')
     const searchDimension = searchParams.get('search[dimension]')
-
-    const offset = (page - 1) * limit
-
-    const supabase = await createClient()
 
     let query = supabase.from('bed_type').select('*', { count: 'exact' })
 
@@ -25,24 +23,21 @@ export async function GET(request: Request): Promise<Response> {
     }
     if (searchDimension) {
       const parts = searchDimension
-        .replace(/[^\d\sx]/g, '') // Remove non-numeric and non-'x' characters
+        .replace(/[^\d\sx]/g, '')
         .split('x')
         .map((part) => parseFloat(part.trim()))
         .filter((num) => !isNaN(num))
 
-      const length = parts[0] || null // Length (first number)
-      const width = parts[1] || null // Width (second number)
-      const height = parts[2] || null // Height (third number)
+      const length = parts[0] || null
+      const width = parts[1] || null
+      const height = parts[2] || null
 
-      // Apply filters only for non-null values, searching across all dimensions if it's a single number
       if (length !== null) {
         query = query.or(`length.eq.${length},width.eq.${length},height.eq.${length}`)
       }
-      // Avoid redundant checks if width matches length from single number
       if (width !== null && width !== length) {
         query = query.or(`length.eq.${width},width.eq.${width},height.eq.${width}`)
       }
-      // Avoid redundant checks
       if (height !== null && height !== length && height !== width) {
         query = query.or(`length.eq.${height},width.eq.${height},height.eq.${height}`)
       }

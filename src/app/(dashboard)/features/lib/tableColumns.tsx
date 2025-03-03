@@ -105,7 +105,7 @@ export const tableColumns = (props: Props) => {
         title: 'Price',
         dataIndex: 'price',
         key: 'price',
-        width: '20%',
+        width: '25%',
         ...getColumnSearchProps({
           initialValue: pageParams.search?.price?.toString(),
           placeholder: 'exp: 25000 or 10000-25000',
