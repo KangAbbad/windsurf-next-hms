@@ -16,8 +16,10 @@ export async function GET(request: Request): Promise<Response> {
     const page = parseSearchParamsToNumber(searchParams.get('page'), 1) ?? 1
     const limit = parseSearchParamsToNumber(searchParams.get('limit'), 10) ?? 10
     const offset = (page - 1) * limit
+    const searchGuest = searchParams.get('search[guest]')
+    const searchAmount = searchParams.get('search[amount]')
 
-    const query = supabase.from('booking').select(
+    let query = supabase.from('booking').select(
       `
         *,
         guests:booking_guest(guest(*)),
@@ -29,6 +31,96 @@ export async function GET(request: Request): Promise<Response> {
       `,
       { count: 'exact' }
     )
+
+    if (searchGuest) {
+      const { data: matchingGuests, error: guestNameError } = await supabase
+        .from('guest')
+        .select('id')
+        .ilike('name', `%${searchGuest}%`)
+
+      if (guestNameError) {
+        return createErrorResponse({
+          code: 400,
+          message: guestNameError.message,
+          errors: [guestNameError.message],
+        })
+      }
+
+      if (!matchingGuests || matchingGuests.length === 0) {
+        return createApiResponse({
+          code: 200,
+          message: 'Bookings retrieved successfully',
+          start_hrtime: startHrtime,
+          data: {
+            items: [],
+            meta: {
+              page,
+              limit,
+              total: 0,
+              total_pages: 0,
+            },
+          },
+        })
+      }
+
+      const guestIds = matchingGuests.map((g) => g.id)
+      const { data: bookingGuests, error: bookingGuestError } = await supabase
+        .from('booking_guest')
+        .select('booking_id')
+        .in('guest_id', guestIds)
+
+      if (bookingGuestError) {
+        return createErrorResponse({
+          code: 400,
+          message: bookingGuestError.message,
+          errors: [bookingGuestError.message],
+        })
+      }
+
+      if (!bookingGuests || bookingGuests.length === 0) {
+        return createApiResponse({
+          code: 200,
+          message: 'Bookings retrieved successfully',
+          start_hrtime: startHrtime,
+          data: {
+            items: [],
+            meta: {
+              page,
+              limit,
+              total: 0,
+              total_pages: 0,
+            },
+          },
+        })
+      }
+
+      const bookingIds = bookingGuests.map((bg) => bg.booking_id)
+      query = query.in('id', bookingIds)
+    }
+
+    if (searchAmount) {
+      let minAmount: number = 0
+      let maxAmount: number | null = null
+
+      const cleanAmountFormat = searchAmount.trim()
+
+      if (cleanAmountFormat.includes('-')) {
+        const parts = cleanAmountFormat.split('-').map((part) => part.trim())
+        if (parts.length === 2) {
+          minAmount = parseFloat(parts[0]) || 0
+          maxAmount = parseFloat(parts[1]) || null
+        }
+      } else {
+        minAmount = parseFloat(cleanAmountFormat) || 0
+      }
+
+      if (maxAmount !== null && minAmount > maxAmount) {
+        ;[minAmount, maxAmount] = [maxAmount, minAmount]
+      }
+
+      query = query.gte('booking_amount', minAmount)
+      if (maxAmount !== null) query = query.lte('booking_amount', maxAmount)
+    }
 
     const { data, error, count } = await query
       .range(offset, offset + limit - 1)

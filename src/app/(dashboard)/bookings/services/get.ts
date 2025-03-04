@@ -5,10 +5,10 @@ import { axiosInstance } from '@/services/axiosInstance'
 export type BookingListPageParams = {
   page?: number
   limit?: number
-  search?: string
-  searchBy?: 'guest' | 'dates'
-  startDate?: string
-  endDate?: string
+  search?: {
+    guest?: string
+    amount?: string
+  }
 }
 
 export const getAll = async (params: BookingListPageParams) => {

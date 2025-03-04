@@ -1,15 +1,19 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Flex, Popconfirm, Tag } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
+import { usePathname, useRouter } from 'next/navigation'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
 import { queryKey } from './constants'
+import { getPageParams } from './getPageParams'
 import { bookingDetailStore } from './state'
 import { deleteItem } from '../services/delete'
 
 import { BookingListItem } from '@/app/api/bookings/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { searchByTableColumn } from '@/utils/changeTableFilter'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getColumnSearchProps } from '@/utils/getColumnSearchProps'
 
 type Props = {
   onEdit: () => void
@@ -19,8 +23,11 @@ export const tableColumns = (props: Props) => {
   const { onEdit } = props
 
   return (): ColumnsType<BookingListItem> => {
+    const router = useRouter()
+    const pathname = usePathname()
     const queryClient = useQueryClient()
     const { antdMessage } = useAntdContextHolder()
+    const pageParams = getPageParams()
     const { setData: setBookingDetail } = bookingDetailStore()
 
     const {
@@ -45,10 +52,19 @@ export const tableColumns = (props: Props) => {
 
     return [
       {
-        title: 'Guest',
+        title: 'Guest PIC',
         key: 'guest',
+        dataIndex: 'guest',
         width: '20%',
         fixed: 'left',
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.guest,
+          placeholder: 'Search by guest name',
+          onSearch: (value) => {
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[guest]', value })
+          },
+        }),
+        sorter: (a, b) => a.guest.name.localeCompare(b.guest.name),
         render: (_, record) => (
           <span>
             {record.guest.name}
@@ -56,11 +72,11 @@ export const tableColumns = (props: Props) => {
             <small className="text-gray-500">{record.guest.email ?? record.guest.phone}</small>
           </span>
         ),
-        sorter: (a, b) => a.guest.name.localeCompare(b.guest.name),
       },
       {
         title: 'Stay Period',
-        key: 'stay_period',
+        key: 'checkin_date',
+        dataIndex: 'checkin_date',
         width: '15%',
         render: (_, record) => {
           const checkin = new Date(record.checkin_date)
@@ -89,6 +105,7 @@ export const tableColumns = (props: Props) => {
       {
         title: 'Rooms',
         key: 'rooms',
+        dataIndex: 'rooms',
         width: '15%',
         render: (_, record) => (
           <Flex gap={4} vertical>
@@ -104,7 +121,8 @@ export const tableColumns = (props: Props) => {
       },
       {
         title: 'Guests',
-        key: 'guests',
+        key: 'num_adults',
+        dataIndex: 'num_adults',
         width: '10%',
         render: (_, record) => (
           <span>
@@ -124,12 +142,20 @@ export const tableColumns = (props: Props) => {
         dataIndex: 'booking_amount',
         key: 'booking_amount',
         width: '15%',
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.amount,
+          placeholder: 'Search by amount',
+          onSearch: (value) => {
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[amount]', value })
+          },
+        }),
         sorter: (a, b) => a.booking_amount - b.booking_amount,
         render: (amount) => <span className="font-medium">{formatCurrency(amount)}</span>,
       },
       {
         title: 'Payment Status',
         key: 'payment_status',
+        dataIndex: 'payment_status',
         width: '15%',
         render: (_, record) => (
           <Tag
@@ -149,6 +175,7 @@ export const tableColumns = (props: Props) => {
       {
         title: 'Actions',
         key: 'actions',
+        dataIndex: 'id',
         width: '10%',
         align: 'center',
         fixed: 'right',

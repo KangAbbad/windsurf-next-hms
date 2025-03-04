@@ -7,10 +7,11 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { FaPlus } from 'react-icons/fa6'
 
-import { defaultPageSize, queryKey } from './lib/constants'
+import { queryKey } from './lib/constants'
+import { getPageParams } from './lib/getPageParams'
 import { bookingDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
-import { type BookingListPageParams, getAll } from './services/get'
+import { getAll } from './services/get'
 
 import { changePagination } from '@/utils/changeTableFilter'
 
@@ -23,13 +24,7 @@ export default function BookingsPage() {
   const pathname = usePathname()
   const { token } = theme.useToken()
   const { colorBgContainer } = token
-  const [pageParams] = useState<BookingListPageParams>({
-    page: 1,
-    limit: defaultPageSize,
-    search: undefined,
-    startDate: undefined,
-    endDate: undefined,
-  })
+  const pageParams = getPageParams()
 
   const [isFormVisible, setFormVisible] = useState<boolean>(false)
   const { resetData: resetBookingDetail } = bookingDetailStore()

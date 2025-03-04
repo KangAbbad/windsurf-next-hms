@@ -34,8 +34,6 @@ export const tableColumns = (props: Props) => {
     const pageParams = getPageParams()
     const { setData: setBedTypeDetail } = bedTypeDetailStore()
 
-    // Remove the local onSearch function and use the utility directly
-
     const {
       mutate: deleteMutation,
       variables: deleteVariables,
