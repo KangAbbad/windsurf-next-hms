@@ -66,6 +66,8 @@ export async function GET(request: Request): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const newFloor: CreateFloorBody = await request.json()
@@ -103,6 +105,7 @@ export async function POST(request: Request): Promise<Response> {
     return createApiResponse<FloorListItem>({
       code: 201,
       message: 'Floor created successfully',
+      start_hrtime: startHrtime,
       data,
     })
   } catch (error) {

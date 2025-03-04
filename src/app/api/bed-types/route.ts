@@ -87,6 +87,8 @@ export async function GET(request: Request): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const newBedType: CreateBedTypeBody = await request.json()
@@ -199,6 +201,7 @@ export async function POST(request: Request): Promise<Response> {
     return createApiResponse({
       code: 201,
       message: 'Bed type created successfully',
+      start_hrtime: startHrtime,
       data,
     })
   } catch (error) {

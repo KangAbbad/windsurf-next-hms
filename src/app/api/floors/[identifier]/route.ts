@@ -4,6 +4,8 @@ import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
 
 export async function GET(_request: Request, { params }: { params: Promise<{ identifier: string }> }) {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const { identifier } = await params
@@ -21,6 +23,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ ide
     return createApiResponse<FloorListItem>({
       code: 200,
       message: 'Floor retrieved successfully',
+      start_hrtime: startHrtime,
       data,
     })
   } catch (error) {
@@ -34,6 +37,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ ide
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ identifier: string }> }) {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const { identifier } = await params
@@ -77,6 +82,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ iden
     return createApiResponse<FloorListItem>({
       code: 200,
       message: 'Floor updated successfully',
+      start_hrtime: startHrtime,
       data,
     })
   } catch (error) {
@@ -90,6 +96,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ iden
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ identifier: string }> }) {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const { identifier } = await params
@@ -118,6 +126,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     return createApiResponse({
       code: 200,
       message: 'Floor deleted successfully',
+      start_hrtime: startHrtime,
     })
   } catch (error) {
     console.error('Delete floor error:', error)

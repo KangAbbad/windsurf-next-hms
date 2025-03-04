@@ -7,6 +7,8 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ identifier: string }> }
 ): Promise<Response> {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const { identifier } = await params
@@ -67,6 +69,7 @@ export async function GET(
     return createApiResponse<RoomListItem>({
       code: 200,
       message: 'Room details retrieved successfully',
+      start_hrtime: startHrtime,
       data: enrichedRoom,
     })
   } catch (error) {
@@ -83,6 +86,8 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ identifier: string }> }
 ): Promise<Response> {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const { identifier } = await params
@@ -173,6 +178,7 @@ export async function PUT(
     return createApiResponse<RoomListItem>({
       code: 200,
       message: 'Room updated successfully',
+      start_hrtime: startHrtime,
       data,
     })
   } catch (error) {
@@ -189,6 +195,8 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ identifier: string }> }
 ): Promise<Response> {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const { identifier } = await params
@@ -217,6 +225,7 @@ export async function DELETE(
     return createApiResponse({
       code: 200,
       message: 'Room deleted successfully',
+      start_hrtime: startHrtime,
     })
   } catch (error) {
     console.error('Delete room error:', error)

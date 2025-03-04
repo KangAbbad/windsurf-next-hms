@@ -86,6 +86,8 @@ export async function GET(request: Request): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const newFeature: CreateFeatureBody = await request.json()
@@ -163,6 +165,7 @@ export async function POST(request: Request): Promise<Response> {
     return createApiResponse<FeatureListItem>({
       code: 201,
       message: 'Feature created successfully',
+      start_hrtime: startHrtime,
       data,
     })
   } catch (error) {

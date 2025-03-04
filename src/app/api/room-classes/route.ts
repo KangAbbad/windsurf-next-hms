@@ -62,9 +62,10 @@ export async function GET(request: Request): Promise<Response> {
       }
 
       if (!matchingBedTypes || matchingBedTypes.length === 0) {
-        return createApiResponse({
+        return createApiResponse<PaginatedDataResponse<RoomClassListItem>>({
           code: 200,
           message: 'Room class list retrieved successfully',
+          start_hrtime: startHrtime,
           data: {
             items: [],
             meta: {
@@ -92,9 +93,10 @@ export async function GET(request: Request): Promise<Response> {
       }
 
       if (!bedTypeRelations || bedTypeRelations.length === 0) {
-        return createApiResponse({
+        return createApiResponse<PaginatedDataResponse<RoomClassListItem>>({
           code: 200,
           message: 'Room class list retrieved successfully',
+          start_hrtime: startHrtime,
           data: {
             items: [],
             meta: {
@@ -125,9 +127,10 @@ export async function GET(request: Request): Promise<Response> {
       }
 
       if (!matchingFeatures || matchingFeatures.length === 0) {
-        return createApiResponse({
+        return createApiResponse<PaginatedDataResponse<RoomClassListItem>>({
           code: 200,
           message: 'Room class list retrieved successfully',
+          start_hrtime: startHrtime,
           data: {
             items: [],
             meta: {
@@ -155,9 +158,10 @@ export async function GET(request: Request): Promise<Response> {
       }
 
       if (!featureRelations || featureRelations.length === 0) {
-        return createApiResponse({
+        return createApiResponse<PaginatedDataResponse<RoomClassListItem>>({
           code: 200,
           message: 'Room class list retrieved successfully',
+          start_hrtime: startHrtime,
           data: {
             items: [],
             meta: {
@@ -246,7 +250,7 @@ export async function GET(request: Request): Promise<Response> {
       },
     }
 
-    return createApiResponse({
+    return createApiResponse<PaginatedDataResponse<RoomClassListItem>>({
       code: 200,
       message: 'Room class list retrieved successfully',
       start_hrtime: startHrtime,
@@ -263,6 +267,8 @@ export async function GET(request: Request): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const newRoomClass: CreateRoomClassBody = await request.json()
@@ -477,6 +483,7 @@ export async function POST(request: Request): Promise<Response> {
     return createApiResponse({
       code: 201,
       message: 'Room class created successfully',
+      start_hrtime: startHrtime,
       data: response,
     })
   } catch (error) {
