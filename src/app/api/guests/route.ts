@@ -2,6 +2,7 @@ import type { CreateGuestBody, GuestListItem } from './types'
 
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
+import { parseSearchParamsToNumber } from '@/utils/parseSearchParamsToNumber'
 
 export async function GET(request: Request): Promise<Response> {
   const startHrtime = process.hrtime()
@@ -9,15 +10,31 @@ export async function GET(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
-    const page = Number(searchParams.get('page')) || 1
-    const limit = Number(searchParams.get('limit')) || 10
-    const search = searchParams.get('search')?.toLowerCase() ?? ''
+    const page = parseSearchParamsToNumber(searchParams.get('page'), 1) ?? 1
+    const limit = parseSearchParamsToNumber(searchParams.get('limit'), 10) ?? 10
     const offset = (page - 1) * limit
+    const searchName = searchParams.get('search[name]')
+    const searchIdCardNumber = searchParams.get('search[id_card_number]')
+    const searchEmail = searchParams.get('search[email]')
+    const searchPhone = searchParams.get('search[phone]')
+    const searchAddress = searchParams.get('search[address]')
 
     let query = supabase.from('guest').select('*', { count: 'exact' })
 
-    if (search) {
-      query = query.ilike('name', `%${search}%`)
+    if (searchName) {
+      query = query.ilike('name', `%${searchName}%`)
+    }
+    if (searchIdCardNumber) {
+      query = query.ilike('id_card_number', `%${searchIdCardNumber}%`)
+    }
+    if (searchEmail) {
+      query = query.ilike('email', `%${searchEmail}%`)
+    }
+    if (searchPhone) {
+      query = query.ilike('phone', `%${searchPhone}%`)
+    }
+    if (searchAddress) {
+      query = query.ilike('address', `%${searchAddress}%`)
     }
 
     const {

@@ -5,7 +5,13 @@ import { axiosInstance } from '@/services/axiosInstance'
 export type GuestListPageParams = {
   page?: number
   limit?: number
-  search?: string
+  search?: {
+    name?: string
+    id_card_number?: string
+    email?: string
+    phone?: string
+    address?: string
+  }
 }
 
 export const getAll = async (params: GuestListPageParams) => {

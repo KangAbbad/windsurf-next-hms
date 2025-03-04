@@ -8,9 +8,10 @@ import { useState } from 'react'
 import { FaPlus } from 'react-icons/fa6'
 
 import { queryKey } from './lib/constants'
+import { getPageParams } from './lib/getPageParams'
 import { guestDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
-import { type GuestListPageParams, getAll } from './services/get'
+import { getAll } from './services/get'
 
 import { changePagination } from '@/utils/changeTableFilter'
 
@@ -23,11 +24,7 @@ export default function GuestsPage() {
   const pathname = usePathname()
   const { token } = theme.useToken()
   const { colorBgContainer } = token
-  const [pageParams] = useState<GuestListPageParams>({
-    page: 1,
-    limit: 10,
-    search: undefined,
-  })
+  const pageParams = getPageParams()
 
   const [isFormVisible, setFormVisible] = useState<boolean>(false)
   const { resetData: resetGuestDetail } = guestDetailStore()

@@ -1,14 +1,18 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Flex, Popconfirm, Tag } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
+import { usePathname, useRouter } from 'next/navigation'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
 import { queryKey } from './constants'
+import { getPageParams } from './getPageParams'
 import { guestDetailStore } from './state'
 import { deleteItem } from '../services/delete'
 
 import { GuestListItem } from '@/app/api/guests/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { searchByTableColumn } from '@/utils/changeTableFilter'
+import { getColumnSearchProps } from '@/utils/getColumnSearchProps'
 
 type Props = {
   onEdit: () => void
@@ -18,8 +22,11 @@ export const tableColumns = (props: Props) => {
   const { onEdit } = props
 
   return (): ColumnsType<GuestListItem> => {
+    const router = useRouter()
     const queryClient = useQueryClient()
+    const pathname = usePathname()
     const { antdMessage } = useAntdContextHolder()
+    const pageParams = getPageParams()
     const { setData: setGuestDetail } = guestDetailStore()
 
     const {
@@ -49,6 +56,13 @@ export const tableColumns = (props: Props) => {
         key: 'name',
         width: 225,
         fixed: 'left',
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.name,
+          placeholder: 'Search by name',
+          onSearch: (value) => {
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[name]', value })
+          },
+        }),
         sorter: (a, b) => a.name.localeCompare(b.name),
       },
       {
@@ -56,6 +70,13 @@ export const tableColumns = (props: Props) => {
         dataIndex: 'id_card_number',
         key: 'id_card_number',
         width: 225,
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.id_card_number,
+          placeholder: 'Search by id card number',
+          onSearch: (value) => {
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[id_card_number]', value })
+          },
+        }),
         sorter: (a, b) => a.id_card_number.localeCompare(b.id_card_number),
       },
       {
@@ -96,6 +117,13 @@ export const tableColumns = (props: Props) => {
         dataIndex: 'email',
         key: 'email',
         width: 225,
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.email,
+          placeholder: 'Search by email',
+          onSearch: (value) => {
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[email]', value })
+          },
+        }),
         sorter: (a, b) => a.email.localeCompare(b.email),
         render: (_, record) => record.email || '-',
       },
@@ -104,6 +132,13 @@ export const tableColumns = (props: Props) => {
         dataIndex: 'phone',
         key: 'phone',
         width: 175,
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.phone,
+          placeholder: 'Search by phone',
+          onSearch: (value) => {
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[phone]', value })
+          },
+        }),
         sorter: (a, b) => a.phone.localeCompare(b.phone),
       },
       {
@@ -111,6 +146,13 @@ export const tableColumns = (props: Props) => {
         dataIndex: 'address',
         key: 'address',
         width: 250,
+        ...getColumnSearchProps({
+          initialValue: pageParams.search?.address,
+          placeholder: 'Search by address',
+          onSearch: (value) => {
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[address]', value })
+          },
+        }),
         sorter: (a, b) => a.address.localeCompare(b.address),
         render: (_, record) => record.address || '-',
       },
