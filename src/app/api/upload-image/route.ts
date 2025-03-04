@@ -5,6 +5,8 @@ import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse } from '@/services/apiResponse'
 
 export async function POST(request: Request): Promise<Response> {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const formData = await request.formData()
@@ -54,6 +56,7 @@ export async function POST(request: Request): Promise<Response> {
       return createApiResponse({
         code: 201,
         message: 'Image uploaded successfully',
+        start_hrtime: startHrtime,
         data: {
           ...uploadedImage,
           image_url,

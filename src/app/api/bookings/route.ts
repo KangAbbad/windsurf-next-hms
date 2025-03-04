@@ -12,14 +12,11 @@ export async function GET(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
-
-    // Pagination params
     const page = Number(searchParams.get('page')) || 1
     const limit = Number(searchParams.get('limit')) || 10
     const offset = (page - 1) * limit
 
-    // Build base query with relations
-    let query = supabase.from('booking').select(
+    const query = supabase.from('booking').select(
       `
         *,
         guests:booking_guest(guest(*)),
@@ -32,9 +29,9 @@ export async function GET(request: Request): Promise<Response> {
       { count: 'exact' }
     )
 
-    query = query.range(offset, offset + limit - 1).order('checkin_date', { ascending: false })
-
     const { data, error, count } = await query
+      .range(offset, offset + limit - 1)
+      .order('checkin_date', { ascending: false })
 
     const items: BookingListItem[] = (data ?? []).map((item) => {
       const { guests, rooms, addons, ...restItem } = item

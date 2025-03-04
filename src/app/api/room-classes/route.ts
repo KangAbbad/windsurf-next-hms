@@ -5,6 +5,8 @@ import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
 
 export async function GET(request: Request): Promise<Response> {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
@@ -246,6 +248,7 @@ export async function GET(request: Request): Promise<Response> {
     return createApiResponse({
       code: 200,
       message: 'Room class list retrieved successfully',
+      start_hrtime: startHrtime,
       data: response,
     })
   } catch (error) {

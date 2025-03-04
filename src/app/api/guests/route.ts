@@ -4,18 +4,18 @@ import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
 
 export async function GET(request: Request): Promise<Response> {
+  const startHrtime = process.hrtime()
+
   try {
+    const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     const page = Number(searchParams.get('page')) || 1
     const limit = Number(searchParams.get('limit')) || 10
     const search = searchParams.get('search')?.toLowerCase() ?? ''
     const offset = (page - 1) * limit
 
-    const supabase = await createClient()
-
     let query = supabase.from('guest').select('*', { count: 'exact' })
 
-    // Apply search filter if search param is provided
     if (search) {
       query = query.ilike('name', `%${search}%`)
     }
@@ -47,6 +47,7 @@ export async function GET(request: Request): Promise<Response> {
     return createApiResponse<PaginatedDataResponse<GuestListItem>>({
       code: 200,
       message: 'Guest list retrieved successfully',
+      start_hrtime: startHrtime,
       data: response,
     })
   } catch (error) {
@@ -64,7 +65,6 @@ export async function POST(request: Request): Promise<Response> {
     const supabase = await createClient()
     const newGuest: CreateGuestBody = await request.json()
 
-    // Validate required fields
     if (
       !newGuest.nationality &&
       !newGuest.id_card_type &&

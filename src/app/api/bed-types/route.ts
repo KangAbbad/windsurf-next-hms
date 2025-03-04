@@ -3,6 +3,8 @@ import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
 
 export async function GET(request: Request): Promise<Response> {
+  const startHrtime = process.hrtime()
+
   try {
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
@@ -70,6 +72,7 @@ export async function GET(request: Request): Promise<Response> {
     return createApiResponse<PaginatedDataResponse<BedTypeListItem>>({
       code: 200,
       message: 'Bed types retrieved successfully',
+      start_hrtime: startHrtime,
       data: response,
     })
   } catch (error) {
