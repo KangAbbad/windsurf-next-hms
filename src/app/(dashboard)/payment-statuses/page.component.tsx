@@ -27,7 +27,6 @@ export default function PaymentStatusesPage() {
   const pageParams = getPageParams()
 
   const [isFormVisible, setFormVisible] = useState<boolean>(false)
-
   const { resetData: resetPaymentStatusDetail } = paymentStatusDetailStore()
 
   const { data: dataSourceResponse, isFetching: isDataSourceFetching } = useQuery({

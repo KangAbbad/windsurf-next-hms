@@ -27,7 +27,6 @@ export default function RoomsPage() {
   const pageParams = getPageParams()
 
   const [isFormVisible, setFormVisible] = useState<boolean>(false)
-
   const { resetData: resetRoomDetail } = roomDetailStore()
 
   const { data: dataSourceResponse, isFetching: isDataSourceFetching } = useQuery({

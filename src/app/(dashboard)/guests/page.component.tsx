@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Button, Table, theme } from 'antd'
 import dynamic from 'next/dynamic'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { FaPlus } from 'react-icons/fa6'
 
@@ -11,20 +12,24 @@ import { guestDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
 import { type GuestListPageParams, getAll } from './services/get'
 
+import { changePagination } from '@/utils/changeTableFilter'
+
 const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
 })
 
 export default function GuestsPage() {
+  const router = useRouter()
+  const pathname = usePathname()
   const { token } = theme.useToken()
   const { colorBgContainer } = token
-  const [isFormVisible, setFormVisible] = useState<boolean>(false)
-  const [pageParams, setPageParams] = useState<GuestListPageParams>({
+  const [pageParams] = useState<GuestListPageParams>({
     page: 1,
     limit: 10,
     search: undefined,
   })
 
+  const [isFormVisible, setFormVisible] = useState<boolean>(false)
   const { resetData: resetGuestDetail } = guestDetailStore()
 
   const { data: dataSourceResponse, isFetching: isDataSourceFetching } = useQuery({
@@ -70,8 +75,8 @@ export default function GuestsPage() {
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} items`,
             className: '!px-4',
-            onChange: (page, pageSize) => {
-              setPageParams((prev) => ({ ...prev, page, limit: pageSize }))
+            onChange: (page, limit) => {
+              changePagination({ router, pathname, pageParams, page, limit })
             },
           }}
         />

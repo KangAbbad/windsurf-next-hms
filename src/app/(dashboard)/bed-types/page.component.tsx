@@ -27,7 +27,6 @@ export default function BedTypesPage() {
   const pageParams = getPageParams()
 
   const [isFormVisible, setFormVisible] = useState<boolean>(false)
-
   const { resetData: resetBedTypeDetail } = bedTypeDetailStore()
 
   const { data: dataSourceResponse, isFetching: isDataSourceFetching } = useQuery({

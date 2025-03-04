@@ -27,7 +27,6 @@ export default function AddonsPage() {
   const pageParams = getPageParams()
 
   const [isFormVisible, setFormVisible] = useState<boolean>(false)
-
   const { resetData: resetAddonDetail } = addonDetailStore()
 
   const { data: dataSourceResponse, isFetching: isDataSourceFetching } = useQuery({
