@@ -5,7 +5,6 @@ import { axiosInstance } from '@/services/axiosInstance'
 export type PaymentStatusListPageParams = {
   page?: number
   limit?: number
-  search?: string
 }
 
 export const getAll = async (params: PaymentStatusListPageParams) => {
