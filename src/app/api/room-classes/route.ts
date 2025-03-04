@@ -14,6 +14,7 @@ export async function GET(request: Request): Promise<Response> {
     const searchName = searchParams.get('search[name]')
     const searchPrice = searchParams.get('search[price]')
     const searchBedType = searchParams.get('search[bed_type]')
+    const searchFeature = searchParams.get('search[feature]')
 
     let query = supabase.from('room_class').select('*', { count: 'exact' })
 
@@ -44,9 +45,6 @@ export async function GET(request: Request): Promise<Response> {
       if (maxPrice !== null) query = query.lte('price', maxPrice)
     }
     if (searchBedType) {
-      // If bed type filter is provided, get room class IDs that have this bed type
-      let roomClassIds: string[] = []
-      // First get the bed type IDs that match the name
       const { data: matchingBedTypes, error: bedTypeNameError } = await supabase
         .from('bed_type')
         .select('id')
@@ -61,7 +59,6 @@ export async function GET(request: Request): Promise<Response> {
       }
 
       if (!matchingBedTypes || matchingBedTypes.length === 0) {
-        // No bed types match this name, return empty response
         return createApiResponse({
           code: 200,
           message: 'Room class list retrieved successfully',
@@ -77,7 +74,6 @@ export async function GET(request: Request): Promise<Response> {
         })
       }
 
-      // Then get room classes that have these bed types
       const bedTypeIds = matchingBedTypes.map((bt) => bt.id)
       const { data: bedTypeRelations, error: bedTypeError } = await supabase
         .from('room_class_bed_type')
@@ -93,7 +89,6 @@ export async function GET(request: Request): Promise<Response> {
       }
 
       if (!bedTypeRelations || bedTypeRelations.length === 0) {
-        // No room classes with this bed type, return empty response
         return createApiResponse({
           code: 200,
           message: 'Room class list retrieved successfully',
@@ -109,12 +104,71 @@ export async function GET(request: Request): Promise<Response> {
         })
       }
 
-      roomClassIds = bedTypeRelations.map((relation) => relation.room_class_id)
+      const roomClassIds = bedTypeRelations.map((relation) => relation.room_class_id)
+      query = query.in('id', roomClassIds)
+    }
+    if (searchFeature) {
+      const { data: matchingFeatures, error: featureNameError } = await supabase
+        .from('feature')
+        .select('id')
+        .ilike('name', `%${searchFeature}%`)
 
-      // Apply bed type filter if we have room class IDs
-      if (roomClassIds.length) {
-        query = query.in('id', roomClassIds)
+      if (featureNameError) {
+        return createErrorResponse({
+          code: 400,
+          message: featureNameError.message,
+          errors: [featureNameError.message],
+        })
       }
+
+      if (!matchingFeatures || matchingFeatures.length === 0) {
+        return createApiResponse({
+          code: 200,
+          message: 'Room class list retrieved successfully',
+          data: {
+            items: [],
+            meta: {
+              page,
+              limit,
+              total: 0,
+              total_pages: 0,
+            },
+          },
+        })
+      }
+
+      const featureIds = matchingFeatures.map((f) => f.id)
+      const { data: featureRelations, error: featureError } = await supabase
+        .from('room_class_feature')
+        .select('room_class_id')
+        .in('feature_id', featureIds)
+
+      if (featureError) {
+        return createErrorResponse({
+          code: 400,
+          message: featureError.message,
+          errors: [featureError.message],
+        })
+      }
+
+      if (!featureRelations || featureRelations.length === 0) {
+        return createApiResponse({
+          code: 200,
+          message: 'Room class list retrieved successfully',
+          data: {
+            items: [],
+            meta: {
+              page,
+              limit,
+              total: 0,
+              total_pages: 0,
+            },
+          },
+        })
+      }
+
+      const featureRoomClassIds = featureRelations.map((relation) => relation.room_class_id)
+      query = query.in('id', featureRoomClassIds)
     }
 
     const {
