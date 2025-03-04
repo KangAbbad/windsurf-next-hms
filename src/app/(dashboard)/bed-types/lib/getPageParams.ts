@@ -2,17 +2,18 @@ import { useSearchParams } from 'next/navigation'
 
 import { BedTypeListPageParams } from '../services/get'
 
+import { parseSearchParamsToNumber } from '@/utils/parseSearchParamsToNumber'
+
 const getPageParamsHoc = () => {
   return () => {
     const searchParams = useSearchParams()
-    const searchName = searchParams.get('search[name]') ?? undefined
-    const searchMaterial = searchParams.get('search[material]') ?? undefined
-    const searchDimension = searchParams.get('search[dimension]') ?? undefined
+    const page = parseSearchParamsToNumber(searchParams.get('page'), 1)
+    const limit = parseSearchParamsToNumber(searchParams.get('limit'), 10)
+    const searchName = searchParams.get('search[name]')
+    const searchMaterial = searchParams.get('search[material]')
+    const searchDimension = searchParams.get('search[dimension]')
 
-    const pageParams: BedTypeListPageParams = {
-      page: Number(searchParams.get('page') ?? 1),
-      limit: Number(searchParams.get('limit') ?? 10),
-    }
+    const pageParams: BedTypeListPageParams = { page, limit }
 
     if (searchName || searchMaterial || searchDimension) {
       pageParams.search = {}

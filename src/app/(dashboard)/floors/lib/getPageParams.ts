@@ -2,16 +2,17 @@ import { useSearchParams } from 'next/navigation'
 
 import { FloorListPageParams } from '../services/get'
 
+import { parseSearchParamsToNumber } from '@/utils/parseSearchParamsToNumber'
+
 const getPageParamsHoc = () => {
   return () => {
     const searchParams = useSearchParams()
-    const searchName = searchParams.get('search[name]') ?? undefined
+    const page = parseSearchParamsToNumber(searchParams.get('page'), 1)
+    const limit = parseSearchParamsToNumber(searchParams.get('limit'), 10)
+    const searchName = searchParams.get('search[name]')
     const searchNumber = searchParams.get('search[number]') ? Number(searchParams.get('search[number]')) : undefined
 
-    const pageParams: FloorListPageParams = {
-      page: Number(searchParams.get('page') ?? 1),
-      limit: Number(searchParams.get('limit') ?? 10),
-    }
+    const pageParams: FloorListPageParams = { page, limit }
 
     if (searchName || searchNumber) {
       pageParams.search = {}

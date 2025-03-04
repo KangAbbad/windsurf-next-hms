@@ -13,7 +13,7 @@ import { bedTypeDetailStore } from './lib/state'
 import { tableColumns } from './lib/tableColumns'
 import { getAll } from './services/get'
 
-import { changeTableFilter } from '@/utils/changeTableFilter'
+import { changePagination } from '@/utils/changeTableFilter'
 
 const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
   ssr: false,
@@ -41,11 +41,6 @@ export default function BedTypesPage() {
   const showAddModal = () => {
     resetBedTypeDetail()
     setFormVisible(true)
-  }
-
-  const changePagination = (page: number, limit: number) => {
-    const newPageParams = { ...pageParams, page, limit }
-    changeTableFilter({ router, pathname, pageParams: newPageParams })
   }
 
   const columns = tableColumns({
@@ -79,7 +74,9 @@ export default function BedTypesPage() {
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} items`,
             className: '!px-4',
-            onChange: changePagination,
+            onChange: (page, limit) => {
+              changePagination({ router, pathname, pageParams, page, limit })
+            },
           }}
         />
       </div>

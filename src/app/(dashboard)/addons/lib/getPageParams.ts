@@ -2,16 +2,17 @@ import { useSearchParams } from 'next/navigation'
 
 import { AddonListPageParams } from '../services/get'
 
+import { parseSearchParamsToNumber } from '@/utils/parseSearchParamsToNumber'
+
 const getPageParamsHoc = () => {
   return () => {
     const searchParams = useSearchParams()
-    const searchName = searchParams.get('search[name]') ?? undefined
-    const searchPrice = searchParams.get('search[price]') ?? undefined
+    const page = parseSearchParamsToNumber(searchParams.get('page'), 1)
+    const limit = parseSearchParamsToNumber(searchParams.get('limit'), 10)
+    const searchName = searchParams.get('search[name]')
+    const searchPrice = searchParams.get('search[price]')
 
-    const pageParams: AddonListPageParams = {
-      page: Number(searchParams.get('page') ?? 1),
-      limit: Number(searchParams.get('limit') ?? 10),
-    }
+    const pageParams: AddonListPageParams = { page, limit }
 
     if (searchName || searchPrice) {
       pageParams.search = {}

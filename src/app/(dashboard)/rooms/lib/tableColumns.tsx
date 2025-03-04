@@ -2,16 +2,20 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button, Flex, Popconfirm, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
+import { usePathname, useRouter } from 'next/navigation'
 import { FaPenToSquare, FaTrashCan } from 'react-icons/fa6'
 
 import { queryKey } from './constants'
+import { getPageParams } from './getPageParams'
 import { roomDetailStore } from './state'
 import { deleteItem } from '../services/delete'
 
 import { RoomListItem } from '@/app/api/rooms/types'
 import { ImageFallback } from '@/components/ImageFallback'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { searchByTableColumn } from '@/utils/changeTableFilter'
 import { formatCurrency } from '@/utils/formatCurrency'
+import { getColumnSearchProps } from '@/utils/getColumnSearchProps'
 
 type Props = {
   onEdit: () => void
@@ -21,8 +25,11 @@ export const tableColumns = (props: Props) => {
   const { onEdit } = props
 
   return (): ColumnsType<RoomListItem> => {
+    const router = useRouter()
     const queryClient = useQueryClient()
+    const pathname = usePathname()
     const { antdMessage } = useAntdContextHolder()
+    const pageParams = getPageParams()
     const { setData: setRoomDetail } = roomDetailStore()
 
     const {
@@ -52,6 +59,13 @@ export const tableColumns = (props: Props) => {
         key: 'room_class',
         width: '15%',
         fixed: 'left',
+        ...getColumnSearchProps({
+          initialValue: pageParams?.search?.number?.toString(),
+          placeholder: 'Search by room number',
+          onSearch: (value) => {
+            searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[number]', value })
+          },
+        }),
         sorter: (a, b) => a.room_class.name.localeCompare(b.room_class.name),
         render: (_, record) => {
           const { room_class } = record

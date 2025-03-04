@@ -73,14 +73,14 @@ export const searchByTableColumn = <T extends Params>(props: SearchByTableColumn
 
 type ChangePaginationProps<T> = {
   router: AppRouterInstance
-  pageParams: T
   pathname: string
+  pageParams: T
   page: number
   limit: number
 }
 
 export const changePagination = <T extends Params>(props: ChangePaginationProps<T>) => {
-  const { router, pageParams, pathname, page, limit } = props
+  const { router, pathname, pageParams, page, limit } = props
   const newPageParams = { ...pageParams, page, limit }
   changeTableFilter({ router, pathname, pageParams: newPageParams })
 }

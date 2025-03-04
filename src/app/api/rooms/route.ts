@@ -5,17 +5,14 @@ import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@
 
 export async function GET(request: Request): Promise<Response> {
   try {
+    const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') ?? '1', 10)
     const limit = parseInt(searchParams.get('limit') ?? '10', 10)
-    const search = searchParams.get('search') ?? ''
-
     const offset = (page - 1) * limit
+    const searchNumber = searchParams.get('search[number]')
 
-    const supabase = await createClient()
-
-    // Get rooms with basic relations
-    let roomsQuery = supabase.from('room').select(
+    let query = supabase.from('room').select(
       `
         *,
         floor(*),
@@ -25,16 +22,15 @@ export async function GET(request: Request): Promise<Response> {
       { count: 'exact' }
     )
 
-    // Apply search filter if provided
-    if (search) {
-      roomsQuery = roomsQuery.ilike('number', `%${search}%`)
+    if (searchNumber) {
+      query = query.eq('number', searchNumber)
     }
 
     const {
       data: rooms,
       error: roomsError,
       count,
-    } = await roomsQuery.range(offset, offset + limit - 1).order('number', { ascending: true })
+    } = await query.range(offset, offset + limit - 1).order('number', { ascending: true })
 
     if (roomsError) {
       return createErrorResponse({
@@ -44,10 +40,8 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    // Get all unique room class IDs
     const roomClassIds = [...new Set(rooms?.map((room) => room.room_class.id) ?? [])]
 
-    // Get bed types for all room classes
     const { data: bedTypes, error: bedTypesError } = await supabase
       .from('room_class_bed_type')
       .select('*, bed_type(*)')
@@ -61,7 +55,6 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    // Get features for all room classes
     const { data: features, error: featuresError } = await supabase
       .from('room_class_feature')
       .select('*, feature(*)')
@@ -75,8 +68,7 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    // Combine all data
-    const items = rooms?.map((room) => ({
+    const items = (rooms ?? []).map((room) => ({
       ...room,
       room_class: {
         ...room.room_class,
