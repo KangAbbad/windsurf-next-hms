@@ -1,6 +1,7 @@
 import { BED_TYPE_NAME_MAX_LENGTH, BedTypeListItem, type CreateBedTypeBody } from '@/app/api/bed-types/types'
 import { createClient } from '@/providers/supabase/server'
 import { createApiResponse, createErrorResponse, PaginatedDataResponse } from '@/services/apiResponse'
+import { parseSearchParamsToNumber } from '@/utils/parseSearchParamsToNumber'
 
 export async function GET(request: Request): Promise<Response> {
   const startHrtime = process.hrtime()
@@ -8,8 +9,8 @@ export async function GET(request: Request): Promise<Response> {
   try {
     const supabase = await createClient()
     const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') ?? '1', 10)
-    const limit = parseInt(searchParams.get('limit') ?? '10', 10)
+    const page = parseSearchParamsToNumber(searchParams.get('page'), 1) ?? 1
+    const limit = parseSearchParamsToNumber(searchParams.get('limit'), 10) ?? 10
     const offset = (page - 1) * limit
     const searchName = searchParams.get('search[name]')
     const searchMaterial = searchParams.get('search[material]')
