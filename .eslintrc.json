@@ -7,11 +7,7 @@
   ],
   "overrides": [
     {
-      "files": [
-        "*.ts",
-        "*.tsx",
-        "*.d.ts"
-      ],
+      "files": ["*.ts", "*.tsx", "*.d.ts"],
       "parserOptions": {
         "project": "./tsconfig.json"
       }
@@ -21,12 +17,13 @@
     "react/no-unknown-property": [
       2,
       {
-        "ignore": [
-          "jsx",
-          "global"
-        ]
+        "ignore": ["jsx", "global"]
       }
     ],
     "@typescript-eslint/no-floating-promises": "off"
+  },
+  "env": {
+    "node": true,
+    "commonjs": true
   }
 }

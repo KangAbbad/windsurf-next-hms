@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3002 --turbopack",
+    "dev-with-larger-header-size": "rm -rf .next && NODE_OPTIONS='--max-http-header-size=12800000' next dev --port 3002 --turbopack",
+    "dev": "rm -rf .next && next dev --port 3002 --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint && tsc --noEmit",

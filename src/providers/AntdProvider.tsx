@@ -1,7 +1,7 @@
 'use client'
 
 import { AntdRegistry } from '@ant-design/nextjs-registry'
-import { ConfigProvider, theme } from 'antd'
+import { ConfigProvider, theme, ThemeConfig } from 'antd'
 import { Manrope } from 'next/font/google'
 import { ReactNode } from 'react'
 
@@ -14,6 +14,28 @@ const manrope = Manrope({
   weight: ['500'],
 })
 
+const baseThemeConfig: ThemeConfig = {
+  cssVar: true,
+  token: {
+    fontFamily: `${manrope.style.fontFamily}, sans-serif`,
+  },
+  components: {
+    Table: {
+      headerBorderRadius: 0,
+    },
+  },
+}
+
+const lightThemeConfig: ThemeConfig = {
+  ...baseThemeConfig,
+  algorithm: theme.defaultAlgorithm,
+}
+
+const darkThemeConfig: ThemeConfig = {
+  ...baseThemeConfig,
+  algorithm: theme.darkAlgorithm,
+}
+
 type Props = {
   children: ReactNode
 }
@@ -23,22 +45,7 @@ export const AntdProvider = ({ children }: Props) => {
 
   return (
     <AntdRegistry>
-      <ConfigProvider
-        theme={{
-          cssVar: true,
-          algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
-          token: {
-            fontFamily: `${manrope.style.fontFamily}, sans-serif`,
-          },
-          components: {
-            Table: {
-              headerBorderRadius: 0,
-            },
-          },
-        }}
-      >
-        {children}
-      </ConfigProvider>
+      <ConfigProvider theme={isDarkMode ? darkThemeConfig : lightThemeConfig}>{children}</ConfigProvider>
     </AntdRegistry>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Col, Row, theme, Typography } from 'antd'
+import { Col, Row, Typography } from 'antd'
 import dayjs from 'dayjs'
 
 import AnalyticsCard from './components/AnalyticsCard'
@@ -9,9 +9,6 @@ import { queryKey } from './lib/constants'
 import { getRevenueAnalytics, RevenueAnalyticsParams } from './services/get'
 
 export default function HomePage() {
-  const { token } = theme.useToken()
-  const { colorBgContainer } = token
-
   const currentDate = dayjs()
   const currentMonth = currentDate.month() + 1
   const currentYear = currentDate.year()
@@ -68,7 +65,7 @@ export default function HomePage() {
 
   return (
     <main className="p-4">
-      <div className="p-4 rounded-lg" style={{ backgroundColor: colorBgContainer }}>
+      <div className="p-4 rounded-lg bg-ant-color-container">
         <Typography.Title level={2} className="font-semibold">
           Welcome back, Admin!
         </Typography.Title>

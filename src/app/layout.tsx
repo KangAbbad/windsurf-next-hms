@@ -25,7 +25,7 @@ export default async function RootLayout({
   queryClient.setQueryData([queryKeyDarkMode], currentTheme === 'dark')
 
   return (
-    <html lang="en">
+    <html lang="en" data-theme={currentTheme}>
       <body>
         <TanstackQueryProvider>
           <HydrationBoundary state={dehydrate(queryClient)}>
