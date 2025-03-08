@@ -1,4 +1,5 @@
-import { Button, Flex, Input, TableColumnType, theme } from 'antd'
+import { Button, Flex, Input, TableColumnType } from 'antd'
+import clsx from 'clsx'
 import { ChangeEvent } from 'react'
 import { IoSearch } from 'react-icons/io5'
 
@@ -10,9 +11,6 @@ type Props = {
 
 export const getColumnSearchProps = <T extends unknown>(props: Props): TableColumnType<T> => {
   const { placeholder = 'Search', initialValue = '', onSearch } = props
-  const { token } = theme.useToken()
-  const { colorPrimaryText } = token
-
   let isInitialRender = true
 
   return {
@@ -67,7 +65,7 @@ export const getColumnSearchProps = <T extends unknown>(props: Props): TableColu
     },
     filterIcon: (filtered: boolean) => {
       const isFiltered: boolean = filtered || !!initialValue
-      return <IoSearch className="text-base" style={isFiltered ? { color: colorPrimaryText } : {}} />
+      return <IoSearch className={clsx(['text-base', isFiltered && 'text-ant-color-primary'])} />
     },
   }
 }

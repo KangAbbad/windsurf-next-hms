@@ -8,6 +8,9 @@ module.exports = {
         'ant-color-container': 'var(--ant-color-bg-container)',
         'ant-color-border-secondary': 'var(--ant-color-border-secondary)',
       },
+      textColor: {
+        'ant-color-primary': 'var(--ant-color-primary)',
+      },
     },
   },
   plugins: [],

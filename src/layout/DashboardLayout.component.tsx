@@ -1,6 +1,6 @@
 'use client'
 
-import { Breadcrumb, Button, Col, Flex, Layout, Menu, MenuProps, message, Modal, notification, Row, theme } from 'antd'
+import { Breadcrumb, Button, Col, Flex, Layout, Menu, MenuProps, message, Modal, notification, Row } from 'antd'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -20,8 +20,6 @@ type Props = {
 }
 
 export default function DashboardLayout({ children }: Props) {
-  const { token } = theme.useToken()
-  const { colorBgContainer } = token
   const pathname = usePathname()
   const defaultParentKey = [`/${pathname.split('/')[1]}`]
   const defaultSelectedKeys = pathname.split('/').length > 2 ? [pathname] : defaultParentKey
@@ -104,7 +102,7 @@ export default function DashboardLayout({ children }: Props) {
           />
         </Layout.Sider>
         <Layout>
-          <Layout.Header className={styles.headerContainer} style={{ backgroundColor: colorBgContainer }}>
+          <Layout.Header className={styles.headerContainer}>
             <Row gutter={16} className={styles.headerWrapper}>
               <Col>
                 <Button

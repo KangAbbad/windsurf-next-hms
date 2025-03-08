@@ -19,6 +19,7 @@
     "@tanstack/react-query-devtools": "^5.62.16",
     "antd": "^5.22.6",
     "axios": "^1.7.9",
+    "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "jose": "^6.0.8",
     "jwt-decode": "^4.0.0",

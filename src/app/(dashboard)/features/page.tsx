@@ -1,5 +1,5 @@
-import { PageComponent } from './page.component'
+import FeaturesPage from './page.component'
 
 export default function Page() {
-  return <PageComponent />
+  return <FeaturesPage />
 }

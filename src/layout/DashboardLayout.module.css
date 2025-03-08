@@ -25,6 +25,8 @@
   height: 72px !important;
   padding-right: 16px !important;
   padding-left: 0px !important;
+
+  @apply !bg-ant-color-container;
 }
 
 .headerWrapper {

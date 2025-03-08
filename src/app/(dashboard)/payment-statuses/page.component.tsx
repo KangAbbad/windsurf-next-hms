@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Button, Table, theme } from 'antd'
+import { Button, Table } from 'antd'
 import dynamic from 'next/dynamic'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -22,8 +22,6 @@ const FormDrawer = dynamic(() => import('./components/FormDrawer'), {
 export default function PaymentStatusesPage() {
   const router = useRouter()
   const pathname = usePathname()
-  const { token } = theme.useToken()
-  const { colorBgContainer } = token
   const pageParams = getPageParams()
 
   const [isFormVisible, setFormVisible] = useState<boolean>(false)
@@ -50,9 +48,9 @@ export default function PaymentStatusesPage() {
 
   return (
     <main className="p-4">
-      <div className="pb-0 rounded-lg" style={{ backgroundColor: colorBgContainer }}>
+      <div className="pb-0 rounded-lg bg-ant-color-container">
         <div className="flex justify-between items-center p-4 pb-0 mb-4">
-          <h1 className="text-2xl font-semibold m-0">Payment Status Management</h1>
+          <h1 className="text-2xl font-semibold m-0">Payment Statuses Management</h1>
           <Button type="primary" icon={<FaPlus />} onClick={showAddModal}>
             Add New
           </Button>
