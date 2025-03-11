@@ -67,9 +67,9 @@ export const tableColumns = (props: Props) => {
         sorter: (a, b) => a.guest.name.localeCompare(b.guest.name),
         render: (_, record) => (
           <span>
-            {record.guest.name}
+            {record.guest?.name}
             <br />
-            <small className="text-gray-500">{record.guest.email ?? record.guest.phone}</small>
+            <small className="text-gray-500">{record.guest?.email ?? record.guest?.phone}</small>
           </span>
         ),
       },

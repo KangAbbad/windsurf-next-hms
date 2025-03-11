@@ -150,7 +150,7 @@ export default function FormDrawer(props: Props) {
     if (!isVisible) return
     if (bookingDetailState) {
       form.setFieldsValue({
-        guest_id: bookingDetailState.guest.id,
+        guest_id: bookingDetailState.guest?.id,
         payment_status_id: bookingDetailState.payment_status.id,
         dates: [dayjs(bookingDetailState.checkin_date), dayjs(bookingDetailState.checkout_date)],
         num_adults: bookingDetailState.num_adults,

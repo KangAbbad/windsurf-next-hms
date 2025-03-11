@@ -1,5 +1,6 @@
 'use client'
 
+import { useClerk } from '@clerk/nextjs'
 import { Breadcrumb, Button, Col, Flex, Layout, Menu, MenuProps, message, Modal, notification, Row } from 'antd'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -41,6 +42,8 @@ export default function DashboardLayout({ children }: Props) {
     queryKey: ['IS_SIDEBAR_COLLAPSED'],
     initialData: false,
   })()
+
+  const { signOut } = useClerk()
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!isSidebarCollapsed)
@@ -120,6 +123,15 @@ export default function DashboardLayout({ children }: Props) {
               </Col>
               <Col>
                 <DarkModeButton />
+              </Col>
+              <Col>
+                <Button
+                  type="link"
+                  className="!h-auto !p-0"
+                  onClick={() => signOut({ redirectUrl: window.location.href })}
+                >
+                  Logout
+                </Button>
               </Col>
             </Row>
           </Layout.Header>

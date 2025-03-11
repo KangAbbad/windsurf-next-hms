@@ -1,3 +1,4 @@
+import { ClerkProvider } from '@clerk/nextjs'
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query'
 import type { Metadata } from 'next'
 
@@ -27,13 +28,15 @@ export default async function RootLayout({
   return (
     <html lang="en" data-theme={currentTheme}>
       <body>
-        <TanstackQueryProvider>
-          <HydrationBoundary state={dehydrate(queryClient)}>
-            <AntdProvider>
-              <ProgressProvider>{children}</ProgressProvider>
-            </AntdProvider>
-          </HydrationBoundary>
-        </TanstackQueryProvider>
+        <ClerkProvider>
+          <TanstackQueryProvider>
+            <HydrationBoundary state={dehydrate(queryClient)}>
+              <AntdProvider>
+                <ProgressProvider>{children}</ProgressProvider>
+              </AntdProvider>
+            </HydrationBoundary>
+          </TanstackQueryProvider>
+        </ClerkProvider>
       </body>
     </html>
   )
