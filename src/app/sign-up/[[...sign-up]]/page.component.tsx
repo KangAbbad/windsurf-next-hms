@@ -57,13 +57,7 @@ const RegisterPage = () => {
 
   return (
     <Flex align="center" justify="center" className="bg-ant-color-container h-screen">
-      <Flex
-        vertical
-        gap={8}
-        align="center"
-        justify="center"
-        className="border border-gray-200 dark:border-neutral-700 rounded-xl w-[25vw] p-4"
-      >
+      <Flex vertical gap={8} align="center" justify="center" className="rounded-xl w-[35vw] p-4">
         <Image
           src="/v3-hotel-management-landscape-logo.png"
           alt="Hotel Logo"
@@ -122,7 +116,7 @@ const RegisterPage = () => {
           <Typography.Text className="!self-center">Sign up with Google</Typography.Text>
         </Button>
         <Flex gap={4} align="center" className="mt-2">
-          <Typography.Text>Have an account?</Typography.Text>
+          <Typography.Text>Already have an account?</Typography.Text>
           <Link href={signInUrl} className="text-sm mb-[1px]">
             Sign in now!
           </Link>

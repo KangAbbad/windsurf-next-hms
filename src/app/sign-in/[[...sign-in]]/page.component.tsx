@@ -52,13 +52,7 @@ const SignInPage = () => {
 
   return (
     <Flex align="center" justify="center" className="bg-ant-color-container h-screen">
-      <Flex
-        vertical
-        gap={8}
-        align="center"
-        justify="center"
-        className="border border-gray-200 dark:border-neutral-700 rounded-xl w-[25vw] p-4"
-      >
+      <Flex vertical gap={8} align="center" justify="center" className="rounded-xl w-[35vw] p-4">
         <Image
           src="/v3-hotel-management-landscape-logo.png"
           alt="Hotel Logo"
@@ -98,7 +92,7 @@ const SignInPage = () => {
             <Input.Password size="large" placeholder="Enter password" className="!text-sm" />
           </Form.Item>
           <Button type="primary" block loading={isSignInLoading} className="!h-auto !py-2 mt-4" onClick={form.submit}>
-            Login
+            Sign In
           </Button>
         </Form>
         <Flex gap={16} align="center" className="w-full">
@@ -113,7 +107,7 @@ const SignInPage = () => {
           onClick={onSubmitGoogle}
         >
           <FcGoogle className="text-xl" />
-          <Typography.Text className="!self-center">Login with Google</Typography.Text>
+          <Typography.Text className="!self-center">Sign In with Google</Typography.Text>
         </Button>
         <Flex gap={4} align="center" className="mt-2">
           <Typography.Text>Don't have an account?</Typography.Text>

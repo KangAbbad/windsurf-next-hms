@@ -1,7 +1,5 @@
 import SignUpPage from './page.component'
 
-const Page = () => {
+export default function Page() {
   return <SignUpPage />
 }
-
-export default Page

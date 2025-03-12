@@ -1,7 +1,5 @@
 import SignInPage from './page.component'
 
-const Page = () => {
+export default function Page() {
   return <SignInPage />
 }
-
-export default Page
