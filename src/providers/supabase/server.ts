@@ -1,3 +1,4 @@
+import { auth } from '@clerk/nextjs/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
@@ -5,9 +6,18 @@ import { supabaseConfig } from '@/lib/constants'
 
 export async function createClient() {
   const cookieStore = await cookies()
+  const { getToken } = await auth()
   const { url, anonKey } = supabaseConfig
 
   return createServerClient(url, anonKey, {
+    global: {
+      fetch: async (url, options = {}) => {
+        const clerkToken = await getToken({ template: 'supabase' })
+        const headers = new Headers(options?.headers)
+        headers.set('Authorization', `Bearer ${clerkToken}`)
+        return await fetch(url, { ...options, headers })
+      },
+    },
     cookies: {
       getAll() {
         return cookieStore.getAll()

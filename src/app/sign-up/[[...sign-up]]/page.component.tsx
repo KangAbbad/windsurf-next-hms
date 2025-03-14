@@ -97,7 +97,14 @@ const RegisterPage = () => {
           >
             <Input.Password size="large" placeholder="Enter password" className="!text-sm" />
           </Form.Item>
-          <Button type="primary" block loading={isSignUpLoading} className="!h-auto !py-2 mt-4" onClick={form.submit}>
+          <Button
+            type="primary"
+            block
+            loading={isSignUpLoading}
+            htmlType="submit"
+            className="!h-auto !py-2 mt-4"
+            onClick={form.submit}
+          >
             Sign Up
           </Button>
         </Form>
