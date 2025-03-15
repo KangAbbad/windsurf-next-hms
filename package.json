@@ -14,6 +14,7 @@
     "@ant-design/nextjs-registry": "1.0.2",
     "@bprogress/next": "3.0.10",
     "@clerk/nextjs": "6.12.4",
+    "@clerk/themes": "^2.2.21",
     "@supabase/ssr": "0.5.2",
     "@supabase/supabase-js": "2.47.10",
     "@tanstack/react-query": "5.62.16",

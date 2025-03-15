@@ -1,4 +1,5 @@
 import { ClerkProvider } from '@clerk/nextjs'
+import { dark as clerkThemesDark } from '@clerk/themes'
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query'
 import type { Metadata } from 'next'
 
@@ -23,12 +24,13 @@ export default async function RootLayout({
   const queryClient = new QueryClient()
 
   const currentTheme = await getTheme()
-  queryClient.setQueryData([queryKeyDarkMode], currentTheme === 'dark')
+  const isDarkMode = currentTheme === 'dark'
+  queryClient.setQueryData([queryKeyDarkMode], isDarkMode)
 
   return (
     <html lang="en" data-theme={currentTheme}>
       <body>
-        <ClerkProvider>
+        <ClerkProvider appearance={{ baseTheme: isDarkMode ? clerkThemesDark : undefined }}>
           <TanstackQueryProvider>
             <HydrationBoundary state={dehydrate(queryClient)}>
               <AntdProvider>
