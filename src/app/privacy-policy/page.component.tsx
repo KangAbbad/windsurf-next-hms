@@ -15,7 +15,7 @@ export default function PrivacyPolicyPage() {
       <Content className="p-6 md:p-8 max-w-4xl mx-auto">
         <Card bordered={false} className="shadow-sm">
           <Image
-            src="/v3-hotel-management-landscape-logo.png"
+            src="/v4-hotel-management-landscape-logo.png"
             alt="Hotel Logo"
             priority
             height={72}

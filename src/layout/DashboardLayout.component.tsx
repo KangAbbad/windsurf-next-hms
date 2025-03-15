@@ -70,25 +70,28 @@ export default function DashboardLayout({ children }: Props) {
           <Link href="/" className="block max-h-[73px]">
             <Flex align="center" justify="center" className="overflow-hidden">
               {isSidebarCollapsed ? (
-                <div className="px-4 py-2">
+                <div className="px-2">
                   <Image
-                    src="/v3-hotel-management-portrait-logo.png"
+                    src="/v4-hotel-management-portrait-logo.png"
                     alt="Hotel Logo"
                     priority
-                    height={50}
-                    width={50}
+                    height={80}
+                    width={80}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 </div>
               ) : (
-                <Image
-                  src="/v3-hotel-management-landscape-logo.png"
-                  alt="Hotel Logo"
-                  priority
-                  height={192}
-                  width={192}
-                  className="object-contain"
-                />
+                <div className="px-4 py-2">
+                  <Image
+                    src="/v4-hotel-management-landscape-logo.png"
+                    alt="Hotel Logo"
+                    priority
+                    height={88}
+                    width={88}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-contain"
+                  />
+                </div>
               )}
             </Flex>
           </Link>

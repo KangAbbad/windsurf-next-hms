@@ -8,7 +8,7 @@ export default function VerifyEmailPage() {
   return (
     <Flex vertical align="center" justify="center" className="bg-ant-color-container !h-screen">
       <Image
-        src="/v3-hotel-management-landscape-logo.png"
+        src="/v4-hotel-management-landscape-logo.png"
         alt="Hotel Logo"
         priority
         height={72}

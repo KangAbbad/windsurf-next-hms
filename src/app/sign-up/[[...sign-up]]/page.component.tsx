@@ -59,7 +59,7 @@ export default function RegisterPage() {
       <Flex align="center" justify="center" className="bg-ant-color-container h-screen">
         <Flex vertical gap={8} align="center" justify="center" className="rounded-xl w-[35vw] p-4">
           <Image
-            src="/v3-hotel-management-landscape-logo.png"
+            src="/v4-hotel-management-landscape-logo.png"
             alt="Hotel Logo"
             priority
             height={72}
