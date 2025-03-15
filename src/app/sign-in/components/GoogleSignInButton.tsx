@@ -11,7 +11,7 @@ import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 
 const GoogleSignInButton = () => {
   const searchParams = useSearchParams()
-  const redirectUrl = searchParams.get('redirectUrl')
+  const redirectUrl = searchParams.get('redirect_url')
   const { antdMessage } = useAntdContextHolder()
   const [isGoogleSignInLoading, setGoogleSignInLoading] = useState<boolean>(false)
   const { isLoaded: isSignInLoaded, signIn } = useSignIn()
