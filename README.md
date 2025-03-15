@@ -197,3 +197,24 @@ Table requirements for a hotel booking system:
    - The ERD should be clean and organized, with entities grouped logically (e.g., guest-related entities on the left, room-related entities on the right).
    - Use consistent naming conventions for entities and attributes (e.g., snake_case for attribute names like `nationality`, `created_at`).
    - Ensure that all relationships are properly connected with arrows indicating the direction of the relationship (e.g., from foreign key to primary key).
+
+Base prompt in ai ide:
+
+Create api endpoint for room_status table based on ERD
+
+- analyze ERD room_status table first
+- create GET /room-statuses (look at (api)/addons/route.ts for reference)
+- create POST /room-statuses (look at (api)/addons/route.ts for reference)
+- create PUT /room-statuses/:identifier (look at (api)/addons/[identifier]/route.ts for reference)
+- create DELETE /room-statuses/:identifier (look at (api)/addons/[identifier]/route.ts for reference)
+- make sure identifier params use Promise (look at (api)/addons/[identifier]/route.ts for reference)
+
+Create UI Page for bookings api endpoint:
+
+- add new bookings menu in DashboardLayout.menu.tsx
+- create services in (dashboard)/bookings, use axiosInstance, pay attention to function naming, pay attention to import (look at all addons services for references)
+- create constants in (dashboard)/bookings/lib, pay attention to constant naming, pay attention to import (look at addons lib constants for references)
+- create state in (dashboard)/bookings/lib, use createGlobalState, pay attention to import (look at addons lib state for references)
+- create tableColumns in (dashboard)/bookings/lib, pay attention to hoc, pay attention to import, pay attention to actions columns and the rest (look at addons lib tableColumns.tsx for references)
+- create FormModal component in (dashboard)/bookings/components, observe and imitate according to needs, pay attention to import (look at addons components FormModal.tsx for references)
+- create page component in (dashboard)/bookings, observe and imitate according to needs, pay attention to import (look at addons page.tsx, addons page.component.tsx for references)
