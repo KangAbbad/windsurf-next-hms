@@ -1,11 +1,12 @@
 'use client'
 
+import { useRouter } from '@bprogress/next'
 import { useSignIn } from '@clerk/nextjs'
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors'
 import { Button, Flex, Form, Input, message, Typography } from 'antd'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 
 import GoogleSignInButton from '../components/GoogleSignInButton'
