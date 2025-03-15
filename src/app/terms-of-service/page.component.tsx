@@ -2,6 +2,7 @@
 
 import { Typography, Divider, List, Card, Layout } from 'antd'
 import dayjs from 'dayjs'
+import Image from 'next/image'
 
 const { Title, Paragraph, Text } = Typography
 const { Content } = Layout
@@ -13,6 +14,14 @@ export default function TermsOfServicePage() {
     <Layout>
       <Content className="p-6 md:p-8 max-w-4xl mx-auto">
         <Card bordered={false} className="shadow-sm">
+          <Image
+            src="/v3-hotel-management-landscape-logo.png"
+            alt="Hotel Logo"
+            priority
+            height={72}
+            width={192}
+            className="object-contain mx-auto mb-6"
+          />
           <Typography>
             <Title level={1} className="text-center mb-6">
               Terms of Service
