@@ -7,8 +7,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
-import { FcGoogle } from 'react-icons/fc'
 
+import GoogleSignInButton from '@/app/sign-in/components/GoogleSignInButton'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 
 type FormType = {
@@ -52,8 +52,6 @@ const RegisterPage = () => {
       }
     }
   }
-
-  const onSubmitGoogle = () => {}
 
   return (
     <Flex align="center" justify="center" className="bg-ant-color-container h-screen">
@@ -105,7 +103,7 @@ const RegisterPage = () => {
             className="!h-auto !py-2 mt-4"
             onClick={form.submit}
           >
-            Sign Up
+            Continue with email
           </Button>
         </Form>
         <Flex gap={16} align="center" className="w-full">
@@ -113,15 +111,7 @@ const RegisterPage = () => {
           <Typography.Paragraph className="!mb-0">or</Typography.Paragraph>
           <div className="border-t border-gray-300 dark:border-neutral-700 flex-1" />
         </Flex>
-        <Button
-          type="text"
-          block
-          className="border !border-gray-300 dark:!border-neutral-700 !h-10 !p-0"
-          onClick={onSubmitGoogle}
-        >
-          <FcGoogle className="text-xl" />
-          <Typography.Text className="!self-center">Sign up with Google</Typography.Text>
-        </Button>
+        <GoogleSignInButton />
         <Flex gap={4} align="center" className="mt-2">
           <Typography.Text>Already have an account?</Typography.Text>
           <Link href={signInUrl} className="text-sm mb-[1px]">

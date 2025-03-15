@@ -7,7 +7,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
-import { FcGoogle } from 'react-icons/fc'
+
+import GoogleSignInButton from '../components/GoogleSignInButton'
 
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
 
@@ -47,8 +48,6 @@ const SignInPage = () => {
       }
     }
   }
-
-  const onSubmitGoogle = () => {}
 
   return (
     <Flex align="center" justify="center" className="bg-ant-color-container h-screen">
@@ -96,10 +95,10 @@ const SignInPage = () => {
             block
             loading={isSignInLoading}
             htmlType="submit"
-            className="!h-auto !py-2 mt-4"
+            className="!h-auto !py-3 mt-4"
             onClick={form.submit}
           >
-            Sign In
+            Continue with email
           </Button>
         </Form>
         <Flex gap={16} align="center" className="w-full">
@@ -107,15 +106,7 @@ const SignInPage = () => {
           <Typography.Paragraph className="!mb-0">or</Typography.Paragraph>
           <div className="border-t border-gray-300 dark:border-neutral-700 flex-1" />
         </Flex>
-        <Button
-          type="text"
-          block
-          className="border !border-gray-300 dark:!border-neutral-700 !h-10 !p-0"
-          onClick={onSubmitGoogle}
-        >
-          <FcGoogle className="text-xl" />
-          <Typography.Text className="!self-center">Sign In with Google</Typography.Text>
-        </Button>
+        <GoogleSignInButton />
         <Flex gap={4} align="center" className="mt-2">
           <Typography.Text>Don't have an account?</Typography.Text>
           <Link href={signUpUrl} className="text-sm mb-[1px]">
