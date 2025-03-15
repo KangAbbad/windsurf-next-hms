@@ -4,7 +4,7 @@ import { Flex, Typography } from 'antd'
 import Image from 'next/image'
 import Link from 'next/link'
 
-const VerifyEmailPage = () => {
+export default function VerifyEmailPage() {
   return (
     <Flex vertical align="center" justify="center" className="bg-ant-color-container !h-screen">
       <Image
@@ -38,5 +38,3 @@ const VerifyEmailPage = () => {
     </Flex>
   )
 }
-
-export default VerifyEmailPage

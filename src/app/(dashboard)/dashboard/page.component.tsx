@@ -8,7 +8,7 @@ import AnalyticsCard from './components/AnalyticsCard'
 import { queryKey } from './lib/constants'
 import { getRevenueAnalytics, RevenueAnalyticsParams } from './services/get'
 
-export default function HomePage() {
+export default function DashboardPage() {
   const currentDate = dayjs()
   const currentMonth = currentDate.month() + 1
   const currentYear = currentDate.year()

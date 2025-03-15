@@ -17,7 +17,7 @@ type FormType = {
   password: string
 }
 
-const SignInPage = () => {
+export default function SignInPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const signUpUrl = `/sign-up${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
@@ -117,5 +117,3 @@ const SignInPage = () => {
     </Flex>
   )
 }
-
-export default SignInPage

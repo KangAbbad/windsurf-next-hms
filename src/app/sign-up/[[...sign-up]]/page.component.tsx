@@ -17,7 +17,7 @@ type FormType = {
   password: string
 }
 
-const RegisterPage = () => {
+export default function RegisterPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const signInUrl = `/sign-in${searchParams.toString() ? `?${searchParams.toString()}` : ''}`
@@ -122,5 +122,3 @@ const RegisterPage = () => {
     </Flex>
   )
 }
-
-export default RegisterPage
