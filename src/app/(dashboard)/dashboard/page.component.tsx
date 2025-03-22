@@ -5,6 +5,7 @@ import { Col, Row, Typography } from 'antd'
 import dayjs from 'dayjs'
 
 import AnalyticsCard from './components/AnalyticsCard'
+import RevenueChart from './components/RevenueChart'
 import { queryKey } from './lib/constants'
 import { getRevenueAnalytics, RevenueAnalyticsParams } from './services/get'
 
@@ -99,6 +100,9 @@ export default function DashboardPage() {
               percentage={annuallyRevenue?.percentage}
               dateRange={`${currentDate.startOf('year').format('MMM DD')}, ${currentDate.format('YYYY')} - ${currentDate.endOf('year').format('MMM DD')}, ${currentDate.format('YYYY')}`}
             />
+          </Col>
+          <Col span={24}>
+            <RevenueChart />
           </Col>
         </Row>
       </div>

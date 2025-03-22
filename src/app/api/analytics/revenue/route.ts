@@ -29,20 +29,19 @@ export async function GET(request: Request): Promise<Response> {
       })
     }
 
-    // Calculate date range for fetching both current and previous period data
     let startDate: Date
     const endDate = new Date(year, month !== null ? month + 1 : 11, 31)
 
     if (periodType === 'daily') {
       startDate = new Date(year, month ?? 0, 1)
-      startDate.setDate(startDate.getDate() - 1) // Include previous day
+      startDate.setDate(startDate.getDate() - 1)
     } else if (periodType === 'weekly') {
       startDate = new Date(year, 0, 1)
-      startDate.setDate(startDate.getDate() - 7) // Include previous week
+      startDate.setDate(startDate.getDate() - 7)
     } else if (periodType === 'monthly') {
-      startDate = new Date(year, (month ?? 0) - 1, 1) // Include previous month
+      startDate = new Date(year, (month ?? 0) - 1, 1)
     } else {
-      startDate = new Date(year - 1, 0, 1) // Include previous year
+      startDate = new Date(year - 1, 0, 1)
     }
 
     const { data: bookings, error: bookingsError } = await supabase
@@ -51,6 +50,7 @@ export async function GET(request: Request): Promise<Response> {
         `
           id,
           booking_amount,
+          checkin_date,
           created_at,
           payment_status!inner(
             number
@@ -86,9 +86,27 @@ export async function GET(request: Request): Promise<Response> {
 
     const revenueMap = new Map<string, { revenue: number; count: number }>()
 
+    // Initialize all periods with zero revenue
+    if (periodType === 'daily' && month !== null) {
+      // Get the number of days in the specified month
+      const daysInMonth = new Date(year, month + 1, 0).getDate()
+      // Initialize all days with zero revenue
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day)
+        const periodKey = date.toISOString().split('T')[0]
+        revenueMap.set(periodKey, { revenue: 0, count: 0 })
+      }
+    } else if (periodType === 'monthly') {
+      // Initialize all months in the year with zero revenue
+      for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+        const periodKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}`
+        revenueMap.set(periodKey, { revenue: 0, count: 0 })
+      }
+    }
+
     // Process bookings
     bookings?.forEach((booking) => {
-      const bookingDate = new Date(booking.created_at)
+      const bookingDate = new Date(booking.checkin_date)
       let periodKey: string
 
       if (periodType === 'daily') {
@@ -115,6 +133,33 @@ export async function GET(request: Request): Promise<Response> {
         const [periodYear, periodRest] = period.split('-')
         const yearMatch = parseInt(periodYear, 10) === year
         if (!month) return yearMatch
+
+        if (periodType === 'daily') {
+          // For daily, extract month from the date string (YYYY-MM-DD)
+          const periodMonth = parseInt(periodRest.split('-')[0], 10)
+          return yearMatch && periodMonth === month + 1
+        } else if (periodType === 'weekly' && month !== null) {
+          // For weekly, we need to check if the week overlaps with the specified month
+          const weekNum = parseInt(periodRest.substring(1), 10)
+          // Create a date for the first day of that week
+          const weekStart = new Date(parseInt(periodYear, 10), 0, 1)
+          weekStart.setDate(weekStart.getDate() + (weekNum - 1) * 7)
+          // Create a date for the last day of that week
+          const weekEnd = new Date(weekStart)
+          weekEnd.setDate(weekStart.getDate() + 6)
+
+          // Check if any part of the week falls within the specified month
+          const monthStart = new Date(year, month, 1)
+          const monthEnd = new Date(year, month + 1, 0)
+
+          return (
+            yearMatch &&
+            ((weekStart >= monthStart && weekStart <= monthEnd) ||
+              (weekEnd >= monthStart && weekEnd <= monthEnd) ||
+              (weekStart <= monthStart && weekEnd >= monthEnd))
+          )
+        }
+
         return yearMatch && periodRest === String(month + 1).padStart(2, '0')
       })
       .map(([period, data]) => {

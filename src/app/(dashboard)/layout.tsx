@@ -1,9 +1,11 @@
+import { ReactNode } from 'react'
+
 import DashboardLayout from '@/layout/DashboardLayout.component'
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+type Props = Readonly<{
+  children: ReactNode
+}>
+
+export default function RootLayout({ children }: Props) {
   return <DashboardLayout>{children}</DashboardLayout>
 }
