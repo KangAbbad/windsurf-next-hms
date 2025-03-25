@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { Flex, Segmented, Spin } from 'antd'
+import { Flex, Segmented, Spin, theme } from 'antd'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
@@ -18,6 +18,7 @@ import { queryKey } from '../lib/constants'
 import { getRevenueAnalytics, RevenueAnalyticsParams } from '../services/get'
 
 import { darkModeState } from '@/lib/state/darkMode'
+import { hexToRgba } from '@/utils/hexToRgba'
 
 type EChartsType = echarts.EChartsType
 type FilterType = 'daily' | 'weekly' | 'monthly'
@@ -29,6 +30,9 @@ dayjs.extend(customParseFormat)
 echarts.use([GridComponent, LineChart, CanvasRenderer, UniversalTransition, TooltipComponent])
 
 const RevenueChart = () => {
+  const {
+    token: { colorPrimary },
+  } = theme.useToken()
   const [filterType, setFilterType] = useState<FilterType>('daily')
   const { data: isDarkMode } = darkModeState()
 
@@ -90,11 +94,11 @@ const RevenueChart = () => {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
             {
               offset: 0,
-              color: 'rgba(58,77,233,0.8)',
+              color: hexToRgba(colorPrimary, 0.8),
             },
             {
               offset: 1,
-              color: 'rgba(58,77,233,0.3)',
+              color: hexToRgba(colorPrimary, 0.3),
             },
           ]),
         },
