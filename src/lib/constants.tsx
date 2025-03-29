@@ -6,6 +6,7 @@ import { ReactNode } from 'react'
 export const supabaseConfig = {
   url: process.env.SUPABASE_URL ?? '',
   anonKey: process.env.SUPABASE_ANON_KEY ?? '',
+  jwtTemplate: process.env.CLERK_JWT_TEMPLATE ?? '',
 }
 
 export const queryKeyUpload = {

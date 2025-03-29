@@ -14,7 +14,7 @@ export type BookingListItem = {
   checkout_date: string
   num_adults: number
   num_children: number
-  booking_amount: number
+  amount: number
   rooms: RoomListItem[]
   addons: AddonListItem[]
   created_at: string
@@ -28,7 +28,7 @@ export type CreateBookingBody = {
   checkout_date: string
   num_adults: number
   num_children: number
-  booking_amount: number
+  amount: number
   room_ids: string[]
   addon_ids?: string[]
 }

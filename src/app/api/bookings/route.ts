@@ -118,8 +118,8 @@ export async function GET(request: Request): Promise<Response> {
         ;[minAmount, maxAmount] = [maxAmount, minAmount]
       }
 
-      query = query.gte('booking_amount', minAmount)
-      if (maxAmount !== null) query = query.lte('booking_amount', maxAmount)
+      query = query.gte('amount', minAmount)
+      if (maxAmount !== null) query = query.lte('amount', maxAmount)
     }
 
     const { data, error, count } = await query
@@ -188,7 +188,7 @@ export async function POST(request: Request): Promise<Response> {
       !newBooking.checkin_date &&
       !newBooking.checkout_date &&
       typeof newBooking.num_adults !== 'number' &&
-      !newBooking.booking_amount &&
+      !newBooking.amount &&
       !newBooking.room_ids.length &&
       !newBooking.addon_ids?.length
     ) {
@@ -278,8 +278,8 @@ export async function POST(request: Request): Promise<Response> {
       })
     }
 
-    // Validate booking booking_amount
-    if (typeof newBooking.booking_amount !== 'number') {
+    // Validate booking amount
+    if (typeof newBooking.amount !== 'number') {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
@@ -385,7 +385,7 @@ export async function POST(request: Request): Promise<Response> {
         checkout_date: newBooking.checkout_date,
         num_adults: newBooking.num_adults,
         num_children: newBooking.num_children,
-        booking_amount: newBooking.booking_amount,
+        amount: newBooking.amount,
       })
       .select()
       .single()
@@ -488,7 +488,7 @@ export async function POST(request: Request): Promise<Response> {
       checkout_date: createdBooking.checkout_date,
       num_adults: createdBooking.num_adults,
       num_children: createdBooking.num_children,
-      booking_amount: createdBooking.booking_amount,
+      amount: createdBooking.amount,
       created_at: createdBooking.created_at,
       updated_at: createdBooking.updated_at,
     }

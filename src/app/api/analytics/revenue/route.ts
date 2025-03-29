@@ -49,7 +49,7 @@ export async function GET(request: Request): Promise<Response> {
       .select(
         `
           id,
-          booking_amount,
+          amount,
           checkin_date,
           created_at,
           payment_status!inner(
@@ -121,7 +121,7 @@ export async function GET(request: Request): Promise<Response> {
       }
 
       const current = revenueMap.get(periodKey) ?? { revenue: 0, count: 0 }
-      current.revenue += booking.booking_amount
+      current.revenue += booking.amount
       current.count += 1
       revenueMap.set(periodKey, current)
     })

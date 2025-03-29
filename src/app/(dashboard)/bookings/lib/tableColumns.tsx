@@ -139,8 +139,8 @@ export const tableColumns = (props: Props) => {
       },
       {
         title: 'Amount',
-        dataIndex: 'booking_amount',
-        key: 'booking_amount',
+        dataIndex: 'amount',
+        key: 'amount',
         width: '15%',
         ...getColumnSearchProps({
           initialValue: pageParams.search?.amount,
@@ -149,7 +149,7 @@ export const tableColumns = (props: Props) => {
             searchByTableColumn({ router, pathname, pageParams, dataIndex: 'search[amount]', value })
           },
         }),
-        sorter: (a, b) => a.booking_amount - b.booking_amount,
+        sorter: (a, b) => a.amount - b.amount,
         render: (amount) => <span className="font-medium">{formatCurrency(amount)}</span>,
       },
       {

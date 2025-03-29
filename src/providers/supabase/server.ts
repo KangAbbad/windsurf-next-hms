@@ -7,12 +7,12 @@ import { supabaseConfig } from '@/lib/constants'
 export async function createClient() {
   const cookieStore = await cookies()
   const { getToken } = await auth()
-  const { url, anonKey } = supabaseConfig
+  const { url, anonKey, jwtTemplate } = supabaseConfig
 
   return createServerClient(url, anonKey, {
     global: {
       fetch: async (url, options = {}) => {
-        const clerkToken = await getToken({ template: 'supabase' })
+        const clerkToken = await getToken({ template: jwtTemplate })
         const headers = new Headers(options?.headers)
         headers.set('Authorization', `Bearer ${clerkToken}`)
         return await fetch(url, { ...options, headers })

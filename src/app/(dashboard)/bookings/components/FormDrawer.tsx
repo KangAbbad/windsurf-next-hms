@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Form, DatePicker, Select, Typography, Drawer, Button, Input } from 'antd'
+import { AxiosError } from 'axios'
 import dayjs from 'dayjs'
 import { useEffect } from 'react'
 import { IoClose } from 'react-icons/io5'
@@ -21,6 +22,7 @@ import { updateItem } from '../services/put'
 
 import { CreateBookingBody, UpdateBookingBody } from '@/app/api/bookings/types'
 import { useAntdContextHolder } from '@/lib/context/AntdContextHolder'
+import { ApiResponse } from '@/services/apiResponse'
 import { formatCurrency } from '@/utils/formatCurrency'
 import { inputNumberValidation } from '@/utils/inputNumberValidation'
 
@@ -33,7 +35,7 @@ type FormType = {
   dates: [dayjs.Dayjs, dayjs.Dayjs]
   num_adults: number
   num_children: number
-  booking_amount: number
+  amount: number
   room_ids: string[]
   addon_ids: string[]
 }
@@ -106,8 +108,10 @@ export default function FormDrawer(props: Props) {
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_BOOKING_LIST] })
       hideDrawer()
     },
-    onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to create booking')
+    onError: (res: AxiosError<ApiResponse>) => {
+      const errors = res.response?.data?.errors ?? []
+      const errorMessages = errors.length ? errors.join(', ') : 'Failed to create booking'
+      antdMessage?.error(errorMessages)
     },
   })
 
@@ -118,8 +122,10 @@ export default function FormDrawer(props: Props) {
       queryClient.invalidateQueries({ queryKey: [queryKey.RES_BOOKING_LIST] })
       hideDrawer()
     },
-    onError: (res) => {
-      antdMessage?.error(res?.message ?? 'Failed to update booking')
+    onError: (res: AxiosError<ApiResponse>) => {
+      const errors = res.response?.data?.errors ?? []
+      const errorMessages = errors.length ? errors.join(', ') : 'Failed to update booking'
+      antdMessage?.error(errorMessages)
     },
   })
 
@@ -136,7 +142,7 @@ export default function FormDrawer(props: Props) {
       num_children: Number(values.num_children),
       checkin_date: checkin_date.toISOString(),
       checkout_date: checkout_date.toISOString(),
-      booking_amount: bookingAmount,
+      amount: bookingAmount,
     }
 
     if (bookingDetailState) {
@@ -155,7 +161,7 @@ export default function FormDrawer(props: Props) {
         dates: [dayjs(bookingDetailState.checkin_date), dayjs(bookingDetailState.checkout_date)],
         num_adults: bookingDetailState.num_adults,
         num_children: bookingDetailState.num_children,
-        booking_amount: bookingDetailState.booking_amount,
+        amount: bookingDetailState.amount,
         room_ids: bookingDetailState.rooms.map((room) => room.id),
         addon_ids: bookingDetailState.addons.map((addon) => addon.id),
       })
@@ -171,7 +177,7 @@ export default function FormDrawer(props: Props) {
       placement="right"
       width={520}
       maskClosable={false}
-      closeIcon={<IoClose className="text-black text-2xl" />}
+      closeIcon={<IoClose className="text-black dark:text-white text-2xl" />}
       extra={
         <Button type="primary" loading={isFormLoading} onClick={form.submit}>
           {bookingDetailState ? 'Update' : 'Create'}

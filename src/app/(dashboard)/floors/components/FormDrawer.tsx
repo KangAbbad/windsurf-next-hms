@@ -101,7 +101,7 @@ export default function FormDrawer(props: Props) {
       placement="right"
       width={520}
       maskClosable={false}
-      closeIcon={<IoClose className="text-black text-2xl" />}
+      closeIcon={<IoClose className="text-black dark:text-white text-2xl" />}
       extra={
         <Button type="primary" loading={isFormLoading} onClick={form.submit}>
           {floorDetailState ? 'Update' : 'Create'}

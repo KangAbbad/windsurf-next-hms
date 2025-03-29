@@ -87,7 +87,7 @@ export async function PUT(
       !updateData.checkin_date &&
       !updateData.checkout_date &&
       typeof updateData.num_adults !== 'number' &&
-      !updateData.booking_amount &&
+      !updateData.amount &&
       !updateData.room_ids?.length &&
       !updateData.addon_ids?.length
     ) {
@@ -177,8 +177,8 @@ export async function PUT(
       })
     }
 
-    // Validate booking booking_amount
-    if (typeof updateData.booking_amount !== 'number') {
+    // Validate booking amount
+    if (typeof updateData.amount !== 'number') {
       return createErrorResponse({
         code: 400,
         message: 'Missing or invalid required fields',
@@ -285,7 +285,7 @@ export async function PUT(
         checkout_date: updateData.checkout_date,
         num_adults: updateData.num_adults,
         num_children: updateData.num_children,
-        booking_amount: updateData.booking_amount,
+        amount: updateData.amount,
       })
       .eq('id', identifier)
 
@@ -430,7 +430,7 @@ export async function PUT(
       checkout_date: updatedBooking.checkout_date,
       num_adults: updatedBooking.num_adults,
       num_children: updatedBooking.num_children,
-      booking_amount: updatedBooking.booking_amount,
+      amount: updatedBooking.amount,
       created_at: updatedBooking.created_at,
       updated_at: updatedBooking.updated_at,
     }

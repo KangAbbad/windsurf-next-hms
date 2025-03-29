@@ -8,7 +8,7 @@ CREATE TYPE public.booking_input AS (
   checkout_date date,
   num_adults integer,
   num_children integer,
-  booking_amount decimal
+  amount decimal
 );
 
 -- Create type for booking update input
@@ -22,7 +22,7 @@ CREATE TYPE public.booking_update_input AS (
   checkout_date date,
   num_adults integer,
   num_children integer,
-  booking_amount decimal
+  amount decimal
 );
 
 -- Function to check room availability
@@ -120,7 +120,7 @@ BEGIN
       checkout_date,
       num_adults,
       num_children,
-      booking_amount
+      amount
     ) VALUES (
       booking_input.guest_id,
       booking_input.payment_status_id,
@@ -128,7 +128,7 @@ BEGIN
       booking_input.checkout_date,
       booking_input.num_adults,
       booking_input.num_children,
-      booking_input.booking_amount
+      booking_input.amount
     )
     RETURNING id INTO new_booking_id;
 
@@ -229,7 +229,7 @@ BEGIN
       checkout_date = COALESCE(booking_update.checkout_date, checkout_date),
       num_adults = COALESCE(booking_update.num_adults, num_adults),
       num_children = COALESCE(booking_update.num_children, num_children),
-      booking_amount = COALESCE(booking_update.booking_amount, booking_amount),
+      amount = COALESCE(booking_update.amount, amount),
       updated_at = CURRENT_TIMESTAMP
     WHERE id = booking_update.id;
 
