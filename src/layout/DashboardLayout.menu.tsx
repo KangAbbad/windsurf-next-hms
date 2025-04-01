@@ -2,7 +2,7 @@
 
 import { MenuItemType } from 'antd/es/menu/interface'
 import Link from 'next/link'
-import { BsFillHouseAddFill } from 'react-icons/bs'
+import { BsFillHouseAddFill, BsTerminal } from 'react-icons/bs'
 import { MdDashboard } from 'react-icons/md'
 import { PiStairsDuotone } from 'react-icons/pi'
 import { RiHotelBedFill } from 'react-icons/ri'
@@ -63,5 +63,10 @@ export const dashboardMenuList: MenuItemType[] = [
     key: '/bed-types',
     icon: <TbBed />,
     label: <Link href="/bed-types">Bed Types</Link>,
+  },
+  {
+    key: '/logs',
+    icon: <BsTerminal />,
+    label: <Link href="/logs">Activity Logs</Link>,
   },
 ]
